@@ -25,6 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/rawdb"
+	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethdb"
@@ -85,6 +86,16 @@ func (r *testerChainReader) GetHeaderByNumber(number uint64) *types.Header {
 		return rawdb.ReadHeader(r.db, rawdb.ReadCanonicalHash(r.db, 0), 0)
 	}
 	return nil
+}
+
+// State returns a new mutable state based on the current HEAD block.
+func (r *testerChainReader) State() (*state.StateDB, error) {
+	panic("not supported")
+}
+
+// StateAt returns a new mutable state based on a particular point in time.
+func (r *testerChainReader) StateAt(root common.Hash) (*state.StateDB, error) {
+	panic("not supported")
 }
 
 // Tests that voting is evaluated correctly for various simple and complex scenarios.
