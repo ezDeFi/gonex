@@ -37,6 +37,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/eth/downloader"
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/eth/gasprice"
@@ -436,6 +437,47 @@ func (s *Ethereum) StartMining(threads int) error {
 			if wallet == nil || err != nil {
 				log.Error("Etherbase account unavailable locally", "err", err)
 				return fmt.Errorf("signer missing: %v", err)
+			}
+			state, err := s.blockchain.State()
+			if state == nil || err != nil {
+				log.Error("Cannot read state of current header", "err", err)
+				return fmt.Errorf("cannot read state of current header: %v", err)
+			}
+			header := s.blockchain.CurrentHeader()
+			if header.Number.Cmp(big.NewInt(core.DccsBlock)) >= 0 {
+				size := state.GetCodeSize(core.NtfContractAddress)
+				log.Info("smart contract size", "size", size)
+				if size > 0 && state.Error() == nil {
+					// Get token holder from coinbase
+					index := common.BigToHash(big.NewInt(14)).String()[2:]
+					coinbase := "0x000000000000000000000000" + eb.String()[2:]
+					key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
+					result := state.GetState(core.NtfContractAddress, key)
+
+					if (result == common.Hash{}) {
+						log.Error("The coinbase is not link with any NTF token holder")
+						return fmt.Errorf("The coinbase is not link with any NTF token holder")
+					} else {
+						// Get token balance
+						address := result.Hex()
+						log.Info("NTF token holder", "addess", address)
+						index := common.BigToHash(big.NewInt(7)).String()[2:]
+						key := crypto.Keccak256Hash(hexutil.MustDecode(address + index))
+						result := state.GetState(core.NtfContractAddress, key)
+
+						if (result == common.Hash{}) {
+							log.Error("Etherbase account is not NTF token holder")
+							return fmt.Errorf("signer is not NTF token holder")
+						} else {
+							balance := result.Big()
+							log.Info("NTF token balance", "balance", balance)
+							if balance.Cmp(big.NewInt(0)) < 0 {
+								log.Error("Etherbase account don't hold any NTF token")
+								return fmt.Errorf("signer don't hold NTF token")
+							}
+						}
+					}
+				}
 			}
 			dccs.Authorize(eb, wallet.SignHash)
 		}
