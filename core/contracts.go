@@ -22,8 +22,8 @@ import (
 
 var (
 	// DccsBlock dccs hf blocknumber
-	DccsBlock int64 = 5230
+	DccsBlock int64 = 84
 
 	// NtfContractAddress escrow smart contract address
-	NtfContractAddress = common.HexToAddress("0xa649ef40ddf8892196827327425e3c5ad0ee0fde")
+	NtfContractAddress = common.HexToAddress("0xa5d4798d4292caffa5375bd66195d1d6ba1bed81")
 )
