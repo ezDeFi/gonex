@@ -20,6 +20,7 @@ package dccs
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"math/big"
 	"math/rand"
 	"sync"
@@ -30,6 +31,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
+	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -347,7 +349,7 @@ func (d *Dccs) verifyCascadingFields(chain consensus.ChainReader, header *types.
 		return ErrInvalidTimestamp
 	}
 	// Retrieve the snapshot needed to verify this header and cache it
-	snap, err := d.snapshot(chain, number-1, header.ParentHash, parents)
+	snap, err := d.snapshot2(chain, number-1, header.ParentHash, parents)
 	if err != nil {
 		return err
 	}
@@ -444,6 +446,65 @@ func (d *Dccs) snapshot(chain consensus.ChainReader, number uint64, hash common.
 	return snap, err
 }
 
+// snapshot2 retrieves the authorization snapshot at a given point in time.
+func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common.Hash, parents []*types.Header) (*Snapshot, error) {
+	// Search for a snapshot in memory or on disk for checkpoints
+	var (
+		snap *Snapshot
+	)
+	for snap == nil {
+		// Get signers from Nexty staking smart contract at the latest epoch checkpoint from block number
+		cp := (number / d.config.Epoch) * d.config.Epoch
+		checkpoint := chain.GetHeaderByNumber(cp)
+		if checkpoint != nil {
+			hash := checkpoint.Hash()
+			log.Warn("Reading signers from epoch checkpoint", "number", cp, "hash", hash)
+			// If an in-memory snapshot was found, use that
+			if s, ok := d.recents.Get(hash); ok {
+				snap = s.(*Snapshot)
+				log.Info("Loading snapshot from mem-cache", "hash", snap.Hash, "length", len(snap.signers()))
+				break
+			}
+			state, err := chain.StateAt(checkpoint.Root)
+			if state == nil || err != nil {
+				log.Error("Cannot read state of the checkpoint header", "err", err)
+				return nil, fmt.Errorf("cannot read state of checkpoint header: %v", err)
+			}
+			size := state.GetCodeSize(core.NtfContractAddress)
+			if size > 0 && state.Error() == nil {
+				var num int64 = 1 // signers array position in the smart contract state
+				index := common.BigToHash(big.NewInt(num))
+				result := state.GetState(core.NtfContractAddress, index)
+				var length int64
+				if (result == common.Hash{}) {
+					length = 0
+				} else {
+					length = result.Big().Int64()
+				}
+				log.Warn("Total number of signer from staking smart contract", "length", length)
+				signers := make([]common.Address, length)
+				key := crypto.Keccak256Hash(hexutil.MustDecode(index.String()))
+				for i := 0; i < len(signers); i++ {
+					log.Info("key hash", "key", key)
+					singer := state.GetState(core.NtfContractAddress, key)
+					signers[i] = common.HexToAddress(singer.Hex())
+					key = key.Plus()
+				}
+				snap = newSnapshot(d.config, d.signatures, number, hash, signers)
+				// Store found snapshot into mem-cache
+				d.recents.Add(snap.Hash, snap)
+				break
+			} else {
+				return nil, fmt.Errorf("Epoch checkpoint data is not available")
+			}
+		}
+	}
+
+	// Set current block number for snapshot to calculate the inturn & difficulty
+	snap.Number = number
+	return snap, nil
+}
+
 // VerifyUncles implements consensus.Engine, always returning an error for any
 // uncles as this consensus mechanism doesn't permit uncles.
 func (d *Dccs) VerifyUncles(chain consensus.ChainReader, block *types.Block) error {
@@ -470,7 +531,7 @@ func (d *Dccs) verifySeal(chain consensus.ChainReader, header *types.Header, par
 		return errUnknownBlock
 	}
 	// Retrieve the snapshot needed to verify this header and cache it
-	snap, err := d.snapshot(chain, number-1, header.ParentHash, parents)
+	snap, err := d.snapshot2(chain, number-1, header.ParentHash, parents)
 	if err != nil {
 		return err
 	}
@@ -483,14 +544,7 @@ func (d *Dccs) verifySeal(chain consensus.ChainReader, header *types.Header, par
 	if _, ok := snap.Signers[signer]; !ok {
 		return errUnauthorized
 	}
-	for seen, recent := range snap.Recents {
-		if recent == signer {
-			// Signer is among recents, only fail if the current block doesn't shift it out
-			if limit := uint64(len(snap.Signers)/2 + 1); seen > number-limit {
-				return errUnauthorized
-			}
-		}
-	}
+
 	// Ensure that the difficulty corresponds to the turn-ness of the signer
 	inturn := snap.inturn(header.Number.Uint64(), signer)
 	if inturn && header.Difficulty.Cmp(diffInTurn) != 0 {
@@ -510,34 +564,14 @@ func (d *Dccs) Prepare(chain consensus.ChainReader, header *types.Header) error 
 	header.Nonce = types.BlockNonce{}
 
 	number := header.Number.Uint64()
-	// Assemble the voting snapshot to check which votes make sense
-	snap, err := d.snapshot(chain, number-1, header.ParentHash, nil)
+	snap, err := d.snapshot2(chain, number-1, header.ParentHash, nil)
 	if err != nil {
 		return err
 	}
-	if number%d.config.Epoch != 0 {
-		d.lock.RLock()
 
-		// Gather all the proposals that make sense voting on
-		addresses := make([]common.Address, 0, len(d.proposals))
-		for address, authorize := range d.proposals {
-			if snap.validVote(address, authorize) {
-				addresses = append(addresses, address)
-			}
-		}
-		// If there's pending proposals, cast a vote on them
-		if len(addresses) > 0 {
-			header.Coinbase = addresses[rand.Intn(len(addresses))]
-			if d.proposals[header.Coinbase] {
-				copy(header.Nonce[:], nonceAuthVote)
-			} else {
-				copy(header.Nonce[:], nonceDropVote)
-			}
-		}
-		d.lock.RUnlock()
-	}
 	// Set the correct difficulty
 	header.Difficulty = CalcDifficulty(snap, d.signer)
+	log.Error("header.Difficulty", "difficulty", header.Difficulty)
 
 	// Ensure the extra data has all it's components
 	if len(header.Extra) < extraVanity {
@@ -608,7 +642,7 @@ func (d *Dccs) Seal(chain consensus.ChainReader, block *types.Block, results cha
 	d.lock.RUnlock()
 
 	// Bail out if we're unauthorized to sign a block
-	snap, err := d.snapshot(chain, number-1, header.ParentHash, nil)
+	snap, err := d.snapshot2(chain, number-1, header.ParentHash, nil)
 	if err != nil {
 		return err
 	}
@@ -663,7 +697,7 @@ func (d *Dccs) Seal(chain consensus.ChainReader, block *types.Block, results cha
 // that a new block should have based on the previous blocks in the chain and the
 // current signer.
 func (d *Dccs) CalcDifficulty(chain consensus.ChainReader, time uint64, parent *types.Header) *big.Int {
-	snap, err := d.snapshot(chain, parent.Number.Uint64(), parent.Hash(), nil)
+	snap, err := d.snapshot2(chain, parent.Number.Uint64(), parent.Hash(), nil)
 	if err != nil {
 		return nil
 	}
