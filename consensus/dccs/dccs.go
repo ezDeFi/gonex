@@ -357,7 +357,7 @@ func (d *Dccs) verifyCascadingFields(chain consensus.ChainReader, header *types.
 	if number%d.config.Epoch == 0 {
 		signers := make([]byte, len(snap.Signers)*common.AddressLength)
 		for i, signer := range snap.signers() {
-			copy(signers[i*common.AddressLength:], signer[:])
+			copy(signers[i*common.AddressLength:], signer.Address[:])
 		}
 		extraSuffix := len(header.Extra) - extraSeal
 		if !bytes.Equal(header.Extra[extraVanity:extraSuffix], signers) {
@@ -581,7 +581,7 @@ func (d *Dccs) Prepare(chain consensus.ChainReader, header *types.Header) error 
 
 	if number%d.config.Epoch == 0 {
 		for _, signer := range snap.signers() {
-			header.Extra = append(header.Extra, signer[:]...)
+			header.Extra = append(header.Extra, signer.Address[:]...)
 		}
 	}
 	header.Extra = append(header.Extra, make([]byte, extraSeal)...)
