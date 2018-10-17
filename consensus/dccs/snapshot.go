@@ -23,9 +23,11 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto/sha3"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ethereum/go-ethereum/rlp"
 	lru "github.com/hashicorp/golang-lru"
 )
 
@@ -58,12 +60,22 @@ type Snapshot struct {
 	Tally   map[common.Address]Tally    `json:"tally"`   // Current vote tally to avoid recalculating
 }
 
-// signers implements the sort interface to allow sorting a list of addresses
-type signers []common.Address
+// Signer contain data of signer's address and checkpoint block hash
+type Signer struct {
+	Hash    common.Hash
+	Address common.Address
+}
 
-func (s signers) Len() int           { return len(s) }
-func (s signers) Less(i, j int) bool { return bytes.Compare(s[i][:], s[j][:]) < 0 }
-func (s signers) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+// Signers implements the sort interface to allow sorting a list of signers by hash
+type Signers []Signer
+
+func (sn Signers) Len() int { return len(sn) }
+func (sn Signers) Less(i, j int) bool {
+	h1 := rlpHash(sn[i])
+	h2 := rlpHash(sn[j])
+	return bytes.Compare(h1[:], h2[:]) < 0
+}
+func (sn Signers) Swap(i, j int) { sn[i], sn[j] = sn[j], sn[i] }
 
 // newSnapshot creates a new snapshot with the specified startup parameters. This
 // method does not initialize the set of recent signers, so only ever use if for
@@ -293,22 +305,33 @@ func (s *Snapshot) apply(headers []*types.Header) (*Snapshot, error) {
 	return snap, nil
 }
 
-// signers retrieves the list of authorized signers in ascending order.
-func (s *Snapshot) signers() []common.Address {
-	sigs := make([]common.Address, 0, len(s.Signers))
+// signers retrieves the list of authorized signers in hash ascending order.
+func (s *Snapshot) signers() []Signer {
+	sigs := make([]Signer, 0, len(s.Signers))
 	for sig := range s.Signers {
-		sigs = append(sigs, sig)
+		sigs = append(sigs, Signer{Hash: s.Hash, Address: sig})
 	}
-	sort.Sort(signers(sigs))
+	sort.Sort(Signers(sigs))
 	return sigs
 }
 
 // inturn returns if a signer at a given block height is in-turn or not.
 func (s *Snapshot) inturn(number uint64, signer common.Address) bool {
 	signers, offset := s.signers(), 0
-	for offset < len(signers) && signers[offset] != signer {
+	for offset < len(signers) && signers[offset].Address != signer {
 		offset++
 	}
 	log.Warn("inturn", "offset", offset, "number", number, "len(signers)", len(signers))
 	return (number % uint64(len(signers))) == uint64(offset)
+}
+
+// rlpHash return hash of an input
+func rlpHash(s Signer) (h common.Hash) {
+	hasher := sha3.NewKeccak256()
+	rlp.Encode(hasher, []interface{}{
+		s.Address,
+		s.Hash,
+	})
+	hasher.Sum(h[:0])
+	return h
 }
