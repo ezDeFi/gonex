@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"math/rand"
 	"sync"
@@ -649,24 +650,19 @@ func (d *Dccs) Seal(chain consensus.ChainReader, block *types.Block, results cha
 	if _, authorized := snap.Signers[signer]; !authorized {
 		return errUnauthorized
 	}
-	// If we're amongst the recent signers, wait for the next block
-	for seen, recent := range snap.Recents {
-		if recent == signer {
-			// Signer is among recents, only wait if the current block doesn't shift it out
-			if limit := uint64(len(snap.Signers)/2 + 1); number < limit || seen > number-limit {
-				log.Info("Signed recently, must wait for others")
-				return nil
-			}
-		}
-	}
+
 	// Sweet, the protocol permits us to sign the block, wait for our time
 	delay := time.Unix(header.Time.Int64(), 0).Sub(time.Now()) // nolint: gosimple
 	if header.Difficulty.Cmp(diffNoTurn) == 0 {
 		// It's not our turn explicitly to sign, delay it a bit
-		wiggle := time.Duration(len(snap.Signers)/2+1) * wiggleTime
-		delay += time.Duration(rand.Int63n(int64(wiggle)))
+		if header.Number.Cmp(big.NewInt(core.DccsBlock)) > 0 {
+			delay += d.calcDelayTime(snap, block, signer)
+		} else {
+			wiggle := time.Duration(len(snap.Signers)/2+1) * wiggleTime
+			delay += time.Duration(rand.Int63n(int64(wiggle)))
 
-		log.Trace("Out-of-turn signing requested", "wiggle", common.PrettyDuration(wiggle))
+			log.Trace("Out-of-turn signing requested", "wiggle", common.PrettyDuration(wiggle))
+		}
 	}
 	// Sign all the things!
 	sighash, err := signFn(accounts.Account{Address: signer}, sigHash(header).Bytes())
@@ -675,7 +671,7 @@ func (d *Dccs) Seal(chain consensus.ChainReader, block *types.Block, results cha
 	}
 	copy(header.Extra[len(header.Extra)-extraSeal:], sighash)
 	// Wait until sealing is terminated or delay timeout.
-	log.Trace("Waiting for slot to sign and propagate", "delay", common.PrettyDuration(delay))
+	log.Warn("Waiting for slot to sign and propagate", "delay", common.PrettyDuration(delay))
 	go func() {
 		select {
 		case <-stop:
@@ -691,6 +687,37 @@ func (d *Dccs) Seal(chain consensus.ChainReader, block *types.Block, results cha
 	}()
 
 	return nil
+}
+
+// calcDelayTime calculate delay time for current sealing node
+func (d *Dccs) calcDelayTime(snap *Snapshot, block *types.Block, signer common.Address) time.Duration {
+	header := block.Header()
+	number := header.Number.Uint64()
+	delay := time.Duration(0)
+	sigs := snap.signers()
+	pos := 0
+	for seen, sig := range sigs {
+		if sig.Address == signer {
+			pos = seen
+		}
+	}
+	cp := (number / d.config.Epoch) * d.config.Epoch
+	total := uint64(len(sigs))
+	offset := (number - cp) - (number-cp)/total*total
+	log.Error("calcDelayTime", "number", number, "checkpoint", cp, "len", uint64(len(sigs)), "offset", offset)
+	if pos >= int(offset) {
+		pos -= int(offset)
+	} else {
+		pos += len(sigs) - int(offset)
+	}
+	wiggle := float64(0.0)
+	for i := 1; i <= pos; i++ {
+		wiggle += math.Floor(float64(1.387978)/(float64(0.002313279)*float64(i)+float64(0.00462659)) + float64(199.9994))
+	}
+	wiggle = wiggle * float64(time.Millisecond)
+	delay += time.Duration(int64(wiggle))
+	log.Info("current node waiting time", "delay", common.PrettyDuration(delay))
+	return delay
 }
 
 // CalcDifficulty is the difficulty adjustment algorithm. It returns the difficulty
