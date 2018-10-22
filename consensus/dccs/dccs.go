@@ -50,7 +50,8 @@ const (
 	inmemorySnapshots  = 128  // Number of recent vote snapshots to keep in memory
 	inmemorySignatures = 4096 // Number of recent block signatures to keep in memory
 
-	wiggleTime = 500 * time.Millisecond // Random delay (per signer) to allow concurrent signers
+	wiggleTime   = 500 * time.Millisecond // Random delay (per signer) to allow concurrent signers
+	blockPerYear = uint64(15778476)       // Number of blocks per year with blocktime = 2s
 )
 
 // Dccs proof-of-foundation protocol constants.
@@ -67,6 +68,9 @@ var (
 
 	diffInTurn = big.NewInt(2) // Block difficulty for in-turn signatures
 	diffNoTurn = big.NewInt(1) // Block difficulty for out-of-turn signatures
+
+	rewards       = []float64{0.1, 0.05, 0.025, 0.0125, 0.00625, 0.005} // rewards per year in percent of current total supply
+	initialSupply = uint64(18e+10)                                      // initial total supply
 )
 
 // Various error messages to mark blocks invalid. These should be private to
@@ -277,18 +281,8 @@ func (d *Dccs) verifyHeader(chain consensus.ChainReader, header *types.Header, p
 	if header.Time.Cmp(big.NewInt(time.Now().Unix())) > 0 {
 		return consensus.ErrFutureBlock
 	}
-	// Checkpoint blocks need to enforce zero beneficiary
+
 	checkpoint := (number % d.config.Epoch) == 0
-	if checkpoint && header.Coinbase != (common.Address{}) {
-		return errInvalidCheckpointBeneficiary
-	}
-	// Nonces must be 0x00..0 or 0xff..f, zeroes enforced on checkpoints
-	if !bytes.Equal(header.Nonce[:], nonceAuthVote) && !bytes.Equal(header.Nonce[:], nonceDropVote) {
-		return errInvalidVote
-	}
-	if checkpoint && !bytes.Equal(header.Nonce[:], nonceDropVote) {
-		return errInvalidCheckpointVote
-	}
 	// Check that the extra-data contains both the vanity and signature
 	if len(header.Extra) < extraVanity {
 		return errMissingVanity
@@ -468,7 +462,7 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 			}
 			state, err := chain.StateAt(checkpoint.Root)
 			if state == nil || err != nil {
-				log.Error("Cannot read state of the checkpoint header", "err", err)
+				log.Error("Cannot read state of the checkpoint header", "err", err, "number", cp, "hash", hash, "root", checkpoint.Root)
 				return nil, fmt.Errorf("cannot read state of checkpoint header: %v", err)
 			}
 			size := state.GetCodeSize(core.NtfContractAddress)
@@ -560,8 +554,6 @@ func (d *Dccs) verifySeal(chain consensus.ChainReader, header *types.Header, par
 // Prepare implements consensus.Engine, preparing all the consensus fields of the
 // header for running the transactions on top.
 func (d *Dccs) Prepare(chain consensus.ChainReader, header *types.Header) error {
-	// If the block isn't a checkpoint, cast a random vote (good enough for now)
-	header.Coinbase = common.Address{}
 	header.Nonce = types.BlockNonce{}
 
 	number := header.Number.Uint64()
@@ -605,7 +597,8 @@ func (d *Dccs) Prepare(chain consensus.ChainReader, header *types.Header) error 
 // Finalize implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
 func (d *Dccs) Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
-	// No block rewards in PoA, so the state remains as is and uncles are dropped
+	// Calculate any block reward for the sealer and commit the final state root
+	d.calculateRewards(chain, state, header)
 	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
 	header.UncleHash = types.CalcUncleHash(nil)
 
@@ -760,4 +753,54 @@ func (d *Dccs) APIs(chain consensus.ChainReader) []rpc.API {
 		Service:   &API{chain: chain, dccs: d},
 		Public:    false,
 	}}
+}
+
+func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateDB, header *types.Header) {
+	number := header.Number.Uint64()
+	cp := (number / d.config.Epoch) * d.config.Epoch
+	checkpoint := chain.GetHeaderByNumber(cp)
+	if checkpoint != nil {
+		root, _ := chain.StateAt(checkpoint.Root)
+		// Check if eb already sealed and received reward in the current sealing round
+		snap, _ := d.snapshot2(chain, number, header.Hash(), nil)
+		len := uint64(len(snap.signers()))
+		start := cp + (number-cp)/len*len
+		for i := start; i < number; i++ {
+			h := chain.GetHeaderByNumber(i)
+			sig, _ := ecrecover(h, d.signatures)
+			if sig == header.Coinbase {
+				log.Warn("sealer already sealed and received reward in the current sealing round", "coinbase", d.signer)
+				return
+			}
+		}
+
+		// Get the beneficiary of sealer from smart contract and give reward
+		size := root.GetCodeSize(core.NtfContractAddress)
+		if size > 0 && root.Error() == nil {
+			index := common.BigToHash(big.NewInt(0)).String()[2:]
+			coinbase := "0x000000000000000000000000" + header.Coinbase.String()[2:]
+			key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
+			result := root.GetState(core.NtfContractAddress, key)
+			beneficiary := common.HexToAddress(result.Hex())
+
+			yo := (number - uint64(core.DccsBlock)) / blockPerYear
+			per := yo
+			if per > 5 {
+				per = 5
+			}
+			totalSupply := initialSupply
+			for i := uint64(1); i <= yo; i++ {
+				r := i
+				if r > 5 {
+					r = 5
+				}
+				totalSupply += uint64(float64(totalSupply) * rewards[r])
+			}
+			totalReward := uint64(float64(totalSupply) * rewards[per])
+			log.Info("Total reward for current year", "reward", totalReward, "total sypply", totalSupply)
+			reward := totalReward / blockPerYear
+			log.Info("Give reward for sealer", "beneficiary", beneficiary, "reward", reward, "number", number, "hash", header.Hash)
+			state.AddBalance(beneficiary, new(big.Int).Mul(big.NewInt(int64(reward)), big.NewInt(1e+18)))
+		}
+	}
 }
