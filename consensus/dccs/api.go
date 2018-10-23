@@ -72,7 +72,7 @@ func (api *API) GetSigners(number *rpc.BlockNumber) ([]Signer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return snap.signers(), nil
+	return snap.signers2(), nil
 }
 
 // GetSignersAtHash retrieves the state snapshot at a given block.
@@ -85,7 +85,7 @@ func (api *API) GetSignersAtHash(hash common.Hash) ([]Signer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return snap.signers(), nil
+	return snap.signers2(), nil
 }
 
 // Proposals returns the current proposals the node tries to uphold and vote on.
