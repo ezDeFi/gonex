@@ -305,8 +305,24 @@ func (s *Snapshot) apply(headers []*types.Header) (*Snapshot, error) {
 	return snap, nil
 }
 
-// signers retrieves the list of authorized signers in hash ascending order.
-func (s *Snapshot) signers() []Signer {
+// signers retrieves the list of authorized signers in ascending order.
+func (s *Snapshot) signers() []common.Address {
+	signers := make([]common.Address, 0, len(s.Signers))
+	for signer := range s.Signers {
+		signers = append(signers, signer)
+	}
+	for i := 0; i < len(signers); i++ {
+		for j := i + 1; j < len(signers); j++ {
+			if bytes.Compare(signers[i][:], signers[j][:]) > 0 {
+				signers[i], signers[j] = signers[j], signers[i]
+			}
+		}
+	}
+	return signers
+}
+
+// signers2 retrieves the list of authorized signers in hash ascending order.
+func (s *Snapshot) signers2() []Signer {
 	sigs := make([]Signer, 0, len(s.Signers))
 	for sig := range s.Signers {
 		sigs = append(sigs, Signer{Hash: s.Hash, Address: sig})
@@ -318,6 +334,16 @@ func (s *Snapshot) signers() []Signer {
 // inturn returns if a signer at a given block height is in-turn or not.
 func (s *Snapshot) inturn(number uint64, signer common.Address) bool {
 	signers, offset := s.signers(), 0
+	for offset < len(signers) && signers[offset] != signer {
+		offset++
+	}
+	log.Warn("inturn", "offset", offset, "number", number, "len(signers)", len(signers))
+	return (number % uint64(len(signers))) == uint64(offset)
+}
+
+// inturn2 returns if a signer at a given block height is in-turn or not.
+func (s *Snapshot) inturn2(number uint64, signer common.Address) bool {
+	signers, offset := s.signers2(), 0
 	for offset < len(signers) && signers[offset].Address != signer {
 		offset++
 	}

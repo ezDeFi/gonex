@@ -444,7 +444,7 @@ func (s *Ethereum) StartMining(threads int) error {
 				return fmt.Errorf("cannot read state of current header: %v", err)
 			}
 			header := s.blockchain.CurrentHeader()
-			if header.Number.Cmp(big.NewInt(core.DccsBlock)) > 0 {
+			if header.Number.Cmp(big.NewInt(core.DccsBlock)) >= 0 {
 				size := state.GetCodeSize(core.NtfContractAddress)
 				log.Info("smart contract size", "size", size)
 				if size > 0 && state.Error() == nil {
