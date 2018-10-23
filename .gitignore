@@ -50,3 +50,5 @@ profile.cov
 # testnet
 boot.key
 nexty.json
+*.log
+passwd
