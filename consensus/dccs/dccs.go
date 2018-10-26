@@ -86,6 +86,10 @@ var (
 	// block has a beneficiary set to non-zeroes.
 	errInvalidCheckpointBeneficiary = errors.New("beneficiary in checkpoint block non-zero")
 
+	// errInvalidBeneficiarySignature is returned when the beneficiary signature
+	// is not come from coinbase address
+	errInvalidBeneficiarySignature = errors.New("beneficiary signature is not come from coinbase address")
+
 	// errInvalidVote is returned if a nonce value is something else that the two
 	// allowed constants of 0x00..0 or 0xff..f.
 	errInvalidVote = errors.New("vote nonce not 0x00..0 or 0xff..f")
@@ -698,6 +702,10 @@ func (d *Dccs) verifySeal2(chain consensus.ChainReader, header *types.Header, pa
 	}
 	if _, ok := snap.Signers[signer]; !ok {
 		return errUnauthorized
+	}
+	// Ensure the the signer's signature come from coinbase address
+	if signer != header.Coinbase {
+		return errInvalidBeneficiarySignature
 	}
 
 	// Ensure that the difficulty corresponds to the turn-ness of the signer
