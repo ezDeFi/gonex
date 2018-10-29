@@ -50,8 +50,7 @@ const (
 	inmemorySnapshots  = 128  // Number of recent vote snapshots to keep in memory
 	inmemorySignatures = 4096 // Number of recent block signatures to keep in memory
 
-	wiggleTime   = 500 * time.Millisecond // Random delay (per signer) to allow concurrent signers
-	blockPerYear = uint64(15778476)       // Number of blocks per year with blocktime = 2s
+	wiggleTime = 500 * time.Millisecond // Random delay (per signer) to allow concurrent signers
 )
 
 // Dccs proof-of-foundation protocol constants.
@@ -69,8 +68,16 @@ var (
 	diffInTurn = big.NewInt(2) // Block difficulty for in-turn signatures
 	diffNoTurn = big.NewInt(1) // Block difficulty for out-of-turn signatures
 
-	rewards       = []float64{0.1, 0.05, 0.025, 0.0125, 0.00625, 0.005} // rewards per year in percent of current total supply
-	initialSupply = uint64(18e+10)                                      // initial total supply
+	rewards = []*big.Int{
+		big.NewInt(1e+4),
+		big.NewInt(5e+3),
+		big.NewInt(25e+2),
+		big.NewInt(1250),
+		big.NewInt(625),
+		big.NewInt(500),
+	} // rewards per year in percent of current total supply
+	initialSupply = big.NewInt(18e+10)   // initial total supply in NTY
+	blockPerYear  = big.NewInt(15778476) // Number of blocks per year with blocktime = 2s
 )
 
 // Various error messages to mark blocks invalid. These should be private to
@@ -1139,24 +1146,28 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 			result := root.GetState(core.NtfContractAddress, key)
 			beneficiary := common.HexToAddress(result.Hex())
 
-			yo := (number - uint64(core.DccsBlock)) / blockPerYear
+			yo := (number - uint64(core.DccsBlock)) / blockPerYear.Uint64()
 			per := yo
 			if per > 5 {
 				per = 5
 			}
-			totalSupply := initialSupply
+			totalSupply := new(big.Int).Mul(initialSupply, big.NewInt(1e+18)) // total supply in Wei
 			for i := uint64(1); i <= yo; i++ {
 				r := i
 				if r > 5 {
 					r = 5
 				}
-				totalSupply += uint64(float64(totalSupply) * rewards[r])
+				totalReward := new(big.Int).Mul(totalSupply, rewards[r])
+				totalReward = totalReward.Div(totalReward, big.NewInt(1e+5))
+				totalSupply = totalSupply.Add(totalSupply, totalReward)
+
 			}
-			totalReward := uint64(float64(totalSupply) * rewards[per])
-			log.Info("Total reward for current year", "reward", totalReward, "total sypply", totalSupply)
-			reward := totalReward / blockPerYear
-			log.Info("Give reward for sealer", "beneficiary", beneficiary, "reward", reward, "number", number, "hash", header.Hash)
-			state.AddBalance(beneficiary, new(big.Int).Mul(big.NewInt(int64(reward)), big.NewInt(1e+18)))
+			totalYearReward := new(big.Int).Mul(totalSupply, rewards[per])
+			totalYearReward = totalYearReward.Div(totalYearReward, big.NewInt(1e+5))
+			log.Info("Total reward for current year", "reward", totalYearReward, "total sypply", totalSupply)
+			blockReward := new(big.Int).Div(totalYearReward, blockPerYear)
+			log.Info("Give reward for sealer", "beneficiary", beneficiary, "reward", blockReward, "number", number, "hash", header.Hash)
+			state.AddBalance(beneficiary, blockReward)
 		}
 	}
 }
