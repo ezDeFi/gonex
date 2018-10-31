@@ -714,7 +714,20 @@ func (d *Dccs) verifySeal2(chain consensus.ChainReader, header *types.Header, pa
 	if signer != header.Coinbase {
 		return errInvalidBeneficiarySignature
 	}
-
+	headers, err := d.GetRecentHeaders(snap, chain, header, parents)
+	if err != nil {
+		return err
+	}
+	for _, h := range headers {
+		sig, err := ecrecover(h, d.signatures)
+		if err != nil {
+			return err
+		}
+		if signer == sig {
+			// Signer is among recents, only fail if the current block doesn't shift it out
+			return errUnauthorized
+		}
+	}
 	// Ensure that the difficulty corresponds to the turn-ness of the signer
 	inturn := snap.inturn2(header.Number.Uint64(), signer)
 	if inturn && header.Difficulty.Cmp(diffInTurn) != 0 {
@@ -993,7 +1006,22 @@ func (d *Dccs) seal2(chain consensus.ChainReader, block *types.Block, results ch
 	if _, authorized := snap.Signers[signer]; !authorized {
 		return errUnauthorized
 	}
-
+	// If we're amongst the recent signers, wait for the next block
+	headers, err := d.GetRecentHeaders(snap, chain, header, nil)
+	if err != nil {
+		return err
+	}
+	for _, h := range headers {
+		sig, err := ecrecover(h, d.signatures)
+		if err != nil {
+			return err
+		}
+		if signer == sig {
+			// Signer is among recents
+			log.Info("Signed recently, must wait for others")
+			return nil
+		}
+	}
 	// Sweet, the protocol permits us to sign the block, wait for our time
 	delay := time.Unix(header.Time.Int64(), 0).Sub(time.Now()) // nolint: gosimple
 	if header.Difficulty.Cmp(diffNoTurn) == 0 {
@@ -1170,4 +1198,32 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 			state.AddBalance(beneficiary, blockReward)
 		}
 	}
+}
+
+// GetRecentHeaders get some recent headers
+func (d *Dccs) GetRecentHeaders(snap *Snapshot, chain consensus.ChainReader, header *types.Header, parents []*types.Header) ([]*types.Header, error) {
+	var headers []*types.Header
+	number := header.Number.Uint64()
+	limit := len(snap.Signers) / 2
+	num, hash := number-1, header.ParentHash
+	for i := 1; i <= limit; i++ {
+		var h *types.Header
+		if len(parents) > 0 {
+			// If we have explicit parents, pick from there (enforced)
+			h = parents[len(parents)-1]
+			if h.Hash() != hash || h.Number.Uint64() != num {
+				return nil, consensus.ErrUnknownAncestor
+			}
+			parents = parents[:len(parents)-1]
+		} else {
+			// No explicit parents (or no more left), reach out to the database
+			h = chain.GetHeader(hash, num)
+			if header == nil {
+				return nil, consensus.ErrUnknownAncestor
+			}
+		}
+		headers = append(headers, h)
+		num, hash = num-1, h.ParentHash
+	}
+	return headers, nil
 }
