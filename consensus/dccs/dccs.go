@@ -578,11 +578,11 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 		checkpoint := chain.GetHeaderByNumber(cp)
 		if checkpoint != nil {
 			hash := checkpoint.Hash()
-			log.Warn("Reading signers from epoch checkpoint", "number", cp, "hash", hash)
+			log.Trace("Reading signers from epoch checkpoint", "number", cp, "hash", hash)
 			// If an in-memory snapshot was found, use that
 			if s, ok := d.recents.Get(hash); ok {
 				snap = s.(*Snapshot)
-				log.Info("Loading snapshot from mem-cache", "hash", snap.Hash, "length", len(snap.signers()))
+				log.Trace("Loading snapshot from mem-cache", "hash", snap.Hash, "length", len(snap.signers()))
 				break
 			}
 			state, err := chain.StateAt(checkpoint.Root)
@@ -601,11 +601,11 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 				} else {
 					length = result.Big().Int64()
 				}
-				log.Warn("Total number of signer from staking smart contract", "length", length)
+				log.Trace("Total number of signer from staking smart contract", "length", length)
 				signers := make([]common.Address, length)
 				key := crypto.Keccak256Hash(hexutil.MustDecode(index.String()))
 				for i := 0; i < len(signers); i++ {
-					log.Info("key hash", "key", key)
+					log.Trace("key hash", "key", key)
 					singer := state.GetState(core.NtfContractAddress, key)
 					signers[i] = common.HexToAddress(singer.Hex())
 					key = key.Plus()
@@ -826,7 +826,7 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 
 	// Set the correct difficulty
 	header.Difficulty = CalcDifficulty2(snap, d.signer)
-	log.Error("header.Difficulty", "difficulty", header.Difficulty)
+	log.Trace("header.Difficulty", "difficulty", header.Difficulty)
 
 	// Ensure the extra data has all it's components
 	if len(header.Extra) < extraVanity {
@@ -1070,7 +1070,7 @@ func (d *Dccs) calcDelayTime(snap *Snapshot, block *types.Block, signer common.A
 	cp := (number / d.config.Epoch) * d.config.Epoch
 	total := uint64(len(sigs))
 	offset := (number - cp) - (number-cp)/total*total
-	log.Error("calcDelayTime", "number", number, "checkpoint", cp, "len", uint64(len(sigs)), "offset", offset)
+	log.Trace("calcDelayTime", "number", number, "checkpoint", cp, "len", uint64(len(sigs)), "offset", offset)
 	if pos >= int(offset) {
 		pos -= int(offset)
 	} else {
@@ -1082,7 +1082,6 @@ func (d *Dccs) calcDelayTime(snap *Snapshot, block *types.Block, signer common.A
 	}
 	wiggle = wiggle * float64(time.Millisecond)
 	delay += time.Duration(int64(wiggle))
-	log.Info("current node waiting time", "delay", common.PrettyDuration(delay))
 	return delay
 }
 
@@ -1160,7 +1159,7 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 			h := chain.GetHeaderByNumber(i)
 			sig, _ := ecrecover(h, d.signatures)
 			if sig == header.Coinbase {
-				log.Warn("sealer already sealed and received reward in the current sealing round", "coinbase", d.signer)
+				log.Trace("Sealer already received reward in current sealing round", "coinbase", d.signer)
 				return
 			}
 		}
@@ -1192,7 +1191,7 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 			}
 			totalYearReward := new(big.Int).Mul(totalSupply, rewards[per])
 			totalYearReward = totalYearReward.Div(totalYearReward, big.NewInt(1e+5))
-			log.Info("Total reward for current year", "reward", totalYearReward, "total sypply", totalSupply)
+			log.Trace("Total reward for current year", "reward", totalYearReward, "total sypply", totalSupply)
 			blockReward := new(big.Int).Div(totalYearReward, blockPerYear)
 			log.Info("Give reward for sealer", "beneficiary", beneficiary, "reward", blockReward, "number", number, "hash", header.Hash)
 			state.AddBalance(beneficiary, blockReward)
