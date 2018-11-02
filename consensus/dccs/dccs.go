@@ -1157,10 +1157,12 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 		start := cp + (number-cp)/len*len
 		for i := start; i < number; i++ {
 			h := chain.GetHeaderByNumber(i)
-			sig, _ := ecrecover(h, d.signatures)
-			if sig == header.Coinbase {
-				log.Trace("Sealer already received reward in current sealing round", "coinbase", d.signer)
-				return
+			if h != nil {
+				sig, _ := ecrecover(h, d.signatures)
+				if sig == header.Coinbase {
+					log.Trace("Sealer already received reward in current sealing round", "coinbase", d.signer)
+					return
+				}
 			}
 		}
 
