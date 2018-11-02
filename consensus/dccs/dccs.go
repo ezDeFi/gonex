@@ -1037,7 +1037,7 @@ func (d *Dccs) seal2(chain consensus.ChainReader, block *types.Block, results ch
 	}
 	copy(header.Extra[len(header.Extra)-extraSeal:], sighash)
 	// Wait until sealing is terminated or delay timeout.
-	log.Warn("Waiting for slot to sign and propagate", "delay", common.PrettyDuration(delay))
+	log.Trace("Waiting for slot to sign and propagate", "delay", common.PrettyDuration(delay))
 	go func() {
 		select {
 		case <-stop:
@@ -1195,7 +1195,7 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 			totalYearReward = totalYearReward.Div(totalYearReward, big.NewInt(1e+5))
 			log.Trace("Total reward for current year", "reward", totalYearReward, "total sypply", totalSupply)
 			blockReward := new(big.Int).Div(totalYearReward, blockPerYear)
-			log.Info("Give reward for sealer", "beneficiary", beneficiary, "reward", blockReward, "number", number, "hash", header.Hash)
+			log.Trace("Give reward for sealer", "beneficiary", beneficiary, "reward", blockReward, "number", number, "hash", header.Hash)
 			state.AddBalance(beneficiary, blockReward)
 		}
 	}
