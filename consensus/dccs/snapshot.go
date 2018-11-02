@@ -337,7 +337,7 @@ func (s *Snapshot) inturn(number uint64, signer common.Address) bool {
 	for offset < len(signers) && signers[offset] != signer {
 		offset++
 	}
-	log.Warn("inturn", "offset", offset, "number", number, "len(signers)", len(signers))
+	log.Trace("inturn", "offset", offset, "number", number, "len(signers)", len(signers))
 	return (number % uint64(len(signers))) == uint64(offset)
 }
 
@@ -347,7 +347,7 @@ func (s *Snapshot) inturn2(number uint64, signer common.Address) bool {
 	for offset < len(signers) && signers[offset].Address != signer {
 		offset++
 	}
-	log.Warn("inturn", "offset", offset, "number", number, "len(signers)", len(signers))
+	log.Trace("inturn", "offset", offset, "number", number, "len(signers)", len(signers))
 	return (number % uint64(len(signers))) == uint64(offset)
 }
 
