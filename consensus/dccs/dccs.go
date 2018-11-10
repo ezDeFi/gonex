@@ -1153,7 +1153,7 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 		root, _ := chain.StateAt(checkpoint.Root)
 		// Check if eb already sealed and received reward in the current sealing round
 		snap, _ := d.snapshot2(chain, number, header.Hash(), nil)
-		len := uint64(len(snap.signers()))
+		len := uint64(len(snap.signers2()))
 		start := cp + (number-cp)/len*len
 		for i := start; i < number; i++ {
 			h := chain.GetHeaderByNumber(i)
