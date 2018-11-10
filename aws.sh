@@ -60,7 +60,7 @@ SSH="ssh -oStrictHostKeyChecking=no -o BatchMode=yes"
 SCP="scp -oStrictHostKeyChecking=no -o BatchMode=yes"
 PSCP="pscp -OStrictHostKeyChecking=no -OBatchMode=yes"
 SSH_COPY_ID="ssh-copy-id -f"
-GETH="./geth --verbosity=5 --syncmode full --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 42000000 -gcmode=archive"
+GETH="./geth-linux-amd64 --verbosity=5 --syncmode full --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 42000000 -gcmode=archive"
 
 function trim {
 	awk '{$1=$1};1'
@@ -132,13 +132,13 @@ function bootnode {
 	if ! $SSH $SSH_USER@$IP stat boot.key \> /dev/null 2\>\&1; then
 		# remote boot.key not exist
 		./build/bin/bootnode --genkey=boot.key
-		$SCP build/bin/bootnode $SSH_USER@$IP:./
+		$SCP build/bin/bootnode-linux-amd64 $SSH_USER@$IP:./
 		$SCP boot.key $SSH_USER@$IP:./
 	fi
 
-	$SSH $SSH_USER@$IP "nohup yes | ./bootnode -nodekey=boot.key -verbosity 9 &>bootnode.log &"
+	$SSH $SSH_USER@$IP "nohup yes | ./bootnode-linux-amd64 -nodekey=boot.key -verbosity 9 &>bootnode.log &"
 
-	echo enode://`build/bin/bootnode -nodekey=boot.key -writeaddress`@$IP:33333
+	echo enode://`./build/bin/bootnode -nodekey=boot.key -writeaddress`@$IP:33333
 }
 
 function load {
@@ -179,7 +179,7 @@ function create_account {
 	rm -rf /tmp/aws.sh/account
 	mkdir -p /tmp/aws.sh/account
 	for i in "${!IPs[@]}"; do
-		$SSH $SSH_USER@${IPs[$i]} "./geth account new --password <(echo password)" >| /tmp/aws.sh/account/$i &
+		$SSH $SSH_USER@${IPs[$i]} "./geth-linux-amd64 account new --password <(echo password)" >| /tmp/aws.sh/account/$i &
 	done
 	wait
 	for i in "${!IPs[@]}"; do
@@ -264,7 +264,7 @@ function init_genesis {
 function geth_start {
 	IPs=($@)
 	for IP in "${IPs[@]}"; do
-		(	$SSH $SSH_USER@$IP "./geth init *.json"
+		(	$SSH $SSH_USER@$IP "./geth-linux-amd64 init *.json"
 			$SSH $SSH_USER@$IP "nohup $GETH --bootnodes $BOOTNODE --mine --unlock 0 --password <(echo password) --ethstats $IP:$ETHSTATS &>./geth.log &"
 		) &
 	done
@@ -296,7 +296,7 @@ function restart {
 
 function deploy {
 	IPs="$@"
-	$PSCP -h <(printf "%s\n" $IPs) -l ubuntu ./build/bin/geth /home/ubuntu/
+	$PSCP -h <(printf "%s\n" $IPs) -l ubuntu ./build/bin/geth-linux-amd64 /home/ubuntu/
 }
 
 function launch_instance {
