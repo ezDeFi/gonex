@@ -41,7 +41,7 @@ IMAGE_ID=(
 	[eu-west-2]=ami-0b0a60c0a2bd40612
 	[eu-west-3]=ami-08182c55a1c188dee
 )
-KEY_NAME=zergity@gmail.com
+KEY_NAME=dvietha@gmail.com
 BOOTNODE_REGION=ap-southeast-1
 ETHSTATS=nexty-testnet@198.13.40.85:80
 CONTRACT_ADDR=00000000000000000000000000000000000000ff
@@ -58,7 +58,7 @@ NETWORK_ID=50913
 # COMMAND SHORTCUTS
 SSH="ssh -oStrictHostKeyChecking=no -o BatchMode=yes"
 SCP="scp -oStrictHostKeyChecking=no -o BatchMode=yes"
-PSCP="parallel-scp -OStrictHostKeyChecking=no -OBatchMode=yes"
+PSCP="pscp -OStrictHostKeyChecking=no -OBatchMode=yes"
 SSH_COPY_ID="ssh-copy-id -f"
 GETH="./geth --verbosity=5 --syncmode full --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 42000000 -gcmode=archive"
 
@@ -126,18 +126,12 @@ function bootnode {
 		aws ec2 wait instance-running --instance-ids $ID
 	fi
 
-	if [ -f "bin/bootnode" ]; then
-		# workaround for not-up-to-date code
-		cp bin/bootnode build/bin/
-	fi
-
 	IP=`instance_ip $ID`
 	ssh_ready $SSH_USER@$IP
 
 	if ! $SSH $SSH_USER@$IP stat boot.key \> /dev/null 2\>\&1; then
 		# remote boot.key not exist
-		strip -s build/bin/bootnode
-		build/bin/bootnode --genkey=boot.key
+		./build/bin/bootnode --genkey=boot.key
 		$SCP build/bin/bootnode $SSH_USER@$IP:./
 		$SCP boot.key $SSH_USER@$IP:./
 	fi
@@ -302,7 +296,6 @@ function restart {
 
 function deploy {
 	IPs="$@"
-	strip -s build/bin/geth
 	$PSCP -h <(printf "%s\n" $IPs) -l ubuntu ./build/bin/geth /home/ubuntu/
 }
 
