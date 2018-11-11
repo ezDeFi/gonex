@@ -22,7 +22,7 @@ shift $((OPTIND-1))
 BLOCK_TIME=2
 BOOTNODE_NAME=BootNode
 INSTANCE_NAME=LoadTest
-INSTANCE_TYPE=t2.micro
+INSTANCE_TYPE=t2.small
 declare -A IMAGE_ID
 IMAGE_ID=(
 	[ap-southeast-1]=ami-0c5199d385b432989
