@@ -22,27 +22,20 @@ shift $((OPTIND-1))
 BLOCK_TIME=2
 BOOTNODE_NAME=BootNode
 INSTANCE_NAME=LoadTest
-INSTANCE_TYPE=t3.small
+INSTANCE_TYPE=t3.medium
 declare -A IMAGE_ID
 IMAGE_ID=(
 	[us-east-1]=ami-0ac019f4fcb7cb7e6
 	[us-east-2]=ami-0f65671a86f061fcd
 	[us-west-1]=ami-063aa838bd7631e0b
 	[us-west-2]=ami-0bbe6b35405ecebdb
-	[ap-northeast-2]=ami-06e7b9c5e0c4dd014
 	[ap-southeast-1]=ami-0c5199d385b432989
-	[ap-southeast-2]=ami-07a3bd4944eb120a0
-	[ca-central-1]=ami-0427e8367e3770df1
-	[eu-central-1]=ami-0bdf93799014acdc4
-	[eu-west-1]=ami-0ab7944c6328200be
-	[eu-west-2]=ami-0b0a60c0a2bd40612
-	[eu-west-3]=ami-08182c55a1c188dee
 )
 KEY_NAME=dvietha@gmail.com
 BOOTNODE_REGION=ap-southeast-1
 ETHSTATS=nexty-testnet@198.13.40.85:80
 CONTRACT_ADDR=00000000000000000000000000000000000000ff
-EPOCH=20
+EPOCH=30
 SSH_USER=ubuntu
 
 OUTPUT_TYPE=table
