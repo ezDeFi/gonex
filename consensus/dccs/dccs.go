@@ -1201,10 +1201,15 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 	}
 }
 
-// GetRecentHeaders get some recent headers
+// GetRecentHeaders get some recent headers back from the current header.
+// Return empty header list at checkpoint, a.k.a reset the recent headers at every checkpoint.
 func (d *Dccs) GetRecentHeaders(snap *Snapshot, chain consensus.ChainReader, header *types.Header, parents []*types.Header) ([]*types.Header, error) {
 	var headers []*types.Header
 	number := header.Number.Uint64()
+	// Reset the recent headers at checkpoint to ensure the in-turn signer
+	if number%d.config.Epoch == 0 {
+		return headers, nil
+	}
 	limit := len(snap.Signers) / 2
 	num, hash := number-1, header.ParentHash
 	for i := 1; i <= limit; i++ {
@@ -1224,6 +1229,9 @@ func (d *Dccs) GetRecentHeaders(snap *Snapshot, chain consensus.ChainReader, hea
 			}
 		}
 		headers = append(headers, h)
+		if num%d.config.Epoch == 0 {
+			break
+		}
 		num, hash = num-1, h.ParentHash
 	}
 	return headers, nil
