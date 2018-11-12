@@ -76,8 +76,9 @@ var (
 		big.NewInt(625),
 		big.NewInt(500),
 	} // rewards per year in percent of current total supply
-	initialSupply = big.NewInt(18e+10)   // initial total supply in NTY
-	blockPerYear  = big.NewInt(15778476) // Number of blocks per year with blocktime = 2s
+	initialSupply    = big.NewInt(18e+10)   // initial total supply in NTY
+	blockPerYear     = big.NewInt(15778476) // Number of blocks per year with blocktime = 2s
+	NextyBlockReward = big.NewInt(5e+18)
 )
 
 // Various error messages to mark blocks invalid. These should be private to
@@ -1078,7 +1079,7 @@ func (d *Dccs) calcDelayTime(snap *Snapshot, block *types.Block, signer common.A
 	}
 	wiggle := float64(0.0)
 	for i := 1; i <= pos; i++ {
-		wiggle += math.Floor(float64(1.387978)/(float64(0.002313279)*float64(i)+float64(0.00462659)) + float64(199.9994))
+		wiggle += math.Floor(float64(1.387978)/(float64(0.002313279)*float64(i)+float64(0.00462659)) + float64(499.9994))
 	}
 	wiggle = wiggle * float64(time.Millisecond)
 	delay += time.Duration(int64(wiggle))
@@ -1146,59 +1147,60 @@ func (d *Dccs) APIs(chain consensus.ChainReader) []rpc.API {
 
 // calculateRewards calculate reward for block sealer
 func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateDB, header *types.Header) {
-	number := header.Number.Uint64()
-	cp := (number / d.config.Epoch) * d.config.Epoch
-	checkpoint := chain.GetHeaderByNumber(cp)
-	if checkpoint != nil {
-		root, _ := chain.StateAt(checkpoint.Root)
-		// Check if eb already sealed and received reward in the current sealing round
-		snap, _ := d.snapshot2(chain, number, header.Hash(), nil)
-		len := uint64(len(snap.signers2()))
-		start := cp + (number-cp)/len*len
-		for i := start; i < number; i++ {
-			h := chain.GetHeaderByNumber(i)
-			if h != nil {
-				sig, _ := ecrecover(h, d.signatures)
-				if sig == header.Coinbase {
-					log.Trace("Sealer already received reward in current sealing round", "coinbase", d.signer)
-					return
-				}
-			}
-		}
+	// number := header.Number.Uint64()
+	// cp := (number / d.config.Epoch) * d.config.Epoch
+	// checkpoint := chain.GetHeaderByNumber(cp)
+	// if checkpoint != nil {
+	// 	root, _ := chain.StateAt(checkpoint.Root)
+	// 	// Check if eb already sealed and received reward in the current sealing round
+	// 	snap, _ := d.snapshot2(chain, number, header.Hash(), nil)
+	// 	len := uint64(len(snap.signers2()))
+	// 	start := cp + (number-cp)/len*len
+	// 	for i := start; i < number; i++ {
+	// 		h := chain.GetHeaderByNumber(i)
+	// 		if h != nil {
+	// 			sig, _ := ecrecover(h, d.signatures)
+	// 			if sig == header.Coinbase {
+	// 				log.Trace("Sealer already received reward in current sealing round", "coinbase", d.signer)
+	// 				return
+	// 			}
+	// 		}
+	// 	}
 
-		// Get the beneficiary of sealer from smart contract and give reward
-		size := root.GetCodeSize(core.NtfContractAddress)
-		if size > 0 && root.Error() == nil {
-			index := common.BigToHash(big.NewInt(0)).String()[2:]
-			coinbase := "0x000000000000000000000000" + header.Coinbase.String()[2:]
-			key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
-			result := root.GetState(core.NtfContractAddress, key)
-			beneficiary := common.HexToAddress(result.Hex())
+	// 	// Get the beneficiary of sealer from smart contract and give reward
+	// 	size := root.GetCodeSize(core.NtfContractAddress)
+	// 	if size > 0 && root.Error() == nil {
+	// 		index := common.BigToHash(big.NewInt(0)).String()[2:]
+	// 		coinbase := "0x000000000000000000000000" + header.Coinbase.String()[2:]
+	// 		key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
+	// 		result := root.GetState(core.NtfContractAddress, key)
+	// 		beneficiary := common.HexToAddress(result.Hex())
 
-			yo := (number - uint64(core.DccsBlock)) / blockPerYear.Uint64()
-			per := yo
-			if per > 5 {
-				per = 5
-			}
-			totalSupply := new(big.Int).Mul(initialSupply, big.NewInt(1e+18)) // total supply in Wei
-			for i := uint64(1); i <= yo; i++ {
-				r := i
-				if r > 5 {
-					r = 5
-				}
-				totalReward := new(big.Int).Mul(totalSupply, rewards[r])
-				totalReward = totalReward.Div(totalReward, big.NewInt(1e+5))
-				totalSupply = totalSupply.Add(totalSupply, totalReward)
+	// 		yo := (number - uint64(core.DccsBlock)) / blockPerYear.Uint64()
+	// 		per := yo
+	// 		if per > 5 {
+	// 			per = 5
+	// 		}
+	// 		totalSupply := new(big.Int).Mul(initialSupply, big.NewInt(1e+18)) // total supply in Wei
+	// 		for i := uint64(1); i <= yo; i++ {
+	// 			r := i
+	// 			if r > 5 {
+	// 				r = 5
+	// 			}
+	// 			totalReward := new(big.Int).Mul(totalSupply, rewards[r])
+	// 			totalReward = totalReward.Div(totalReward, big.NewInt(1e+5))
+	// 			totalSupply = totalSupply.Add(totalSupply, totalReward)
 
-			}
-			totalYearReward := new(big.Int).Mul(totalSupply, rewards[per])
-			totalYearReward = totalYearReward.Div(totalYearReward, big.NewInt(1e+5))
-			log.Trace("Total reward for current year", "reward", totalYearReward, "total sypply", totalSupply)
-			blockReward := new(big.Int).Div(totalYearReward, blockPerYear)
-			log.Trace("Give reward for sealer", "beneficiary", beneficiary, "reward", blockReward, "number", number, "hash", header.Hash)
-			state.AddBalance(beneficiary, blockReward)
-		}
-	}
+	// 		}
+	// 		totalYearReward := new(big.Int).Mul(totalSupply, rewards[per])
+	// 		totalYearReward = totalYearReward.Div(totalYearReward, big.NewInt(1e+5))
+	// 		log.Trace("Total reward for current year", "reward", totalYearReward, "total sypply", totalSupply)
+	// 		blockReward := new(big.Int).Div(totalYearReward, blockPerYear)
+	// 		log.Trace("Give reward for sealer", "beneficiary", beneficiary, "reward", blockReward, "number", number, "hash", header.Hash)
+	// 		state.AddBalance(beneficiary, blockReward)
+	// 	}
+	// }
+	state.AddBalance(header.Coinbase, NextyBlockReward)
 }
 
 // GetRecentHeaders get some recent headers back from the current header.
