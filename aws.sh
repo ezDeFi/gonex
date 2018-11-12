@@ -29,10 +29,9 @@ IMAGE_ID=(
 	[us-east-2]=ami-0f65671a86f061fcd
 	[us-west-1]=ami-063aa838bd7631e0b
 	[us-west-2]=ami-0bbe6b35405ecebdb
-	[ap-southeast-1]=ami-0c5199d385b432989
 )
 KEY_NAME=dvietha@gmail.com
-BOOTNODE_REGION=ap-southeast-1
+BOOTNODE_REGION=us-east-1
 ETHSTATS=nexty-testnet@198.13.40.85:80
 CONTRACT_ADDR=00000000000000000000000000000000000000ff
 EPOCH=30
@@ -109,11 +108,12 @@ function bootnode {
 		ID=$(aws ec2 run-instances\
 				--image-id=${IMAGE_ID[$REGION]}\
 				--instance-type=$INSTANCE_TYPE\
+				--region=$REGION\
 				--key-name=$KEY_NAME\
 				--tag-specifications="ResourceType=instance,Tags=[{Key=Name,Value=$BOOTNODE_NAME}]"\
 				--query "Instances[].[InstanceId]"\
 				--output=text | tr "\n" " " | awk '{$1=$1};1')
-		aws ec2 wait instance-running --instance-ids $ID
+		aws ec2 wait instance-running --region $REGION --instance-ids $ID
 	fi
 
 	IP=`instance_ip $ID`
