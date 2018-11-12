@@ -1153,7 +1153,7 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 		root, _ := chain.StateAt(checkpoint.Root)
 		// Check if eb already sealed and received reward in the current sealing round
 		snap, _ := d.snapshot2(chain, number, header.Hash(), nil)
-		len := uint64(len(snap.signers2()))
+		len := uint64(len(snap.Signers))
 		start := cp + (number-cp)/len*len
 		for i := start; i < number; i++ {
 			h := chain.GetHeaderByNumber(i)
@@ -1201,10 +1201,15 @@ func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateD
 	}
 }
 
-// GetRecentHeaders get some recent headers
+// GetRecentHeaders get some recent headers back from the current header.
+// Return empty header list at checkpoint, a.k.a reset the recent headers at every checkpoint.
 func (d *Dccs) GetRecentHeaders(snap *Snapshot, chain consensus.ChainReader, header *types.Header, parents []*types.Header) ([]*types.Header, error) {
 	var headers []*types.Header
 	number := header.Number.Uint64()
+	// Reset the recent headers at checkpoint to ensure the in-turn signer
+	if number%d.config.Epoch == 0 {
+		return headers, nil
+	}
 	limit := len(snap.Signers) / 2
 	num, hash := number-1, header.ParentHash
 	for i := 1; i <= limit; i++ {
@@ -1224,6 +1229,9 @@ func (d *Dccs) GetRecentHeaders(snap *Snapshot, chain consensus.ChainReader, hea
 			}
 		}
 		headers = append(headers, h)
+		if num%d.config.Epoch == 0 {
+			break
+		}
 		num, hash = num-1, h.ParentHash
 	}
 	return headers, nil
