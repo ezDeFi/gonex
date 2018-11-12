@@ -160,7 +160,9 @@ function load {
 
 	deploy $ALL_IPs &&\
 	start $ALL_IPs | tr "\n" " " | awk '{$1=$1};1'
-	ssh_key_copy $ALL_IPs
+	wait
+
+	# ssh_key_copy $ALL_IPs
 }
 
 function ssh_key_copy {
