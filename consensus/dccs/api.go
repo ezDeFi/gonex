@@ -81,7 +81,7 @@ func (api *API) GetSignersAtHash(hash common.Hash) ([]Signer, error) {
 	if header == nil {
 		return nil, errUnknownBlock
 	}
-	snap, err := api.dccs.snapshot(api.chain, header.Number.Uint64(), header.Hash(), nil)
+	snap, err := api.dccs.snapshot2(api.chain, header.Number.Uint64(), header.Hash(), nil)
 	if err != nil {
 		return nil, err
 	}
