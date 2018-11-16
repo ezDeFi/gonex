@@ -22,7 +22,7 @@ shift $((OPTIND-1))
 BLOCK_TIME=2
 BOOTNODE_NAME=BootNode
 INSTANCE_NAME=LoadTest
-INSTANCE_TYPE=t3.small
+INSTANCE_TYPE=t2.small
 declare -A IMAGE_ID
 IMAGE_ID=(
 	[us-east-1]=ami-0ac019f4fcb7cb7e6
@@ -34,7 +34,6 @@ IMAGE_ID=(
 	[ap-southeast-2]=ami-07a3bd4944eb120a0
 	[ca-central-1]=ami-0427e8367e3770df1
 	[eu-central-1]=ami-0bdf93799014acdc4
-	[eu-west-1]=ami-0ab7944c6328200be
 	[eu-west-2]=ami-0b0a60c0a2bd40612
 	[eu-west-3]=ami-08182c55a1c188dee
 )
