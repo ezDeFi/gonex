@@ -22,7 +22,7 @@ shift $((OPTIND-1))
 BLOCK_TIME=2
 BOOTNODE_NAME=BootNode
 INSTANCE_NAME=LoadTest
-INSTANCE_TYPE=t2.small
+INSTANCE_TYPE=t2.medium
 declare -A IMAGE_ID
 IMAGE_ID=(
 	[us-east-1]=ami-0ac019f4fcb7cb7e6
@@ -40,7 +40,7 @@ IMAGE_ID=(
 KEY_NAME=dvietha@gmail.com
 BOOTNODE_REGION=us-east-1
 ETHSTATS=nexty-testnet@198.13.40.85:80
-CONTRACT_ADDR=00000000000000000000000000000000000000ff
+CONTRACT_ADDR=cafecafecafecafecafecafecafecafecafecafe
 EPOCH=60
 SSH_USER=ubuntu
 
