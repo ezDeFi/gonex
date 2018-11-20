@@ -181,14 +181,34 @@ function create_account {
 		$SSH $SSH_USER@${IPs[$i]} "./geth-linux-amd64 account new --password <(echo password)" >| /tmp/aws.sh/account/$i &
 	done
 	wait
+	arr=()
 	for i in "${!IPs[@]}"; do
 		ACCOUNT=$(cat /tmp/aws.sh/account/$i)
-		printf "%s " ${ACCOUNT:10:40}
+		arr=(${arr[@]} ${ACCOUNT:10:40})
 	done
+	echo "${arr[@]}"
 }
 
+# load pre-fund account from keystore folder
+function load_pre_fund_accounts {
+	arr=()
+	for file in ./.gonex/keystore/*; do
+		if [[ -f $file ]]; then
+			filename=$(basename -- "$file")
+			arr=(${arr[@]} ${filename:37:78})
+		fi
+	done
+	echo "${arr[@]}"
+}
+
+function test_load_pre_fund_accounts {
+	echo `load_pre_fund_accounts`
+}
+
+# generate the genesis json file
 function generate_genesis {
 	ACs=($@)
+	PFACs=(`load_pre_fund_accounts`)
 
 	(	echo 2
 		echo 3
@@ -197,8 +217,8 @@ function generate_genesis {
 			echo $AC
 		done
 		echo
-		for AC in "${ACs[@]}"; do
-			echo $AC
+		for PFAC in "${PFACs[@]}"; do
+			echo $PFAC
 		done
 		echo
 		echo $NETWORK_ID
