@@ -191,7 +191,7 @@ function create_account {
 
 # load pre-fund account from keystore folder
 function load_pre_fund_accounts {
-	arr=()
+	arr=(${CONTRACT_ADDR})
 	for file in ./.gonex/keystore/*; do
 		if [[ -f $file ]]; then
 			filename=$(basename -- "$file")
