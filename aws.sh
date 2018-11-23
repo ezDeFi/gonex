@@ -22,7 +22,7 @@ shift $((OPTIND-1))
 BLOCK_TIME=2
 BOOTNODE_NAME=BootNode
 INSTANCE_NAME=LoadTest
-INSTANCE_TYPE=t2.large
+INSTANCE_TYPE=t2.2xlarge
 declare -A IMAGE_ID
 IMAGE_ID=(
 	[us-east-1]=ami-0ac019f4fcb7cb7e6
@@ -113,6 +113,7 @@ function bootnode {
 
 	if [ -z "$ID" ]; then
 		ID=$(aws ec2 run-instances\
+				--block-device-mappings="DeviceName=/dev/sda1,Ebs={VolumeSize=100,VolumeType=gp2}"\
 				--image-id=${IMAGE_ID[$REGION]}\
 				--instance-type=$INSTANCE_TYPE\
 				--region=$REGION\
@@ -321,6 +322,7 @@ function deploy {
 function launch_instance {
 	COUNT=${1:-1}
 	aws ec2 run-instances\
+	    --block-device-mappings="DeviceName=/dev/sda1,Ebs={VolumeSize=100,VolumeType=gp2}"\
 			--region=$REGION\
 			--image-id=${IMAGE_ID[$REGION]}\
 			--instance-type=$INSTANCE_TYPE\
