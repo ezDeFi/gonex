@@ -56,7 +56,7 @@ SSH="ssh -oStrictHostKeyChecking=no -o BatchMode=yes"
 SCP="scp -oStrictHostKeyChecking=no -o BatchMode=yes"
 PSCP="pscp -OStrictHostKeyChecking=no -OBatchMode=yes"
 SSH_COPY_ID="ssh-copy-id -f"
-GETH="./geth-linux-amd64 --verbosity=5 --pprof --pprofaddr 0.0.0.0 --syncmode full --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 48000000000 --txpool.nolocals --txpool.pricelimit 0 --txpool.accountslots 64 --txpool.globalslots 16384 --txpool.accountqueue 128 --txpool.globalqueue 4096 --gcmode=archive"
+GETH="./geth-linux-amd64 --syncmode full --gcmode=archive --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 42000000 --txpool.nolocals --txpool.pricelimit 0"
 
 function trim {
 	awk '{$1=$1};1'
