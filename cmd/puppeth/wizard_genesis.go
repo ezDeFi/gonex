@@ -101,7 +101,6 @@ func (w *wizard) makeGenesis() {
 
 	case choice == "3":
 		// In the case of dccs, configure the consensus parameters
-		genesis.GasLimit = 42000000
 		genesis.Difficulty = big.NewInt(1)
 		genesis.Config.Dccs = &params.DccsConfig{
 			Period: 2,
