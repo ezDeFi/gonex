@@ -22,14 +22,14 @@ shift $((OPTIND-1))
 BLOCK_TIME=2
 BOOTNODE_NAME=BootNode
 INSTANCE_NAME=LoadTest
-INSTANCE_TYPE=t2.2xlarge
+INSTANCE_TYPE=t3.medium
+ENDPOINT_INSTANCE_TYPE=t3.2xlarge
 declare -A IMAGE_ID
 IMAGE_ID=(
 	[us-east-1]=ami-0ac019f4fcb7cb7e6
 	[us-east-2]=ami-0f65671a86f061fcd
 	[us-west-1]=ami-063aa838bd7631e0b
 	[us-west-2]=ami-0bbe6b35405ecebdb
-	[ap-northeast-2]=ami-06e7b9c5e0c4dd014
 	[ap-southeast-1]=ami-0c5199d385b432989
 	[ap-southeast-2]=ami-07a3bd4944eb120a0
 	[ca-central-1]=ami-0427e8367e3770df1
@@ -39,6 +39,7 @@ IMAGE_ID=(
 )
 KEY_NAME=dvietha@gmail.com
 BOOTNODE_REGION=us-east-1
+ENDPOINT_REGION=us-east-1
 ETHSTATS=nexty-testnet@198.13.40.85:80
 CONTRACT_ADDR=cafecafecafecafecafecafecafecafecafecafe
 EPOCH=60
@@ -56,7 +57,7 @@ SSH="ssh -oStrictHostKeyChecking=no -o BatchMode=yes"
 SCP="scp -oStrictHostKeyChecking=no -o BatchMode=yes"
 PSCP="pscp -OStrictHostKeyChecking=no -OBatchMode=yes"
 SSH_COPY_ID="ssh-copy-id -f"
-GETH="./geth-linux-amd64 --syncmode full --gcmode=archive --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 14000000 --txpool.nolocals --txpool.pricelimit 0"
+GETH="./geth-linux-amd64 --syncmode full --cache 2048 --gcmode=archive --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 14000000 --txpool.nolocals --txpool.pricelimit 0"
 
 function trim {
 	awk '{$1=$1};1'
@@ -154,6 +155,14 @@ function load {
 			echo $IPs >| /tmp/aws.sh/ips/$REGION
 		) &
 	done
+	REGION=$ENDPOINT_REGION
+	( ID=`launch_main_endpoint`
+	  aws ec2 wait instance-running --instance-ids $ID --region=$ENDPOINT_REGION
+		IP=`instance_ip $ID`
+		ssh_ready $SSH_USER@$IP
+		echo " " >> /tmp/aws.sh/ips/$ENDPOINT_REGION
+		echo $IP >> /tmp/aws.sh/ips/$ENDPOINT_REGION
+	) &
 	wait
 
 	ALL_IPs=`cat /tmp/aws.sh/ips/* | tr "\n" " "`
@@ -329,6 +338,18 @@ function launch_instance {
 			--key-name=$KEY_NAME\
 			--tag-specifications="ResourceType=instance,Tags=[{Key=Name,Value=$INSTANCE_NAME}]"\
 			--count=$COUNT\
+			--query "Instances[].[InstanceId]"\
+			--output=text | tr "\n" " " | awk '{$1=$1};1'
+}
+
+function launch_main_endpoint {
+	aws ec2 run-instances\
+	    --block-device-mappings="DeviceName=/dev/sda1,Ebs={VolumeSize=300,VolumeType=io1,Iops=600}"\
+			--region=$ENDPOINT_REGION\
+			--image-id=${IMAGE_ID[$ENDPOINT_REGION]}\
+			--instance-type=$ENDPOINT_INSTANCE_TYPE\
+			--key-name=$KEY_NAME\
+			--tag-specifications="ResourceType=instance,Tags=[{Key=Name,Value=$INSTANCE_NAME}]"\
 			--query "Instances[].[InstanceId]"\
 			--output=text | tr "\n" " " | awk '{$1=$1};1'
 }
