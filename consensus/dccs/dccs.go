@@ -570,7 +570,7 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 	)
 	for snap == nil {
 		// Get signers from Nexty staking smart contract at the latest epoch checkpoint from block number
-		cp := (number / d.config.Epoch) * d.config.Epoch
+		cp := ((number+1)/d.config.Epoch)*d.config.Epoch - 1
 		checkpoint := chain.GetHeaderByNumber(cp)
 		if checkpoint != nil {
 			hash := checkpoint.Hash()
