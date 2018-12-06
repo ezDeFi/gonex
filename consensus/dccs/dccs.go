@@ -812,7 +812,7 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 	header.Nonce = types.BlockNonce{}
 	// Get the beneficiary of signer from smart contract and set to header's coinbase to give sealing reward later
 	number := header.Number.Uint64()
-	cp := (number / d.config.Epoch) * d.config.Epoch
+	cp := ((number - 1) / d.config.Epoch) * d.config.Epoch
 	checkpoint := chain.GetHeaderByNumber(cp)
 	if checkpoint != nil {
 		root, _ := chain.StateAt(checkpoint.Root)
@@ -822,6 +822,9 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 		result := root.GetState(core.NtfContractAddress, key)
 		beneficiary := common.HexToAddress(result.Hex())
 		header.Coinbase = beneficiary
+	} else {
+		log.Error("state is not available at the block number", "number", cp)
+		return errors.New("state is not available at the block number")
 	}
 
 	// Set the correct difficulty
