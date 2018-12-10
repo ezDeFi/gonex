@@ -90,4 +90,17 @@ var (
 
 		CreateBySuicide: 25000,
 	}
+	// GasTableDccs contain the gas re-prices for
+	// the dccs phase.
+	GasTableDccs = GasTable{
+		ExtcodeSize: 700,
+		ExtcodeCopy: 700,
+		Balance:     400,
+		SLoad:       200,
+		Calls:       700,
+		Suicide:     5000,
+		ExpByte:     50,
+
+		CreateBySuicide: 25000,
+	}
 )

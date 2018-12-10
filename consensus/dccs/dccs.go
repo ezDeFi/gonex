@@ -32,7 +32,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
-	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -250,7 +249,7 @@ func (d *Dccs) Author(header *types.Header) (common.Address, error) {
 
 // VerifyHeader checks whether a header conforms to the consensus rules.
 func (d *Dccs) VerifyHeader(chain consensus.ChainReader, header *types.Header, seal bool) error {
-	if header.Number.Cmp(big.NewInt(core.DccsBlock)) >= 0 {
+	if chain.Config().IsDccs(header.Number) {
 		return d.verifyHeader2(chain, header, nil)
 	}
 	return d.verifyHeader(chain, header, nil)
@@ -266,7 +265,7 @@ func (d *Dccs) VerifyHeaders(chain consensus.ChainReader, headers []*types.Heade
 	go func() {
 		for i, header := range headers {
 			var err error
-			if header.Number.Cmp(big.NewInt(core.DccsBlock)) >= 0 {
+			if chain.Config().IsDccs(header.Number) {
 				err = d.verifyHeader2(chain, header, headers[:i])
 			} else {
 				err = d.verifyHeader(chain, header, headers[:i])
@@ -586,11 +585,11 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 				log.Error("Cannot read state of the checkpoint header", "err", err, "number", cp, "hash", hash, "root", checkpoint.Root)
 				return nil, fmt.Errorf("cannot read state of checkpoint header: %v", err)
 			}
-			size := state.GetCodeSize(core.NtfContractAddress)
+			size := state.GetCodeSize(chain.Config().NtfContractAddress)
 			if size > 0 && state.Error() == nil {
 				var num int64 = 1 // signers array position in the smart contract state
 				index := common.BigToHash(big.NewInt(num))
-				result := state.GetState(core.NtfContractAddress, index)
+				result := state.GetState(chain.Config().NtfContractAddress, index)
 				var length int64
 				if (result == common.Hash{}) {
 					length = 0
@@ -602,7 +601,7 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 				key := crypto.Keccak256Hash(hexutil.MustDecode(index.String()))
 				for i := 0; i < len(signers); i++ {
 					log.Trace("key hash", "key", key)
-					singer := state.GetState(core.NtfContractAddress, key)
+					singer := state.GetState(chain.Config().NtfContractAddress, key)
 					signers[i] = common.HexToAddress(singer.Hex())
 					key = key.Plus()
 				}
@@ -633,7 +632,7 @@ func (d *Dccs) VerifyUncles(chain consensus.ChainReader, block *types.Block) err
 // VerifySeal implements consensus.Engine, checking whether the signature contained
 // in the header satisfies the consensus protocol requirements.
 func (d *Dccs) VerifySeal(chain consensus.ChainReader, header *types.Header) error {
-	if header.Number.Cmp(big.NewInt(core.DccsBlock)) >= 0 {
+	if chain.Config().IsDccs(header.Number) {
 		return d.verifySeal2(chain, header, nil)
 	}
 	return d.verifySeal(chain, header, nil)
@@ -735,7 +734,7 @@ func (d *Dccs) verifySeal2(chain consensus.ChainReader, header *types.Header, pa
 // Prepare implements consensus.Engine, preparing all the consensus fields of the
 // header for running the transactions on top.
 func (d *Dccs) Prepare(chain consensus.ChainReader, header *types.Header) error {
-	if header.Number.Cmp(big.NewInt(core.DccsBlock)) >= 0 {
+	if chain.Config().IsDccs(header.Number) {
 		return d.prepare2(chain, header)
 	}
 	return d.prepare(chain, header)
@@ -819,7 +818,7 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 		index := common.BigToHash(big.NewInt(0)).String()[2:]
 		coinbase := "0x000000000000000000000000" + header.Coinbase.String()[2:]
 		key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
-		result := root.GetState(core.NtfContractAddress, key)
+		result := root.GetState(chain.Config().NtfContractAddress, key)
 		beneficiary := common.HexToAddress(result.Hex())
 		header.Coinbase = beneficiary
 	} else {
@@ -866,7 +865,7 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 // Finalize implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
 func (d *Dccs) Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
-	if header.Number.Cmp(big.NewInt(core.DccsBlock)) >= 0 {
+	if chain.Config().IsDccs(header.Number) {
 		return d.finalize2(chain, header, state, txs, uncles, receipts)
 	}
 	return d.finalize(chain, header, state, txs, uncles, receipts)
@@ -909,7 +908,7 @@ func (d *Dccs) Authorize(signer common.Address, signFn SignerFn) {
 // the local signing credentials.
 func (d *Dccs) Seal(chain consensus.ChainReader, block *types.Block, results chan<- *types.Block, stop <-chan struct{}) error {
 	header := block.Header()
-	if header.Number.Cmp(big.NewInt(core.DccsBlock)) >= 0 {
+	if chain.Config().IsDccs(header.Number) {
 		return d.seal2(chain, block, results, stop)
 	}
 	return d.seal(chain, block, results, stop)
@@ -1096,7 +1095,7 @@ func (d *Dccs) calcDelayTime(snap *Snapshot, block *types.Block, signer common.A
 // that a new block should have based on the previous blocks in the chain and the
 // current signer.
 func (d *Dccs) CalcDifficulty(chain consensus.ChainReader, time uint64, parent *types.Header) *big.Int {
-	if parent.Number.Cmp(big.NewInt(core.DccsBlock)) > 0 {
+	if chain.Config().IsDccs(parent.Number) {
 		snap, err := d.snapshot2(chain, parent.Number.Uint64(), parent.Hash(), nil)
 		if err != nil {
 			return nil
@@ -1154,7 +1153,7 @@ func (d *Dccs) APIs(chain consensus.ChainReader) []rpc.API {
 // calculateRewards calculate reward for block sealer
 func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateDB, header *types.Header) {
 	number := header.Number.Uint64()
-	yo := (number - uint64(core.DccsBlock)) / blockPerYear.Uint64()
+	yo := (number - chain.Config().DccsBlock.Uint64()) / blockPerYear.Uint64()
 	per := yo
 	if per > 5 {
 		per = 5
