@@ -40,11 +40,13 @@ func (w *wizard) makeGenesis() {
 		Difficulty: big.NewInt(524288),
 		Alloc:      make(core.GenesisAlloc),
 		Config: &params.ChainConfig{
-			HomesteadBlock: big.NewInt(1),
-			EIP150Block:    big.NewInt(2),
-			EIP155Block:    big.NewInt(3),
-			EIP158Block:    big.NewInt(3),
-			ByzantiumBlock: big.NewInt(4),
+			HomesteadBlock:     big.NewInt(1),
+			EIP150Block:        big.NewInt(2),
+			EIP155Block:        big.NewInt(3),
+			EIP158Block:        big.NewInt(3),
+			ByzantiumBlock:     big.NewInt(4),
+			DccsBlock:          big.NewInt(120),
+			NtfContractAddress: common.HexToAddress("0xcafecafecafecafecafecafecafecafecafecafe"),
 		},
 	}
 	// Figure out which consensus engine to choose
@@ -101,10 +103,11 @@ func (w *wizard) makeGenesis() {
 
 	case choice == "3":
 		// In the case of dccs, configure the consensus parameters
+		genesis.GasLimit = 14000000
 		genesis.Difficulty = big.NewInt(1)
 		genesis.Config.Dccs = &params.DccsConfig{
 			Period: 2,
-			Epoch:  30000,
+			Epoch:  60,
 		}
 		fmt.Println()
 		fmt.Println("How many seconds should blocks take? (default = 2)")
@@ -201,6 +204,16 @@ func (w *wizard) manageGenesis() {
 		fmt.Println()
 		fmt.Printf("Which block should Byzantium come into effect? (default = %v)\n", w.conf.Genesis.Config.ByzantiumBlock)
 		w.conf.Genesis.Config.ByzantiumBlock = w.readDefaultBigInt(w.conf.Genesis.Config.ByzantiumBlock)
+
+		fmt.Println()
+		fmt.Printf("Which block should Dccs come into effect? (default = %v)\n", w.conf.Genesis.Config.DccsBlock)
+		w.conf.Genesis.Config.DccsBlock = w.readDefaultBigInt(w.conf.Genesis.Config.DccsBlock)
+
+		fmt.Println()
+		fmt.Printf("Which nexty governance smart contract address? (default = %v)\n", w.conf.Genesis.Config.NtfContractAddress.Hex())
+		if address := w.readAddress(); address != nil {
+			w.conf.Genesis.Config.NtfContractAddress = *address
+		}
 
 		out, _ := json.MarshalIndent(w.conf.Genesis.Config, "", "  ")
 		fmt.Printf("Chain configuration updated:\n\n%s\n", out)
