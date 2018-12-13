@@ -49,7 +49,7 @@ OUTPUT_TYPE=table
 
 # Global Variables
 BOOTNODE=
-NETWORK_NAME=NextyLoadTest
+NETWORK_NAME=testnet
 NETWORK_ID=50913
 
 # COMMAND SHORTCUTS
@@ -201,7 +201,7 @@ function create_account {
 
 # load pre-fund account from keystore folder
 function load_pre_fund_accounts {
-	arr=(${CONTRACT_ADDR})
+	arr=()
 	for file in ./.gonex/keystore/*; do
 		if [[ -f $file ]]; then
 			filename=$(basename -- "$file")
@@ -221,8 +221,10 @@ function generate_genesis {
 	PFACs=(`load_pre_fund_accounts`)
 
 	(	echo 2
+		echo 1
 		echo 3
 		echo $BLOCK_TIME
+		echo $EPOCH
 		for AC in "${ACs[@]}"; do
 			echo $AC
 		done
@@ -231,7 +233,10 @@ function generate_genesis {
 			echo $PFAC
 		done
 		echo
+		echo no
 		echo $NETWORK_ID
+		echo 0
+		echo $CONTRACT_ADDR
 		echo 2
 		echo 2
 		echo
@@ -249,43 +254,46 @@ function generate_genesis {
 	echo $GENESIS_JSON
 }
 
-function init_smartcontract {
-	ACs=($@)
-	CODE=
-	# Nexty Smart Contract
-	for AC in "${ACs[@]}"; do
-		CODE="$CODE signers[0x$AC] = 0x$AC; sealers.push(0x$AC);"
-	done
-	sed "s/CODE_HERE/$CODE/g" nexty.sol >| /tmp/nexty.sol
+# Comment out because it was already done by backend simulation in puppeth genesis wizard
+# function init_smartcontract {
+# 	ACs=($@)
+# 	CODE=
+# 	# Nexty Smart Contract
+# 	for AC in "${ACs[@]}"; do
+# 		CODE="$CODE signers[0x$AC] = 0x$AC; sealers.push(0x$AC);"
+# 	done
+# 	sed "s/CODE_HERE/$CODE/g" nexty.sol >| /tmp/nexty.sol
 
-	solc --bin-runtime /tmp/nexty.sol 2>/dev/null | tail -n1
-}
+# 	solc --bin-runtime /tmp/nexty.sol 2>/dev/null | tail -n1
+# }
 
 function init_genesis {
 	ACs=($@)
 
 	GENESIS_JSON=`generate_genesis ${ACs[@]}`
-	CONTRACT_CODE="60806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063b688a36314610051578063d66d9e1914610068575b600080fd5b34801561005d57600080fd5b5061006661007f565b005b34801561007457600080fd5b5061007d6100e7565b005b60013390806001815401808255809150509060018203906000526020600020016000909192909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b60008090505b6001805490508110156102685760018181548110151561010957fe5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561025b5760018080805490500381548110151561017c57fe5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff166001828154811015156101b657fe5b9060005260206000200160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060018080805490500381548110151561021357fe5b9060005260206000200160006101000a81549073ffffffffffffffffffffffffffffffffffffffff02191690556001805480919060019003610255919061026c565b50610269565b80806001019150506100ed565b5b50565b815481835581811115610293578183600052602060002091820191016102929190610298565b5b505050565b6102ba91905b808211156102b657600081600090555060010161029e565b5090565b905600a165627a7a723058201643c670757cdf1940e3f657b7ad97d5f76cfe82de027f5470c9b85424fd135a0029"
 
-	mv ./$GENESIS_JSON /tmp/$GENESIS_JSON.template
-	while IFS='' read -r line || [[ -n "$line" ]]; do
-		if [[ "$line" == *"\"epoch\": "* ]]; then
-			echo \"epoch\": $EPOCH
-			continue
-		fi
-		echo $line
-		if [[ "$line" == *"$CONTRACT_ADDR"* ]]; then
-			echo \"code\": \"0x$CONTRACT_CODE\",
-			echo \"storage\": \{
-				idx=3086617846
-				for AC in "${ACs[@]}"; do
-					echo \"0xb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2$(printf "%08x" $idx)\": \"0x$AC\",
-					((idx++))
-				done
-				echo \"0x0000000000000000000000000000000000000000000000000000000000000001\": \"$(printf "%04x" ${#ACs[@]})\"
-			echo \},
-		fi
-	done < /tmp/$GENESIS_JSON.template >| ./$GENESIS_JSON
+	# Comment out this below part because it was already done in puppeth genesis wizard
+	# CONTRACT_CODE="60806040526004361061004c576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063b688a36314610051578063d66d9e1914610068575b600080fd5b34801561005d57600080fd5b5061006661007f565b005b34801561007457600080fd5b5061007d6100e7565b005b60013390806001815401808255809150509060018203906000526020600020016000909192909190916101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b60008090505b6001805490508110156102685760018181548110151561010957fe5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16141561025b5760018080805490500381548110151561017c57fe5b9060005260206000200160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff166001828154811015156101b657fe5b9060005260206000200160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060018080805490500381548110151561021357fe5b9060005260206000200160006101000a81549073ffffffffffffffffffffffffffffffffffffffff02191690556001805480919060019003610255919061026c565b50610269565b80806001019150506100ed565b5b50565b815481835581811115610293578183600052602060002091820191016102929190610298565b5b505050565b6102ba91905b808211156102b657600081600090555060010161029e565b5090565b905600a165627a7a723058201643c670757cdf1940e3f657b7ad97d5f76cfe82de027f5470c9b85424fd135a0029"
+	# 
+	# mv ./$GENESIS_JSON /tmp/$GENESIS_JSON.template
+	# while IFS='' read -r line || [[ -n "$line" ]]; do
+	# 	if [[ "$line" == *"\"epoch\": "* ]]; then
+	# 		echo \"epoch\": $EPOCH
+	# 		continue
+	# 	fi
+	# 	echo $line
+	# 	if [[ "$line" == *"$CONTRACT_ADDR"* ]]; then
+	# 		echo \"code\": \"0x$CONTRACT_CODE\",
+	# 		echo \"storage\": \{
+	# 			idx=3086617846
+	# 			for AC in "${ACs[@]}"; do
+	# 				echo \"0xb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2$(printf "%08x" $idx)\": \"0x$AC\",
+	# 				((idx++))
+	# 			done
+	# 			echo \"0x0000000000000000000000000000000000000000000000000000000000000001\": \"$(printf "%04x" ${#ACs[@]})\"
+	# 		echo \},
+	# 	fi
+	# done < /tmp/$GENESIS_JSON.template >| ./$GENESIS_JSON
 
 	echo $GENESIS_JSON
 }
