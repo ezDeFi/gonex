@@ -229,14 +229,14 @@ function generate_genesis {
 			echo $AC
 		done
 		echo
+		echo 0
+		echo $CONTRACT_ADDR
 		for PFAC in "${PFACs[@]}"; do
 			echo $PFAC
 		done
 		echo
 		echo no
 		echo $NETWORK_ID
-		echo 0
-		echo $CONTRACT_ADDR
 		echo 2
 		echo 2
 		echo
