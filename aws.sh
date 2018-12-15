@@ -22,27 +22,27 @@ shift $((OPTIND-1))
 BLOCK_TIME=2
 BOOTNODE_NAME=BootNode
 INSTANCE_NAME=LoadTest
-INSTANCE_TYPE=t3.medium
-ENDPOINT_INSTANCE_TYPE=t3.2xlarge
+INSTANCE_TYPE=t3.xlarge
+ENDPOINT_INSTANCE_TYPE=c5d.2xlarge
 declare -A IMAGE_ID
 IMAGE_ID=(
 	[us-east-1]=ami-0ac019f4fcb7cb7e6
 	[us-east-2]=ami-0f65671a86f061fcd
 	[us-west-1]=ami-063aa838bd7631e0b
 	[us-west-2]=ami-0bbe6b35405ecebdb
-	[ap-southeast-1]=ami-0c5199d385b432989
-	[ap-southeast-2]=ami-07a3bd4944eb120a0
-	[ca-central-1]=ami-0427e8367e3770df1
-	[eu-central-1]=ami-0bdf93799014acdc4
-	[eu-west-2]=ami-0b0a60c0a2bd40612
-	[eu-west-3]=ami-08182c55a1c188dee
+	# [ap-southeast-1]=ami-0c5199d385b432989
+	# [ap-southeast-2]=ami-07a3bd4944eb120a0
+	# [ca-central-1]=ami-0427e8367e3770df1
+	# [eu-central-1]=ami-0bdf93799014acdc4
+	# [eu-west-2]=ami-0b0a60c0a2bd40612
+	# [eu-west-3]=ami-08182c55a1c188dee
 )
 KEY_NAME=dvietha@gmail.com
 BOOTNODE_REGION=us-east-1
 ENDPOINT_REGION=us-east-1
 ETHSTATS=nexty-testnet@198.13.40.85:80
 CONTRACT_ADDR=cafecafecafecafecafecafecafecafecafecafe
-EPOCH=60
+EPOCH=90
 SSH_USER=ubuntu
 
 OUTPUT_TYPE=table
@@ -57,7 +57,7 @@ SSH="ssh -oStrictHostKeyChecking=no -o BatchMode=yes"
 SCP="scp -oStrictHostKeyChecking=no -o BatchMode=yes"
 PSCP="pscp -OStrictHostKeyChecking=no -OBatchMode=yes"
 SSH_COPY_ID="ssh-copy-id -f"
-GETH="./geth-linux-amd64 --syncmode full --cache 2048 --gcmode=archive --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 14000000 --txpool.nolocals --txpool.pricelimit 0"
+GETH="./geth-linux-amd64 --syncmode full --cache 2048 --gcmode=archive --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 42000000 --txpool.nolocals --txpool.pricelimit 0"
 
 function trim {
 	awk '{$1=$1};1'

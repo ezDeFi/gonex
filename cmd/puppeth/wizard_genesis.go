@@ -114,7 +114,7 @@ func (w *wizard) makeGenesis() {
 
 	case choice == "3":
 		// In the case of dccs, configure the consensus parameters
-		genesis.GasLimit = 14000000
+		genesis.GasLimit = 42000000
 		genesis.Difficulty = big.NewInt(1)
 		genesis.Config.Dccs = &params.DccsConfig{
 			Period: 2,
@@ -154,7 +154,7 @@ func (w *wizard) makeGenesis() {
 		for i, signer := range signers {
 			copy(genesis.ExtraData[32+i*common.AddressLength:], signer[:])
 		}
-		
+
 		fmt.Println()
 		fmt.Printf("Which block should Dccs come into effect? (default = %v)\n", genesis.Config.DccsBlock)
 		genesis.Config.DccsBlock = w.readDefaultBigInt(genesis.Config.DccsBlock)
