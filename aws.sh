@@ -28,8 +28,8 @@ declare -A IMAGE_ID
 IMAGE_ID=(
 	[us-east-1]=ami-0ac019f4fcb7cb7e6
 	[us-east-2]=ami-0f65671a86f061fcd
-	[us-west-1]=ami-063aa838bd7631e0b
-	[us-west-2]=ami-0bbe6b35405ecebdb
+	# [us-west-1]=ami-063aa838bd7631e0b
+	# [us-west-2]=ami-0bbe6b35405ecebdb
 	# [ap-southeast-1]=ami-0c5199d385b432989
 	# [ap-southeast-2]=ami-07a3bd4944eb120a0
 	# [ca-central-1]=ami-0427e8367e3770df1
@@ -57,7 +57,7 @@ SSH="ssh -oStrictHostKeyChecking=no -o BatchMode=yes"
 SCP="scp -oStrictHostKeyChecking=no -o BatchMode=yes"
 PSCP="pscp -OStrictHostKeyChecking=no -OBatchMode=yes"
 SSH_COPY_ID="ssh-copy-id -f"
-GETH="./geth-linux-amd64 --syncmode full --cache 2048 --gcmode=archive --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --gasprice 0 --targetgaslimit 42000000 --txpool.nolocals --txpool.pricelimit 0"
+GETH="./geth-linux-amd64 --syncmode full --cache 2048 --gcmode=archive --networkid $NETWORK_ID --rpc --rpcapi db,eth,net,web3,personal --rpccorsdomain \"*\" --rpcaddr 0.0.0.0 --miner.gasprice 0 --targetgaslimit 42000000 --txpool.nolocals --txpool.pricelimit 0"
 
 function trim {
 	awk '{$1=$1};1'

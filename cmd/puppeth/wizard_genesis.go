@@ -168,7 +168,8 @@ func (w *wizard) makeGenesis() {
 		// Generate a new random account and a funded simulator
 		key, _ := crypto.GenerateKey()
 		auth := bind.NewKeyedTransactor(key)
-		sim := backends.NewSimulatedBackend(core.GenesisAlloc{auth.From: {Balance: big.NewInt(10000000000)}}, genesis.GasLimit)
+		auth.GasLimit = 12344321
+		sim := backends.NewSimulatedBackend(core.GenesisAlloc{auth.From: {Balance: new(big.Int).Lsh(big.NewInt(1), 256-7)}}, genesis.GasLimit)
 		nextyAddress, _, _, err := contract.DeployNexty(auth, sim, signers)
 		if err != nil {
 			fmt.Println("Can't deploy nexty governance smart contract")
