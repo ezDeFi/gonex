@@ -25,7 +25,6 @@ import (
 
 // Genesis hashes to enforce below configs on.
 var (
-	
 	MainnetGenesisHash = common.HexToHash("0x080eeb525df0e852343ba13afedf2b256f0991c1b18797e18863fd7b4ab3574b")
 	TestnetGenesisHash = common.HexToHash("0x004803b4cef4470352041a5da08440b8a280b3b9696be3430c2de831de4233d5")
 	RinkebyGenesisHash = common.HexToHash("0x6341fd3daf94b748c72ced5a5b26028f2474f5f00d824504e4fa37a75767e177")
@@ -317,10 +316,10 @@ func (c *ChainConfig) GasTable(num *big.Int) GasTable {
 		return GasTableHomestead
 	}
 	switch {
-	case c.IsConstantinople(num):
-		return GasTableConstantinople
 	case c.IsDccs(num):
 		return GasTableDccs
+	case c.IsConstantinople(num):
+		return GasTableConstantinople
 	case c.IsEIP158(num):
 		return GasTableEIP158
 	case c.IsEIP150(num):

@@ -95,6 +95,7 @@ var (
 	GasTableDccs = GasTable{
 		ExtcodeSize: 700,
 		ExtcodeCopy: 700,
+		ExtcodeHash: 400,
 		Balance:     400,
 		SLoad:       200,
 		Calls:       700,
