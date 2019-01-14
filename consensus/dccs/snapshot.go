@@ -23,12 +23,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto/sha3"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rlp"
 	lru "github.com/hashicorp/golang-lru"
+	"golang.org/x/crypto/sha3"
 )
 
 // Vote represents a single vote that an authorized signer made to modify the
@@ -353,7 +353,7 @@ func (s *Snapshot) inturn2(number uint64, signer common.Address) bool {
 
 // rlpHash return hash of an input
 func rlpHash(s Signer) (h common.Hash) {
-	hasher := sha3.NewKeccak256()
+	hasher := sha3.NewLegacyKeccak256()
 	rlp.Encode(hasher, []interface{}{
 		s.Address,
 		s.Hash,
