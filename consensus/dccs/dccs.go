@@ -50,6 +50,10 @@ const (
 	inmemorySignatures = 4096 // Number of recent block signatures to keep in memory
 
 	wiggleTime = 500 * time.Millisecond // Random delay (per signer) to allow concurrent signers
+
+	// It is used by the miner to provide logs to the user when a previously mined block
+	// has a high enough guarantee to not be reorged out of the canonical chain.
+	depth = 10
 )
 
 // Dccs proof-of-foundation protocol constants.
@@ -574,7 +578,8 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 		if cp <= 0 {
 			cp = 0
 		} else {
-			cp = cp - 1
+			// Get the state from canonical chain to ensure the chain and state are not in sidefork
+			cp = cp - depth
 		}
 		checkpoint := chain.GetHeaderByNumber(cp)
 		if checkpoint != nil {
@@ -822,7 +827,8 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 	if cp <= 0 {
 		cp = 0
 	} else {
-		cp = cp - 1
+		// Get the state from canonical chain to ensure the chain and state are not in sidefork
+		cp = cp - depth
 	}
 	checkpoint := chain.GetHeaderByNumber(cp)
 	if checkpoint != nil {
