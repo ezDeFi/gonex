@@ -608,11 +608,11 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 				log.Error("Cannot read state of the checkpoint header", "err", err, "number", cp, "hash", hash, "root", checkpoint.Root)
 				return nil, fmt.Errorf("cannot read state of checkpoint header: %v", err)
 			}
-			size := state.GetCodeSize(chain.Config().NtfContractAddress)
+			size := state.GetCodeSize(chain.Config().Dccs.ThangLongAddress)
 			if size > 0 && state.Error() == nil {
 				var num int64 = 5 // signers array position in the smart contract state
 				index := common.BigToHash(big.NewInt(num))
-				result := state.GetState(chain.Config().NtfContractAddress, index)
+				result := state.GetState(chain.Config().Dccs.ThangLongAddress, index)
 				var length int64
 				if (result == common.Hash{}) {
 					length = 0
@@ -624,7 +624,7 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 				key := crypto.Keccak256Hash(hexutil.MustDecode(index.String()))
 				for i := 0; i < len(signers); i++ {
 					log.Trace("key hash", "key", key)
-					singer := state.GetState(chain.Config().NtfContractAddress, key)
+					singer := state.GetState(chain.Config().Dccs.ThangLongAddress, key)
 					signers[i] = common.HexToAddress(singer.Hex())
 					key = key.Plus()
 				}
@@ -851,7 +851,7 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 		index := common.BigToHash(big.NewInt(7)).String()[2:]
 		coinbase := "0x000000000000000000000000" + header.Coinbase.String()[2:]
 		key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
-		result := root.GetState(chain.Config().NtfContractAddress, key)
+		result := root.GetState(chain.Config().Dccs.ThangLongAddress, key)
 		beneficiary := common.HexToAddress(result.Hex())
 		header.Coinbase = beneficiary
 	} else {
