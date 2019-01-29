@@ -117,9 +117,10 @@ func (w *wizard) makeGenesis() {
 		genesis.Config.Dccs = &params.DccsConfig{
 			Period: 2,
 			Epoch:  30000,
-
-			ThangLongBlock: big.NewInt(0),
-			ThangLongEpoch: 3000,
+			// ThangLong hardfork
+			ThangLongBlock:   common.Big0,
+			ThangLongEpoch:   3000,
+			ThangLongAddress: common.HexToAddress("0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF"),
 		}
 		fmt.Println()
 		fmt.Println("How many seconds should blocks take? (default = 2)")
@@ -165,7 +166,7 @@ func (w *wizard) makeGenesis() {
 		genesis.Config.Dccs.ThangLongEpoch = uint64(w.readDefaultInt(int(genesis.Config.Dccs.ThangLongEpoch)))
 
 		fmt.Println()
-		fmt.Printf("Which nexty governance smart contract address? (default = %v)\n", "FFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF")
+		fmt.Printf("Which nexty governance smart contract address? (default = %v)\n", genesis.Config.Dccs.ThangLongAddress.Hex())
 		if address := w.readAddress(); address != nil {
 			genesis.Config.Dccs.ThangLongAddress = *address
 		}
@@ -328,7 +329,7 @@ func (w *wizard) manageGenesis() {
 		}
 
 		fmt.Println()
-		fmt.Printf("Which nexty governance smart contract address? (default = %v)\n", "FFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF")
+		fmt.Printf("Which nexty governance smart contract address? (default = %v)\n", w.conf.Genesis.Config.Dccs.ThangLongAddress.Hex())
 		if address := w.readAddress(); address != nil {
 			w.conf.Genesis.Config.Dccs.ThangLongAddress = *address
 		}
