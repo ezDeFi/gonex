@@ -237,7 +237,7 @@ type DccsConfig struct {
 	ThangLongBlock *big.Int `json:"thangLongBlock,omitempty"` // ThangLong switch block (nil = no fork, 0 = already activated)
 	ThangLongEpoch uint64   `json:"thangLongEpoch"`           // Epoch length to reset votes and checkpoint
 	// governance smart contract address
-	ThangLongAddress common.Address `json:"ntfContractAddress,omitempty"`
+	ThangLongAddress common.Address `json:"thangLongAddress,omitempty"`
 }
 
 // PositionInEpoch returns the offset of a block from the start of an epoch
