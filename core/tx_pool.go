@@ -140,6 +140,7 @@ type blockChain interface {
 type TxPoolConfig struct {
 	Locals    []common.Address // Addresses that should be treated by default as local
 	NoLocals  bool             // Whether local transaction handling should be disabled
+	NoRemotes bool             // Whether remote transaction can be added to the pool
 	Journal   string           // Journal of local transactions to survive node restarts
 	Rejournal time.Duration    // Time interval to regenerate the local transaction journal
 
@@ -897,7 +898,10 @@ func (pool *TxPool) AddLocal(tx *types.Transaction) error {
 // sender is not among the locally tracked ones, full pricing constraints will
 // apply.
 func (pool *TxPool) AddRemote(tx *types.Transaction) error {
-	return pool.addTx(tx, false)
+	if !pool.config.NoRemotes {
+		return pool.addTx(tx, false)
+	}
+	return nil
 }
 
 // AddLocals enqueues a batch of transactions into the pool if they are valid,
