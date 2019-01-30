@@ -47,11 +47,11 @@ var (
 		Dccs: &DccsConfig{
 			Period: 2,
 			Epoch:  300,
+			// Governance contract
+			Contract: common.HexToAddress("0x34fabc8d5f4fc879db7112861c755797d56946ad"),
 			// ThangLong hard-fork
 			ThangLongBlock: big.NewInt(3000),
 			ThangLongEpoch: 300,
-			// Governance contract
-			ThangLongAddress: common.HexToAddress("0x34fabc8d5f4fc879db7112861c755797d56946ad"),
 		},
 	}
 
@@ -79,11 +79,11 @@ var (
 		Dccs: &DccsConfig{
 			Period: 2,
 			Epoch:  600,
+			// Governance contract
+			Contract: common.HexToAddress("0xcafecafecafecafecafecafecafecafecafecafe"),
 			// ThangLong hard-fork
 			ThangLongBlock: big.NewInt(0),
 			ThangLongEpoch: 600,
-			// Governance contract
-			ThangLongAddress: common.HexToAddress("0xcafecafecafecafecafecafecafecafecafecafe"),
 		},
 	}
 
@@ -160,7 +160,7 @@ var (
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllDccsProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, &DccsConfig{Period: 0, Epoch: 30000, ThangLongBlock: big.NewInt(0), ThangLongEpoch: 3000, ThangLongAddress: common.HexToAddress("0x0")}}
+	AllDccsProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, nil, &DccsConfig{Period: 0, Epoch: 30000, ThangLongBlock: big.NewInt(0), ThangLongEpoch: 3000, Contract: common.HexToAddress("0x0")}}
 
 	TestChainConfig = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, new(EthashConfig), nil, nil}
 
@@ -233,11 +233,11 @@ func (c *CliqueConfig) String() string {
 type DccsConfig struct {
 	Period uint64 `json:"period"` // Number of seconds between blocks to enforce
 	Epoch  uint64 `json:"epoch"`  // Epoch length to reset votes and checkpoint
+	// governance smart contract address
+	Contract common.Address `json:"thangLongAddress,omitempty"`
 	// ThangLong hardfork
 	ThangLongBlock *big.Int `json:"thangLongBlock,omitempty"` // ThangLong switch block (nil = no fork, 0 = already activated)
 	ThangLongEpoch uint64   `json:"thangLongEpoch"`           // Epoch length to reset votes and checkpoint
-	// governance smart contract address
-	ThangLongAddress common.Address `json:"thangLongAddress,omitempty"`
 }
 
 // PositionInEpoch returns the offset of a block from the start of an epoch
@@ -266,7 +266,7 @@ func (c *DccsConfig) String() string {
 // String implements the fmt.Stringer interface.
 func (c *ChainConfig) String() string {
 	var thangLongBlock *big.Int
-	var thangLongGCAdrHex string
+	var contract string
 	var engine interface{}
 	switch {
 	case c.Ethash != nil:
@@ -276,7 +276,7 @@ func (c *ChainConfig) String() string {
 	case c.Dccs != nil:
 		engine = c.Dccs
 		thangLongBlock = c.Dccs.ThangLongBlock
-		thangLongGCAdrHex = c.Dccs.ThangLongAddress.Hex()
+		contract = c.Dccs.Contract.Hex()
 	default:
 		engine = "unknown"
 	}
@@ -291,7 +291,7 @@ func (c *ChainConfig) String() string {
 		c.ByzantiumBlock,
 		c.ConstantinopleBlock,
 		thangLongBlock,
-		thangLongGCAdrHex,
+		contract,
 		engine,
 	)
 }

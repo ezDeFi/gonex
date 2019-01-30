@@ -115,12 +115,12 @@ func (w *wizard) makeGenesis() {
 		genesis.GasLimit = 42000000
 		genesis.Difficulty = big.NewInt(1)
 		genesis.Config.Dccs = &params.DccsConfig{
-			Period: 2,
-			Epoch:  30000,
+			Period:   2,
+			Epoch:    30000,
+			Contract: common.HexToAddress("0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF"),
 			// ThangLong hardfork
-			ThangLongBlock:   common.Big0,
-			ThangLongEpoch:   3000,
-			ThangLongAddress: common.HexToAddress("0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF"),
+			ThangLongBlock: common.Big0,
+			ThangLongEpoch: 3000,
 		}
 		fmt.Println()
 		fmt.Println("How many seconds should blocks take? (default = 2)")
@@ -196,7 +196,7 @@ func (w *wizard) makeGenesis() {
 			return true
 		}
 		sim.ForEachStorageAt(ctx, nextyAddress, nil, f)
-		genesis.Alloc[genesis.Config.Dccs.ThangLongAddress] = core.GenesisAccount{
+		genesis.Alloc[genesis.Config.Dccs.Contract] = core.GenesisAccount{
 			Balance: big.NewInt(0),
 			Code:    code,
 			Storage: storage,
@@ -326,12 +326,12 @@ func (w *wizard) manageGenesis() {
 			fmt.Println()
 			fmt.Printf("Which block should ThangLong come into effect? (default = %v)\n", w.conf.Genesis.Config.Dccs.ThangLongBlock)
 			w.conf.Genesis.Config.Dccs.ThangLongBlock = w.readDefaultBigInt(w.conf.Genesis.Config.Dccs.ThangLongBlock)
-		}
 
-		fmt.Println()
-		fmt.Printf("Which nexty governance smart contract address? (default = %v)\n", w.conf.Genesis.Config.Dccs.ThangLongAddress.Hex())
-		if address := w.readAddress(); address != nil {
-			w.conf.Genesis.Config.Dccs.ThangLongAddress = *address
+			fmt.Println()
+			fmt.Printf("Which nexty governance smart contract address? (default = %v)\n", w.conf.Genesis.Config.Dccs.Contract.Hex())
+			if address := w.readAddress(); address != nil {
+				w.conf.Genesis.Config.Dccs.Contract = *address
+			}
 		}
 
 		out, _ := json.MarshalIndent(w.conf.Genesis.Config, "", "  ")

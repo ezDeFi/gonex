@@ -447,14 +447,14 @@ func (s *Ethereum) StartMining(threads int) error {
 			}
 			header := s.blockchain.CurrentHeader()
 			if s.chainConfig.IsThangLong(header.Number) {
-				size := state.GetCodeSize(s.chainConfig.Dccs.ThangLongAddress)
+				size := state.GetCodeSize(s.chainConfig.Dccs.Contract)
 				log.Info("smart contract size", "size", size)
 				if size > 0 && state.Error() == nil {
 					// Get token holder from coinbase
 					index := common.BigToHash(big.NewInt(7)).String()[2:]
 					coinbase := "0x000000000000000000000000" + eb.String()[2:]
 					key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
-					result := state.GetState(s.chainConfig.Dccs.ThangLongAddress, key)
+					result := state.GetState(s.chainConfig.Dccs.Contract, key)
 
 					if (result == common.Hash{}) {
 						log.Error("Validator is not in activation sealer set")
