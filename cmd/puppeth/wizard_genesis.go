@@ -117,7 +117,7 @@ func (w *wizard) makeGenesis() {
 		genesis.Config.Dccs = &params.DccsConfig{
 			Period:   2,
 			Epoch:    30000,
-			Contract: common.HexToAddress("0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF"),
+			Contract: common.HexToAddress("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
 			// ThangLong hardfork
 			ThangLongBlock: common.Big0,
 			ThangLongEpoch: 3000,
