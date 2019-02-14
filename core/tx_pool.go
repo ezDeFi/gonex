@@ -95,10 +95,6 @@ var (
 )
 
 var (
-	blockTimePrice *big.Int
-)
-
-var (
 	// Metrics for the pending pool
 	pendingDiscardCounter   = metrics.NewRegisteredCounter("txpool/pending/discard", nil)
 	pendingReplaceCounter   = metrics.NewRegisteredCounter("txpool/pending/replace", nil)
