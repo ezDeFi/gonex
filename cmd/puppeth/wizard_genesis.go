@@ -18,7 +18,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -30,15 +29,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/contracts/nexty/contract"
 	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/rlp"
 )
 
 // makeGenesis creates a new genesis struct based on some user input.
@@ -169,37 +163,6 @@ func (w *wizard) makeGenesis() {
 		fmt.Printf("Which nexty governance smart contract address? (default = %v)\n", genesis.Config.Dccs.Contract.Hex())
 		if address := w.readAddress(); address != nil {
 			genesis.Config.Dccs.Contract = *address
-		}
-
-		// Generate a new random account and a funded simulator
-		key, _ := crypto.GenerateKey()
-		auth := bind.NewKeyedTransactor(key)
-		auth.GasLimit = 12344321
-		sim := backends.NewSimulatedBackend(core.GenesisAlloc{auth.From: {Balance: new(big.Int).Lsh(big.NewInt(1), 256-7)}}, genesis.GasLimit)
-		nextyAddress, _, _, err := contract.DeployNexty(auth, sim, signers)
-		if err != nil {
-			fmt.Println("Can't deploy nexty governance smart contract")
-		}
-		sim.Commit()
-
-		d := time.Now().Add(1000 * time.Millisecond)
-		ctx, cancel := context.WithDeadline(context.Background(), d)
-		defer cancel()
-		code, _ := sim.CodeAt(ctx, nextyAddress, nil)
-		storage := make(map[common.Hash]common.Hash)
-		f := func(key, val common.Hash) bool {
-			decode := []byte{}
-			trim := bytes.TrimLeft(val.Bytes(), "\x00")
-			rlp.DecodeBytes(trim, &decode)
-			storage[key] = common.BytesToHash(decode)
-			log.Info("DecodeBytes", "value", val.String(), "decode", storage[key].String())
-			return true
-		}
-		sim.ForEachStorageAt(ctx, nextyAddress, nil, f)
-		genesis.Alloc[genesis.Config.Dccs.Contract] = core.GenesisAccount{
-			Balance: big.NewInt(0),
-			Code:    code,
-			Storage: storage,
 		}
 
 	default:

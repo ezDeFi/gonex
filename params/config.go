@@ -336,6 +336,21 @@ func (c *ChainConfig) IsEWASM(num *big.Int) bool {
 	return isForked(c.EWASMBlock, num)
 }
 
+// IsThangLongPreparationBlock returns whether num represents a block number exactly at the ThangLong Preparation
+func (c *ChainConfig) IsThangLongPreparationBlock(num *big.Int) bool {
+	return c.Dccs != nil && c.Dccs.IsThangLongPreparationBlock(num)
+}
+
+// IsThangLongPreparationBlock returns whether num represents a block number exactly at the ThangLong Preparation
+// ThangLong preparation block is hard-coded to 32 blocks before the ThangLong hard-fork
+func (c *DccsConfig) IsThangLongPreparationBlock(num *big.Int) bool {
+	preparationBlock := big.NewInt(1)
+	if c.ThangLongBlock.Cmp(common.Big32) > 0 {
+		preparationBlock = preparationBlock.Sub(c.ThangLongBlock, common.Big32)
+	}
+	return preparationBlock.Cmp(num) == 0
+}
+
 // IsThangLong returns whether num represents a block number after the ThangLong fork
 func (c *ChainConfig) IsThangLong(num *big.Int) bool {
 	return c.Dccs != nil && c.Dccs.IsThangLong(num)

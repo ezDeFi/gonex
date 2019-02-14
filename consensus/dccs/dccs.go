@@ -19,6 +19,7 @@ package dccs
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -28,12 +29,17 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
+	"github.com/ethereum/go-ethereum/contracts/nexty/contract"
+	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
@@ -895,6 +901,59 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 	return nil
 }
 
+func generateConsensusContract(signers []common.Address) (code []byte, storage map[common.Hash]common.Hash, err error) {
+	// Generate a new random account and a funded simulator
+	prvKey, _ := crypto.GenerateKey()
+	auth := bind.NewKeyedTransactor(prvKey)
+	auth.GasLimit = 12344321
+	sim := backends.NewSimulatedBackend(core.GenesisAlloc{auth.From: {Balance: new(big.Int).Lsh(big.NewInt(1), 256-7)}}, auth.GasLimit)
+	address, _, _, err := contract.DeployNexty(auth, sim, signers)
+	if err != nil {
+		fmt.Println("Can't deploy nexty governance smart contract")
+	}
+	sim.Commit()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	code, _ = sim.CodeAt(ctx, address, nil)
+	storage = make(map[common.Hash]common.Hash)
+	sim.ForEachStorageAt(ctx, address, nil, func(key, val common.Hash) bool {
+		storage[key] = val
+		log.Info("DecodeBytes", "key", key, "value", storage[key])
+		return true
+	})
+	return code, storage, err
+}
+
+// deployConsensusContract deploys the consensus contract without any owner
+func deployConsensusContract(state *state.StateDB, chainConfig *params.ChainConfig, signers []common.Address) error {
+	address := chainConfig.Dccs.Contract
+	// Ensure there's no existing contract already at the designated address
+	contractHash := state.GetCodeHash(address)
+	// this is an consensus upgrade
+	upgrade := state.GetNonce(address) != 0 || (contractHash != (common.Hash{}) && contractHash != vm.EmptyCodeHash)
+	if !upgrade {
+		// Create a new account on the state
+		state.CreateAccount(address)
+		// Assuming chainConfig.IsEIP158(BlockNumber)
+		state.SetNonce(address, 1)
+	}
+
+	// Generate contract code and data using a simulated backend
+	code, storage, err := generateConsensusContract(signers)
+	if err != nil {
+		return err
+	}
+
+	// Transfer the code and state from simulated backend to the real state db
+	state.SetCode(address, code)
+	for key, value := range storage {
+		state.SetState(address, key, value)
+	}
+	state.Commit(true)
+	return nil
+}
+
 // Finalize implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
 func (d *Dccs) Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
@@ -907,6 +966,20 @@ func (d *Dccs) Finalize(chain consensus.ChainReader, header *types.Header, state
 // finalize implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
 func (d *Dccs) finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
+	if chain.Config().IsThangLongPreparationBlock(header.Number) {
+		// Retrieve the pre-fork signers list
+		s, err := d.snapshot(chain, header.Number.Uint64()-1, header.ParentHash, nil)
+		if err != nil {
+			return nil, err
+		}
+		sigs := s.signers()
+		// Deploy the contract and ininitalize it with pre-fork signers
+		if deployConsensusContract(state, chain.Config(), sigs) != nil {
+			return nil, errors.New("Unable to deploy Nexty governance smart contract")
+		}
+		log.Info("Successfully deploy Nexty governance contract", "Number of sealers", len(sigs))
+	}
+
 	// No block rewards in PoA, so the state remains as is and uncles are dropped
 	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
 	header.UncleHash = types.CalcUncleHash(nil)
