@@ -285,6 +285,10 @@ func (w *wizard) manageGenesis() {
 		fmt.Printf("Which block should Constantinople come into effect? (default = %v)\n", w.conf.Genesis.Config.ConstantinopleBlock)
 		w.conf.Genesis.Config.ConstantinopleBlock = w.readDefaultBigInt(w.conf.Genesis.Config.ConstantinopleBlock)
 
+		fmt.Println()
+		fmt.Printf("Which block should Constantinople-Fix (remove EIP-1283) come into effect? (default = %v)\n", w.conf.Genesis.Config.ConstantinopleBlock)
+		w.conf.Genesis.Config.PetersburgBlock = w.readDefaultBigInt(w.conf.Genesis.Config.ConstantinopleBlock)
+
 		if w.conf.Genesis.Config.Dccs != nil {
 			fmt.Println()
 			fmt.Printf("Which block should ThangLong come into effect? (default = %v)\n", w.conf.Genesis.Config.Dccs.ThangLongBlock)
