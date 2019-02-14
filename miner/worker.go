@@ -902,7 +902,7 @@ func (w *worker) commitNewWork(interrupt *int32, noempty bool, timestamp int64) 
 	commitUncles(w.localUncles)
 	commitUncles(w.remoteUncles)
 
-	// pre-commiting empty block only makes sense for PoW
+	// pre-committing empty block only makes sense for PoW
 	pow := w.config.Ethash != nil
 	preCommitEmpty := !noempty && pow
 	if preCommitEmpty {

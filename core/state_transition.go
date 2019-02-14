@@ -238,7 +238,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 }
 
 // updateMRU updates the accumulating Most Frequently Used number,
-// after the state transistion applied
+// after the state transition applied
 func (st *StateTransition) updateMRU() bool {
 	blockNumber := st.evm.BlockNumber
 	if !st.evm.ChainConfig().IsThangLong(blockNumber) {

@@ -370,7 +370,7 @@ func (s *Snapshot) offset(signer common.Address, parent *types.Header) (int, err
 
 	pos, ok := signerPosition(signer, signers)
 	if !ok {
-		// unable to find the signer possition
+		// unable to find the signer position
 		return n, errUnauthorized
 	}
 
@@ -387,7 +387,7 @@ func (s *Snapshot) offset(signer common.Address, parent *types.Header) (int, err
 	}
 	prevPos, ok := signerPosition(prevSigner, signers)
 	if !ok {
-		// unable to find the previous signer possition
+		// unable to find the previous signer position
 		return n, errUnauthorized
 	}
 

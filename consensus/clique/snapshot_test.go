@@ -24,8 +24,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -82,7 +80,7 @@ func (ap *testerAccountPool) sign(header *types.Header, signer string) {
 		ap.accounts[signer], _ = crypto.GenerateKey()
 	}
 	// Sign the header and embed the signature in extra data
-	sig, _ := crypto.Sign(sigHash(header).Bytes(), ap.accounts[signer])
+	sig, _ := crypto.Sign(SealHash(header).Bytes(), ap.accounts[signer])
 	copy(header.Extra[len(header.Extra)-extraSeal:], sig)
 }
 
@@ -99,18 +97,6 @@ type testerVote struct {
 // Tests that Clique signer voting is evaluated correctly for various simple and
 // complex scenarios, as well as that a few special corner cases fail correctly.
 func TestClique(t *testing.T) {
-// State returns a new mutable state based on the current HEAD block.
-func (r *testerChainReader) State() (*state.StateDB, error) {
-	panic("not supported")
-}
-
-// StateAt returns a new mutable state based on a particular point in time.
-func (r *testerChainReader) StateAt(root common.Hash) (*state.StateDB, error) {
-	panic("not supported")
-}
-
-// Tests that voting is evaluated correctly for various simple and complex scenarios.
-func TestVoting(t *testing.T) {
 	// Define the various voting scenarios to test
 	tests := []struct {
 		epoch   uint64
