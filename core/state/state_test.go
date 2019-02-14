@@ -56,7 +56,7 @@ func (s *StateSuite) TestDump(c *checker.C) {
 	// check that dump contains the state objects that are in trie
 	got := string(s.state.Dump())
 	want := `{
-    "root": "d1a78cc3424d2062e42a5e6307b73f752a267f643c54cf28508e2b69ea4a4264",
+    "root": "0209a004a40d7f85c01b1d3ef7cd7b76723c0ff10b7787d0f6617ec5370e2a9d",
     "accounts": {
         "0000000000000000000000000000000000000001": {
             "balance": "22",
