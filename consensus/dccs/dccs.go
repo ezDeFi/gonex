@@ -604,7 +604,7 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 			hash := checkpoint.Hash()
 			log.Trace("Reading signers from epoch checkpoint", "number", cp, "hash", hash)
 			// If an in-memory snapshot was found, use that
-			if s, ok := d.recents.Get(hash); ok {
+			if s, ok := d.recents.Get(hash); ok && number+1 != d.config.ThangLongBlock.Uint64() {
 				snap = s.(*Snapshot)
 				log.Trace("Loading snapshot from mem-cache", "hash", snap.Hash, "length", len(snap.signers()))
 				break
