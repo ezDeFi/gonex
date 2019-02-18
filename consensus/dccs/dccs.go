@@ -237,7 +237,7 @@ func New(config *params.DccsConfig, db ethdb.Database) *Dccs {
 	if conf.Epoch == 0 {
 		conf.Epoch = epochLength
 	}
-	if conf.ThangLongBlock.Sign() > 0 && conf.ThangLongEpoch > 0 {
+	if conf.ThangLongBlock != nil && conf.ThangLongBlock.Sign() > 0 && conf.ThangLongEpoch > 0 {
 		// ensure that the hard-fork block must be divisible by both the old and new epoch value
 		tlBlock := conf.ThangLongBlock.Uint64()
 		if tlBlock%conf.Epoch != 0 {
