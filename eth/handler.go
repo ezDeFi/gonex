@@ -678,7 +678,8 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 			// a single block (as the true TD is below the propagated block), however this
 			// scenario should easily be covered by the fetcher.
 			currentBlock := pm.blockchain.CurrentBlock()
-			if trueTD.Cmp(pm.blockchain.GetTd(currentBlock.Hash(), currentBlock.NumberU64())) > 0 {
+			currentTd := pm.blockchain.GetTd(currentBlock.Hash(), currentBlock.NumberU64())
+			if core.ChainCompare(trueTD, currentTd, trueHead, currentBlock.Hash()) > 0 {
 				go pm.synchronise(p)
 			}
 		}

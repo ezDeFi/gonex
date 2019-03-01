@@ -1013,23 +1013,8 @@ func (bc *BlockChain) writeBlockWithState(block *types.Block, receipts []*types.
 	// If the total difficulty is higher than our known, add it to the canonical chain
 	// Second clause in the if statement reduces the vulnerability to selfish mining.
 	// Please refer to http://www.cs.cornell.edu/~ie53/publications/btcProcFC.pdf
-	reorg := externTd.Cmp(localTd) > 0
 	currentBlock = bc.CurrentBlock()
-	if !reorg && externTd.Cmp(localTd) == 0 {
-		// Split same-difficulty blocks by number, then the most gas used,
-		// then blockhash.
-		if block.NumberU64() < currentBlock.NumberU64() {
-			reorg = true
-		} else if block.NumberU64() == currentBlock.NumberU64() {
-			if block.GasUsed() > currentBlock.GasUsed() {
-				reorg = true
-			} else if block.GasUsed() == currentBlock.GasUsed() {
-				if bytes.Compare(block.Hash().Bytes(), currentBlock.Hash().Bytes()) < 0 {
-					reorg = true
-				}
-			}
-		}
-	}
+	reorg := ChainCompare(externTd, localTd, block.Hash(), currentBlock.Hash()) > 0
 	if reorg {
 		// Reorganise the chain if the parent is not the head block
 		if block.ParentHash() != currentBlock.Hash() {
@@ -1055,6 +1040,15 @@ func (bc *BlockChain) writeBlockWithState(block *types.Block, receipts []*types.
 	}
 	bc.futureBlocks.Remove(block.Hash())
 	return status, nil
+}
+
+// ChainCompare compares the weight of remote chain to local chain.
+func ChainCompare(remoteTD, localTD *big.Int, remoteHash, localHash common.Hash) int {
+	cmp := remoteTD.Cmp(localTD)
+	if cmp != 0 {
+		return cmp
+	}
+	return bytes.Compare(localHash.Bytes(), remoteHash.Bytes())
 }
 
 // addFutureBlock checks if the block is within the max allowed window to get
