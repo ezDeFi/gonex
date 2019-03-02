@@ -30,13 +30,13 @@ import (
 
 // explorerDockerfile is the Dockerfile required to run a block explorer.
 var explorerDockerfile = `
-FROM hadv/blockscout:latest
+FROM nextyio/blockscout:latest
 
 ADD genesis.json /genesis.json
 
 RUN \
   echo 'geth --cache 512 init /genesis.json' > explorer.sh && \
-	echo $'exec geth --networkid {{.NetworkID}} --syncmode "full" --port {{.NodePort}} --ethstats \'{{.Ethstats}}\' --cache=512 --rpc --nodiscover &> geth.log &' >> explorer.sh && \
+	echo $'exec geth --networkid {{.NetworkID}} --syncmode "full" --port {{.NodePort}} --ethstats \'{{.Ethstats}}\' --cache=512 --rpc --rpccorsdomain "*" --rpcvhosts "*" --ws --wsorigins "*" --nodiscover &> geth.log &' >> explorer.sh && \
 	echo '/usr/local/bin/docker-entrypoint.sh postgres &' >> explorer.sh && \
 	echo 'sleep 5' >> explorer.sh && \
   	echo 'mix do ecto.drop --force, ecto.create, ecto.migrate' >> explorer.sh && \
