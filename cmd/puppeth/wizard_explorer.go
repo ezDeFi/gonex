@@ -17,7 +17,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -26,15 +25,6 @@ import (
 
 // deployExplorer creates a new block explorer based on some user input.
 func (w *wizard) deployExplorer() {
-	// Do some sanity check before the user wastes time on input
-	if w.conf.Genesis == nil {
-		log.Error("No genesis block configured")
-		return
-	}
-	if w.conf.ethstats == "" {
-		log.Error("No ethstats server configured")
-		return
-	}
 	// Select the server to interact with
 	server := w.selectServer()
 	if server == "" {
@@ -46,13 +36,13 @@ func (w *wizard) deployExplorer() {
 	infos, err := checkExplorer(client, w.network)
 	if err != nil {
 		infos = &explorerInfos{
-			nodePort: 30303, webPort: 80, webHost: client.server,
+			httpRPCURL: "http://localhost:8545",
+			wsRPCURL:   "ws://localhost:8546",
+			webPort:    80,
+			webHost:    client.server,
 		}
 	}
 	existed := err == nil
-
-	infos.genesis, _ = json.MarshalIndent(w.conf.Genesis, "", "  ")
-	infos.networkId = w.conf.Genesis.Config.ChainID.Int64()
 
 	// Figure out which port to listen on
 	fmt.Println()
@@ -64,15 +54,17 @@ func (w *wizard) deployExplorer() {
 		log.Error("Failed to decide on explorer host", "err", err)
 		return
 	}
-	// Figure out where the user wants to store the persistent data
+
+	// Figure out which JSONRPC_HTTP_URL for explorer to connect
 	fmt.Println()
-	if infos.datadir == "" {
-		fmt.Printf("Where should node data be stored on the remote machine?\n")
-		infos.datadir = w.readString()
-	} else {
-		fmt.Printf("Where should node data be stored on the remote machine? (default = %s)\n", infos.datadir)
-		infos.datadir = w.readDefaultString(infos.datadir)
-	}
+	fmt.Printf("Which JSON RPC http url? (default = %s)\n", infos.httpRPCURL)
+	infos.httpRPCURL = w.readDefaultString(infos.httpRPCURL)
+
+	// Figure out which JSONRPC_HTTP_URL for explorer to connect
+	fmt.Println()
+	fmt.Printf("Which JSON RPC websocket url? (default = %s)\n", infos.wsRPCURL)
+	infos.wsRPCURL = w.readDefaultString(infos.wsRPCURL)
+
 	// Figure out where the user wants to store the persistent data for backend database
 	fmt.Println()
 	if infos.dbdir == "" {
@@ -80,22 +72,9 @@ func (w *wizard) deployExplorer() {
 		infos.dbdir = w.readString()
 	} else {
 		fmt.Printf("Where should postgres data be stored on the remote machine? (default = %s)\n", infos.dbdir)
-		infos.dbdir = w.readDefaultString(infos.datadir)
+		infos.dbdir = w.readDefaultString(infos.dbdir)
 	}
-	// Figure out which port to listen on
-	fmt.Println()
-	fmt.Printf("Which TCP/UDP port should the archive node listen on? (default = %d)\n", infos.nodePort)
-	infos.nodePort = w.readDefaultInt(infos.nodePort)
 
-	// Set a proper name to report on the stats page
-	fmt.Println()
-	if infos.ethstats == "" {
-		fmt.Printf("What should the explorer be called on the stats page?\n")
-		infos.ethstats = w.readString() + ":" + w.conf.ethstats
-	} else {
-		fmt.Printf("What should the explorer be called on the stats page? (default = %s)\n", infos.ethstats)
-		infos.ethstats = w.readDefaultString(infos.ethstats) + ":" + w.conf.ethstats
-	}
 	// Try to deploy the explorer on the host
 	nocache := false
 	if existed {
@@ -103,7 +82,7 @@ func (w *wizard) deployExplorer() {
 		fmt.Printf("Should the explorer be built from scratch (y/n)? (default = no)\n")
 		nocache = w.readDefaultYesNo(false)
 	}
-	if out, err := deployExplorer(client, w.network, w.conf.bootnodes, infos, nocache); err != nil {
+	if out, err := deployExplorer(client, w.network, infos, nocache); err != nil {
 		log.Error("Failed to deploy explorer container", "err", err)
 		if len(out) > 0 {
 			fmt.Printf("%s\n", out)

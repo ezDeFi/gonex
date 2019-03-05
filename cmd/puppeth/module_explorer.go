@@ -23,25 +23,21 @@ import (
 	"math/rand"
 	"path/filepath"
 	"strconv"
-	"strings"
-
-	"github.com/ethereum/go-ethereum/log"
 )
 
 // explorerDockerfile is the Dockerfile required to run a block explorer.
-// ADD genesis.json /genesis.json
-// echo 'geth --cache 512 init /genesis.json' > explorer.sh && \
-// echo $'exec geth --networkid {{.NetworkID}} --syncmode "full" --port {{.NodePort}} --ethstats \'{{.Ethstats}}\' --cache=512 --rpc --rpccorsdomain "*" --rpcvhosts "*" --ws --wsorigins "*" --nodiscover &> geth.log &' >> explorer.sh && \
 var explorerDockerfile = `
 FROM nextyio/blockscout:latest
 
+ENV \
+  ETHEREUM_JSONRPC_HTTP_URL={{.HttpRPCURL}} \
+	ETHEREUM_JSONRPC_WS_URL={{.WsRPCURL}}
+
 RUN \
-  echo 'export ETHEREUM_JSONRPC_HTTP_URL=http://199.247.15.240:8545' >> explorer.sh && \
-	echo 'export ETHEREUM_JSONRPC_WS_URL=ws://199.247.15.240:8546' >> explorer.sh && \
-	echo '/usr/local/bin/docker-entrypoint.sh postgres &' >> explorer.sh && \
-	echo 'sleep 5' >> explorer.sh && \
-  echo 'mix do ecto.drop --force, ecto.create, ecto.migrate' >> explorer.sh && \
-	echo 'mix phx.server' >> explorer.sh
+  echo '/usr/local/bin/docker-entrypoint.sh postgres &' >> explorer.sh && \
+  echo 'sleep 5' >> explorer.sh && \
+	echo 'mix do ecto.drop --force, ecto.create, ecto.migrate' >> explorer.sh && \
+  echo 'mix phx.server' >> explorer.sh
 
 ENTRYPOINT ["/bin/sh", "explorer.sh"]
 `
@@ -56,17 +52,12 @@ services:
     image: {{.Network}}/explorer
     container_name: {{.Network}}_explorer_1
     ports:
-      - "{{.NodePort}}:{{.NodePort}}"
-      - "{{.NodePort}}:{{.NodePort}}/udp"{{if not .VHost}}
-      - "{{.WebPort}}:4000"{{end}}
+      - {{if not .VHost}}"{{.WebPort}}:4000"{{end}}
     environment:
       - NETWORK={{.NetworkName}}{{if .VHost}}
       - VIRTUAL_HOST={{.VHost}}
       - VIRTUAL_PORT=4000{{end}}
-      - NODE_PORT={{.NodePort}}/tcp
-      - STATS={{.Ethstats}}
     volumes:
-      - {{.Datadir}}:/root/.ethereum
       - {{.DBDir}}:/var/lib/postgresql/data
     logging:
       driver: "json-file"
@@ -79,17 +70,15 @@ services:
 // deployExplorer deploys a new block explorer container to a remote machine via
 // SSH, docker and docker-compose. If an instance with the specified network name
 // already exists there, it will be overwritten!
-func deployExplorer(client *sshClient, network string, bootnodes []string, config *explorerInfos, nocache bool) ([]byte, error) {
+func deployExplorer(client *sshClient, network string, config *explorerInfos, nocache bool) ([]byte, error) {
 	// Generate the content to upload to the server
 	workdir := fmt.Sprintf("%d", rand.Int63())
 	files := make(map[string][]byte)
 
 	dockerfile := new(bytes.Buffer)
 	template.Must(template.New("").Parse(explorerDockerfile)).Execute(dockerfile, map[string]interface{}{
-		"NetworkID": config.networkId,
-		"Bootnodes": strings.Join(bootnodes, ","),
-		"Ethstats":  config.ethstats,
-		"NodePort":  config.nodePort,
+		"HttpRPCURL": config.httpRPCURL,
+		"WsRPCURL":   config.wsRPCURL,
 	})
 	files[filepath.Join(workdir, "Dockerfile")] = dockerfile.Bytes()
 
@@ -97,16 +86,11 @@ func deployExplorer(client *sshClient, network string, bootnodes []string, confi
 	template.Must(template.New("").Parse(explorerComposefile)).Execute(composefile, map[string]interface{}{
 		"NetworkName": network,
 		"VHost":       config.webHost,
-		"Ethstats":    config.ethstats,
-		"Datadir":     config.datadir,
 		"DBDir":       config.dbdir,
 		"Network":     network,
-		"NodePort":    config.nodePort,
 		"WebPort":     config.webPort,
 	})
 	files[filepath.Join(workdir, "docker-compose.yaml")] = composefile.Bytes()
-
-	files[filepath.Join(workdir, "genesis.json")] = config.genesis
 
 	// Upload the deployment files to the remote server (and clean up afterwards)
 	if out, err := client.Upload(files); err != nil {
@@ -124,23 +108,17 @@ func deployExplorer(client *sshClient, network string, bootnodes []string, confi
 // explorerInfos is returned from a block explorer status check to allow reporting
 // various configuration parameters.
 type explorerInfos struct {
-	genesis   []byte
-	datadir   string
-	dbdir     string
-	ethstats  string
-	nodePort  int
-	webHost   string
-	webPort   int
-	networkId int64
+	httpRPCURL string
+	wsRPCURL   string
+	dbdir      string
+	webHost    string
+	webPort    int
 }
 
 // Report converts the typed struct into a plain string->string map, containing
 // most - but not all - fields for reporting to the user.
 func (info *explorerInfos) Report() map[string]string {
 	report := map[string]string{
-		"Data directory":         info.datadir,
-		"Node listener port ":    strconv.Itoa(info.nodePort),
-		"Ethstats username":      info.ethstats,
 		"Website address ":       info.webHost,
 		"Website listener port ": strconv.Itoa(info.webPort),
 	}
@@ -173,19 +151,12 @@ func checkExplorer(client *sshClient, network string) (*explorerInfos, error) {
 	if host == "" {
 		host = client.server
 	}
-	// Run a sanity check to see if the devp2p is reachable
-	nodePort := infos.portmap[infos.envvars["NODE_PORT"]]
-	if err = checkPort(client.server, nodePort); err != nil {
-		log.Warn(fmt.Sprintf("Explorer devp2p port seems unreachable"), "server", client.server, "port", nodePort, "err", err)
-	}
+
 	// Assemble and return the useful infos
 	stats := &explorerInfos{
-		dbdir:    infos.volumes["/var/lib/postgresql/data"],
-		datadir:  infos.volumes["/root/.ethereum"],
-		nodePort: nodePort,
-		webHost:  host,
-		webPort:  webPort,
-		ethstats: infos.envvars["STATS"],
+		dbdir:   infos.volumes["/var/lib/postgresql/data"],
+		webHost: host,
+		webPort: webPort,
 	}
 	return stats, nil
 }
