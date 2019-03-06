@@ -44,16 +44,18 @@ var (
 		EIP155Block:         big.NewInt(3),
 		EIP158Block:         big.NewInt(3),
 		ByzantiumBlock:      big.NewInt(4),
-		ConstantinopleBlock: nil,
-		PetersburgBlock:     nil,
+		ConstantinopleBlock: big.NewInt(15000000),
+		PetersburgBlock:     big.NewInt(15000000),
 		Dccs: &DccsConfig{
 			Period: 2,
 			Epoch:  30000,
 			// Governance contract
-			Contract: common.HexToAddress("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
+			Contract: common.HexToAddress("0x0000000000000000000000000000000000012345"),
 			// ThangLong hard-fork
-			ThangLongBlock: nil,
-			ThangLongEpoch: 3000,
+			StakeRequire:    50000,
+			StakeLockHeight: 30000,
+			ThangLongBlock:  big.NewInt(15000000),
+			ThangLongEpoch:  3000,
 		},
 	}
 
