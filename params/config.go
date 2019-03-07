@@ -90,7 +90,7 @@ var (
 			StakeRequire:    500,
 			StakeLockHeight: 3000,
 			ThangLongBlock:  big.NewInt(300000),
-			ThangLongEpoch:  3000,
+			ThangLongEpoch:  300,
 		},
 	}
 
