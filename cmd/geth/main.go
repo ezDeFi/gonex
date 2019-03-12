@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	clientIdentifier = "gonex" // Client identifier to advertise over the network
+	clientIdentifier = "geth" // Client identifier to advertise over the network
 )
 
 var (
