@@ -947,16 +947,47 @@ func deployConsensusContracts(state *state.StateDB, chainConfig *params.ChainCon
 
 // Finalize implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
-func (d *Dccs) Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
+func (d *Dccs) Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
 	if chain.Config().IsThangLong(header.Number) {
-		return d.finalize2(chain, header, state, txs, uncles, receipts)
+		d.finalize2(chain, header, state, txs, uncles)
 	}
-	return d.finalize(chain, header, state, txs, uncles, receipts)
+	d.finalize(chain, header, state, txs, uncles)
+}
+
+// FinalizeAndAssemble implements consensus.Engine, ensuring no uncles are set, nor block
+// rewards given, and returns the final block.
+func (d *Dccs) FinalizeAndAssemble(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
+	if chain.Config().IsThangLong(header.Number) {
+		return d.finalizeAndAssemble2(chain, header, state, txs, uncles, receipts)
+	}
+	return d.finalizeAndAssemble(chain, header, state, txs, uncles, receipts)
 }
 
 // finalize implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
-func (d *Dccs) finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
+func (d *Dccs) finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
+	if chain.Config().IsThangLongPreparationBlock(header.Number) {
+		// Retrieve the pre-fork signers list
+		s, err := d.snapshot(chain, header.Number.Uint64()-1, header.ParentHash, nil)
+		if err != nil {
+			return
+		}
+		sigs := s.signers()
+		// Deploy the contract and ininitalize it with pre-fork signers
+		if deployConsensusContracts(state, chain.Config(), sigs) != nil {
+			return
+		}
+		log.Info("Successfully deploy Nexty governance contract", "Number of sealers", len(sigs))
+	}
+
+	// No block rewards in PoA, so the state remains as is and uncles are dropped
+	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
+	header.UncleHash = types.CalcUncleHash(nil)
+}
+
+// finalizeAndAssemble implements consensus.Engine, ensuring no uncles are set, nor block
+// rewards given, and returns the final block.
+func (d *Dccs) finalizeAndAssemble(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
 	if chain.Config().IsThangLongPreparationBlock(header.Number) {
 		// Retrieve the pre-fork signers list
 		s, err := d.snapshot(chain, header.Number.Uint64()-1, header.ParentHash, nil)
@@ -981,7 +1012,16 @@ func (d *Dccs) finalize(chain consensus.ChainReader, header *types.Header, state
 
 // finalize2 implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
-func (d *Dccs) finalize2(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
+func (d *Dccs) finalize2(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
+	// Calculate any block reward for the sealer and commit the final state root
+	d.calculateRewards(chain, state, header)
+	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
+	header.UncleHash = types.CalcUncleHash(nil)
+}
+
+// finalizeAndAssemble2 implements consensus.Engine, ensuring no uncles are set, nor block
+// rewards given, and returns the final block.
+func (d *Dccs) finalizeAndAssemble2(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
 	// Calculate any block reward for the sealer and commit the final state root
 	d.calculateRewards(chain, state, header)
 	header.Root = state.IntermediateRoot(chain.Config().IsEIP158(header.Number))
