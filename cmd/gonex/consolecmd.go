@@ -130,7 +130,7 @@ func remoteConsole(ctx *cli.Context) error {
 				path = filepath.Join(path, "dccs")
 			}
 		}
-		endpoint = fmt.Sprintf("%s/geth.ipc", path)
+		endpoint = fmt.Sprintf("%s/gonex.ipc", path)
 	}
 	client, err := dialRPC(endpoint)
 	if err != nil {
@@ -175,7 +175,7 @@ func dialRPC(endpoint string) (*rpc.Client, error) {
 	return rpc.Dial(endpoint)
 }
 
-// ephemeralConsole starts a new geth node, attaches an ephemeral JavaScript
+// ephemeralConsole starts a new gonex node, attaches an ephemeral JavaScript
 // console to it, executes each of the files specified as arguments and tears
 // everything down.
 func ephemeralConsole(ctx *cli.Context) error {
@@ -187,7 +187,7 @@ func ephemeralConsole(ctx *cli.Context) error {
 	// Attach to the newly started node and start the JavaScript console
 	client, err := node.Attach()
 	if err != nil {
-		utils.Fatalf("Failed to attach to the inproc geth: %v", err)
+		utils.Fatalf("Failed to attach to the inproc gonex: %v", err)
 	}
 	config := console.Config{
 		DataDir: utils.MakeDataDir(ctx),

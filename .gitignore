@@ -5,8 +5,7 @@
 #   git config --global core.excludesfile ~/.gitignore_global
 
 /tmp
-/data/**/gonex
-/data/**/history
+/data/**
 */**/*un~
 */**/*.test
 *un~
@@ -49,3 +48,5 @@ profile.cov
 
 # intermediate files
 *.json
+*.key
+passwd
