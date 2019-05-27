@@ -31,7 +31,7 @@ import (
 // ethstatsDockerfile is the Dockerfile required to build an ethstats backend
 // and associated monitoring site.
 var ethstatsDockerfile = `
-FROM puppeth/ethstats:latest
+FROM nextyio/nextats:latest
 
 RUN echo 'module.exports = {trusted: [{{.Trusted}}], banned: [{{.Banned}}], reserved: ["yournode"]};' > lib/utils/config.js
 `
@@ -43,7 +43,7 @@ version: '2'
 services:
   ethstats:
     build: .
-    image: {{.Network}}/ethstats
+    image: {{.Network}}/nextats
     container_name: {{.Network}}_ethstats_1{{if not .VHost}}
     ports:
       - "{{.Port}}:3000"{{end}}
