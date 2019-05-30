@@ -651,14 +651,12 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 			}
 		}
 
-		if !local {
-			accAge := pool.chain.CurrentBlock().NumberU64() - mruNumber
+		accAge := pool.chain.CurrentBlock().NumberU64() - mruNumber
 
-			if accAge < pool.spammyAge {
-				// too young for zero-fee
-				if gasPrice.Uint64() < pool.spammyPriceLimit {
-					return ErrSpammyUnderpriced
-				}
+		if accAge < pool.spammyAge {
+			// too young for zero-fee
+			if gasPrice.Uint64() < pool.spammyPriceLimit {
+				return ErrSpammyUnderpriced
 			}
 		}
 	}
