@@ -382,6 +382,16 @@ var (
 		Usage: "Price for a parity unit",
 		Value: eth.DefaultConfig.TxPool.ParityPrice,
 	}
+	TxPoolSpammyAgeFlag = cli.Uint64Flag{
+		Name:  "txpool.spammyage",
+		Usage: "Minimum account age for spammy tx",
+		Value: eth.DefaultConfig.TxPool.SpammyAge,
+	}
+	TxPoolSpammyPriceLimitFlag = cli.Uint64Flag{
+		Name:  "txpool.spammypricelimit",
+		Usage: "PriceLimit for spammy tx",
+		Value: eth.DefaultConfig.TxPool.SpammyPriceLimit,
+	}
 	TxPoolAccountSlotsFlag = cli.Uint64Flag{
 		Name:  "txpool.accountslots",
 		Usage: "Minimum number of executable transaction slots guaranteed per account",
@@ -1309,6 +1319,15 @@ func setTxPool(ctx *cli.Context, cfg *core.TxPoolConfig) {
 	}
 	if ctx.GlobalIsSet(TxPoolParityLimitFlag.Name) {
 		cfg.ParityLimit = ctx.GlobalUint64(TxPoolParityLimitFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolParityPriceFlag.Name) {
+		cfg.ParityPrice = ctx.GlobalUint64(TxPoolParityPriceFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolSpammyAgeFlag.Name) {
+		cfg.SpammyAge = ctx.GlobalUint64(TxPoolSpammyAgeFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolSpammyPriceLimitFlag.Name) {
+		cfg.SpammyPriceLimit = ctx.GlobalUint64(TxPoolSpammyPriceLimitFlag.Name)
 	}
 	if ctx.GlobalIsSet(TxPoolAccountSlotsFlag.Name) {
 		cfg.AccountSlots = ctx.GlobalUint64(TxPoolAccountSlotsFlag.Name)
