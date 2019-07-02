@@ -591,7 +591,7 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 		// Get signers from Nexty staking smart contract at the latest epoch checkpoint from block number
 		checkpoint := chain.GetHeaderByNumber(cp)
 		if checkpoint == nil {
-			log.Error("snapshot header not available", "number", cp)
+			log.Trace("snapshot header not available", "number", cp)
 			continue
 		}
 		hash := checkpoint.Hash()
@@ -604,12 +604,12 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 		}
 		state, err := chain.StateAt(checkpoint.Root)
 		if state == nil || err != nil {
-			log.Error("snapshot state not available", "number", cp, "err", err)
+			log.Trace("snapshot state not available", "number", cp, "err", err)
 			continue
 		}
 		size := state.GetCodeSize(chain.Config().Dccs.Contract)
 		if size <= 0 || state.Error() != nil {
-			log.Error("snapshot state not available", "number", cp, "err", state.Error())
+			log.Trace("snapshot state not available", "number", cp, "err", state.Error())
 			continue
 		}
 		index := common.BigToHash(common.Big0)
