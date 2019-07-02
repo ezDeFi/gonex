@@ -609,7 +609,7 @@ func (d *Dccs) snapshot2(chain consensus.ChainReader, number uint64, hash common
 		}
 		size := state.GetCodeSize(chain.Config().Dccs.Contract)
 		if size <= 0 || state.Error() != nil {
-			log.Trace("snapshot state not available", "number", cp, "err", state.Error())
+			log.Trace("snapshot contract state not available", "number", cp, "err", state.Error())
 			continue
 		}
 		index := common.BigToHash(common.Big0)
