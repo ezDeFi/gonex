@@ -776,7 +776,7 @@ func (d *Dccs) prepare(chain consensus.ChainReader, header *types.Header) error 
 	if err != nil {
 		return err
 	}
-	if d.config.IsCheckpoint(number) {
+	if !d.config.IsCheckpoint(number) {
 		d.lock.RLock()
 
 		// Gather all the proposals that make sense voting on
