@@ -463,7 +463,7 @@ func (d *Dccs) verifyCascadingFields2(chain consensus.ChainReader, header *types
 	if d.config.IsCheckpoint(number) {
 		signers := make([]byte, len(snap.Signers)*common.AddressLength)
 		for i, signer := range snap.signers2() {
-			copy(signers[i*common.AddressLength:], signer[:])
+			copy(signers[i*common.AddressLength:], signer.Address[:])
 		}
 		extraSuffix := len(header.Extra) - extraSeal
 		if !bytes.Equal(header.Extra[extraVanity:extraSuffix], signers) {
@@ -842,7 +842,7 @@ func (d *Dccs) prepare2(chain consensus.ChainReader, header *types.Header) error
 
 	if d.config.IsCheckpoint(number) {
 		for _, signer := range snap.signers2() {
-			header.Extra = append(header.Extra, signer[:]...)
+			header.Extra = append(header.Extra, signer.Address[:]...)
 		}
 	}
 	header.Extra = append(header.Extra, make([]byte, extraSeal)...)
@@ -1205,7 +1205,7 @@ func (d *Dccs) calcDelayTime(snap *Snapshot, block *types.Block, signer common.A
 	sigs := snap.signers2()
 	pos := 0
 	for seen, sig := range sigs {
-		if sig == signer {
+		if sig.Address == signer {
 			pos = seen
 		}
 	}
