@@ -190,6 +190,17 @@ func (ec *EthereumClient) GetNonceAt(ctx *Context, account *Address, number int6
 	return int64(rawNonce), err
 }
 
+// GetMRUNumberAt returns the last recent used block number of the given account.
+// The block number can be <0, in which case the nonce is taken from the latest known block.
+func (ec *EthereumClient) GetMRUNumberAt(ctx *Context, account *Address, number int64) (nonce int64, _ error) {
+	if number < 0 {
+		rawNumber, err := ec.client.MRUNumberAt(ctx.context, account.address, nil)
+		return int64(rawNumber), err
+	}
+	rawNumber, err := ec.client.MRUNumberAt(ctx.context, account.address, big.NewInt(number))
+	return int64(rawNumber), err
+}
+
 // Filters
 
 // FilterLogs executes a filter query.

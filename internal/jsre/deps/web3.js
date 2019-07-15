@@ -5358,6 +5358,14 @@ var methods = function () {
         outputFormatter: utils.toDecimal
     });
 
+    var getMRUNumber = new Method({
+        name: 'getMRUNumber',
+        call: 'eth_getMRUNumber',
+        params: 2,
+        inputFormatter: [null, formatters.inputDefaultBlockNumberFormatter],
+        outputFormatter: utils.toDecimal
+    });    
+
     var sendRawTransaction = new Method({
         name: 'sendRawTransaction',
         call: 'eth_sendRawTransaction',
@@ -5444,6 +5452,7 @@ var methods = function () {
         getTransactionFromBlock,
         getTransactionReceipt,
         getTransactionCount,
+        getMRUNumber,
         call,
         estimateGas,
         sendRawTransaction,
