@@ -642,7 +642,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	if pool.chainconfig.IsThangLong(pool.chain.CurrentBlock().Number()) {
 		mruNumber = pool.currentState.GetMRUNumber(from)
 		if mruNumber == 0 {
-			if nonce == 0 {
+			if !pool.currentState.Exist(from) {
 				// new account is treated as freshly used
 				mruNumber = pool.chain.CurrentBlock().NumberU64()
 			} else {
