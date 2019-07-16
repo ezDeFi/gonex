@@ -22,6 +22,7 @@ var Modules = map[string]string{
 	"admin":      AdminJs,
 	"chequebook": ChequebookJs,
 	"clique":     CliqueJs,
+	"dccs":       Dccs_JS,
 	"ethash":     EthashJs,
 	"debug":      DebugJs,
 	"eth":        EthJs,
@@ -107,6 +108,52 @@ web3._extend({
 		new web3._extend.Property({
 			name: 'proposals',
 			getter: 'clique_proposals'
+		}),
+	]
+});
+`
+
+const Dccs_JS = `
+web3._extend({
+	property: 'dccs',
+	methods: [
+		new web3._extend.Method({
+			name: 'getSnapshot',
+			call: 'dccs_getSnapshot',
+			params: 1,
+			inputFormatter: [null]
+		}),
+		new web3._extend.Method({
+			name: 'getSnapshotAtHash',
+			call: 'dccs_getSnapshotAtHash',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'getSigners',
+			call: 'dccs_getSigners',
+			params: 1,
+			inputFormatter: [null]
+		}),
+		new web3._extend.Method({
+			name: 'getSignersAtHash',
+			call: 'dccs_getSignersAtHash',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'propose',
+			call: 'dccs_propose',
+			params: 2
+		}),
+		new web3._extend.Method({
+			name: 'discard',
+			call: 'dccs_discard',
+			params: 1
+		}),
+	],
+	properties: [
+		new web3._extend.Property({
+			name: 'proposals',
+			getter: 'dccs_proposals'
 		}),
 	]
 });
@@ -765,7 +812,7 @@ web3._extend({
 const LESJs = `
 web3._extend({
 	property: 'les',
-	methods: 
+	methods:
 	[
 		new web3._extend.Method({
 			name: 'getCheckpoint',
@@ -773,7 +820,7 @@ web3._extend({
 			params: 1
 		}),
 	],
-	properties: 
+	properties:
 	[
 		new web3._extend.Property({
 			name: 'latestCheckpoint',
