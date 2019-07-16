@@ -78,10 +78,10 @@ var (
 	// MainnetTrustedCheckpoint contains the light client trusted checkpoint for the main network.
 	MainnetTrustedCheckpoint = &TrustedCheckpoint{
 		Name:         "mainnet",
-		SectionIndex: 561,
-		SectionHead:  common.HexToHash("0x6b87a31980a1fe764e5db97ea7c841b9d6db88fe8cd0506937532bae7eab783c"),
-		CHTRoot:      common.Hash{}, // TODO: will calculate later when using LES
-		BloomRoot:    common.Hash{}, // TODO: will calculate later when using LES
+		SectionIndex: 623,
+		SectionHead:  common.HexToHash("0x483a93c0aaa63461dfe5f655a8c3d8089ce6f2cee2abc3cebc98fa00b3246c09"),
+		CHTRoot:      common.HexToHash("0x17cf64ea72f3cd1996284521ee6377a1e3ede97e49157d157d7c1f184db2e877"),
+		BloomRoot:    common.HexToHash("0xbe58f56dd6a616fb00a4d1a30f4810325f61cf1aaf7b803835c802b8a55ba023"),
 	}
 
 	// TestnetChainConfig contains the chain parameters to run a node on the Dccs test network.
@@ -113,10 +113,10 @@ var (
 	// TestnetTrustedCheckpoint contains the light client trusted checkpoint for the Ropsten test network.
 	TestnetTrustedCheckpoint = &TrustedCheckpoint{
 		Name:         "testnet",
-		SectionIndex: 19,
-		SectionHead:  common.HexToHash("0x57a235095aba5f4c6cf7a1787c283003e93adadf68f46ecacbcc777d505d83b2"),
-		CHTRoot:      common.Hash{}, // TODO: will calculate later when using LES
-		BloomRoot:    common.Hash{}, // TODO: will calculate later when using LES
+		SectionIndex: 79,
+		SectionHead:  common.HexToHash("0x125f8a605f40bc83d97022d4702b032c12b4acf33a7277328accd92478dd0ee6"),
+		CHTRoot:      common.HexToHash("0x4ef0f20179948ff63668015a8e6f29843af0be9e624b800feff6002595d924e8"),
+		BloomRoot:    common.HexToHash("0x60832585683837c3c8016ef3816a95ac8b2d0012580612635e83935ddaa0526f"),
 	}
 
 	// RinkebyChainConfig contains the chain parameters to run a node on the Rinkeby test network.
