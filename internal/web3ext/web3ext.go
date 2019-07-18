@@ -113,7 +113,7 @@ web3._extend({
 });
 `
 
-const Dccs_JS = `
+const DccsJs = `
 web3._extend({
 	property: 'dccs',
 	methods: [
