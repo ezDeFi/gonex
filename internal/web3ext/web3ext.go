@@ -22,7 +22,7 @@ var Modules = map[string]string{
 	"admin":      AdminJs,
 	"chequebook": ChequebookJs,
 	"clique":     CliqueJs,
-	"dccs":       Dccs_JS,
+	"dccs":       DccsJs,
 	"ethash":     EthashJs,
 	"debug":      DebugJs,
 	"eth":        EthJs,
