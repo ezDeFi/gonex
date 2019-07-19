@@ -79,9 +79,9 @@ var (
 	MainnetTrustedCheckpoint = &TrustedCheckpoint{
 		Name:         "mainnet",
 		SectionIndex: 623,
-		SectionHead:  common.HexToHash("0x483a93c0aaa63461dfe5f655a8c3d8089ce6f2cee2abc3cebc98fa00b3246c09"),
+		SectionHead:  common.HexToHash("0xbe58f56dd6a616fb00a4d1a30f4810325f61cf1aaf7b803835c802b8a55ba023"),
 		CHTRoot:      common.HexToHash("0x17cf64ea72f3cd1996284521ee6377a1e3ede97e49157d157d7c1f184db2e877"),
-		BloomRoot:    common.HexToHash("0xbe58f56dd6a616fb00a4d1a30f4810325f61cf1aaf7b803835c802b8a55ba023"),
+		BloomRoot:    common.HexToHash("0x483a93c0aaa63461dfe5f655a8c3d8089ce6f2cee2abc3cebc98fa00b3246c09"),
 	}
 
 	// TestnetChainConfig contains the chain parameters to run a node on the Dccs test network.
