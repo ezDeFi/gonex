@@ -413,9 +413,7 @@ func (c *vdfVerify) Run(input []byte) (valid []byte, err error) {
 	}
 
 	iteration := new(big.Int).SetBytes(getData(input, 32, 32)).Uint64()
-	// make a clone
-	seed := make([]byte, 32)
-	copy(seed, getData(input, 64, 32))
+	seed := getData(input, 64, 32)
 	output := getData(input, 96, outputLen)
 
 	log.Trace("VDFVerify",
