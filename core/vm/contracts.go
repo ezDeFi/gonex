@@ -19,16 +19,15 @@ package vm
 import (
 	"crypto/sha256"
 	"errors"
-	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
+	"github.com/ethereum/go-ethereum/core/vdf"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/bn256"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/harmony-one/vdf/src/vdf_go"
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -422,15 +421,7 @@ func (c *vdfVerify) Run(input []byte) (valid []byte, err error) {
 		"seed", common.ToHex(seed),
 		"output", common.ToHex(output))
 
-	defer func() {
-		if x := recover(); x != nil {
-			log.Error("VDFVerify: verification process panic", "reason", x)
-			valid = false32Byte
-			err = fmt.Errorf("%v", x)
-		}
-	}()
-
-	ok := vdf_go.VerifyVDF(seed, output, int(iteration), int(bitSize))
+	ok := vdf.Instance().Verify(seed, output, iteration, bitSize)
 	log.Trace("VDFVerify", "valid", ok)
 	if ok {
 		return true32Byte, nil
