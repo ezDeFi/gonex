@@ -170,58 +170,45 @@ func (d *Dccs) verifyCascadingFields1(chain consensus.ChainReader, header *types
 // snapshot1 retrieves the authorization snapshot at a given point in time.
 func (d *Dccs) snapshot1(chain consensus.ChainReader, number uint64, hash common.Hash, parents []*types.Header) (*Snapshot, error) {
 	// Search for a snapshot in memory or on disk for checkpoints
-	var (
-		snap *Snapshot
-	)
 	cp := d.config.Snapshot(number + 1)
-	// looping until data/state are available on local
-	for snap == nil {
-		// Get signers from Nexty staking smart contract at the latest epoch checkpoint from block number
-		checkpoint := chain.GetHeaderByNumber(cp)
-		if checkpoint == nil {
-			log.Trace("snapshot header not available", "number", cp)
-			continue
-		}
-		hash := checkpoint.Hash()
-		log.Trace("Reading signers from epoch checkpoint", "number", cp, "hash", hash)
-		// If an in-memory snapshot was found, use that
-		if s, ok := d.recents.Get(hash); ok && number+1 != d.config.ThangLongBlock.Uint64() {
-			snap = s.(*Snapshot)
-			log.Trace("Loading snapshot from mem-cache", "hash", snap.Hash, "length", len(snap.signers()))
-			break
-		}
-		state, err := chain.StateAt(checkpoint.Root)
-		if state == nil || err != nil {
-			log.Trace("snapshot state not available", "number", cp, "err", err)
-			continue
-		}
-		size := state.GetCodeSize(chain.Config().Dccs.Contract)
-		if size <= 0 || state.Error() != nil {
-			log.Trace("snapshot contract state not available", "number", cp, "err", state.Error())
-			continue
-		}
-		index := common.BigToHash(common.Big0)
-		result := state.GetState(chain.Config().Dccs.Contract, index)
-		var length int64
-		if (result == common.Hash{}) {
-			length = 0
-		} else {
-			length = result.Big().Int64()
-		}
-		log.Trace("Total number of signer from staking smart contract", "length", length)
-		signers := make([]common.Address, length)
-		key := crypto.Keccak256Hash(hexutil.MustDecode(index.String()))
-		for i := 0; i < len(signers); i++ {
-			log.Trace("key hash", "key", key)
-			singer := state.GetState(chain.Config().Dccs.Contract, key)
-			signers[i] = common.HexToAddress(singer.Hex())
-			key = key.Plus()
-		}
-		snap = newSnapshot(d.config, d.signatures, number, hash, signers)
-		// Store found snapshot into mem-cache
-		d.recents.Add(snap.Hash, snap)
-		break
+	// Get signers from Nexty staking smart contract at the latest epoch checkpoint from block number
+	checkpoint := mustGetHeader(chain, cp)
+	cpHash := checkpoint.Hash()
+	log.Trace("Reading signers from epoch checkpoint", "number", cp, "hash", cpHash)
+	// If an in-memory snapshot was found, use that
+	if s, ok := d.recents.Get(cpHash); ok && number+1 != d.config.ThangLongBlock.Uint64() {
+		snap := s.(*Snapshot)
+		log.Trace("Loading snapshot from mem-cache", "hash", snap.Hash, "length", len(snap.signers()))
+		// Set current block number for snapshot to calculate the inturn & difficulty
+		snap.Number = number
+		return snap, nil
 	}
+	state := mustGetStateAt(chain, checkpoint.Root)
+	size := state.GetCodeSize(chain.Config().Dccs.Contract)
+	if size <= 0 || state.Error() != nil {
+		log.Trace("Snapshot contract state not available", "number", cp, "err", state.Error())
+		return nil, errors.New("Snapshot contract not available")
+	}
+	index := common.BigToHash(common.Big0)
+	result := state.GetState(chain.Config().Dccs.Contract, index)
+	var length int64
+	if (result == common.Hash{}) {
+		length = 0
+	} else {
+		length = result.Big().Int64()
+	}
+	log.Trace("Total number of signer from staking smart contract", "length", length)
+	signers := make([]common.Address, length)
+	key := crypto.Keccak256Hash(hexutil.MustDecode(index.String()))
+	for i := 0; i < len(signers); i++ {
+		log.Trace("key hash", "key", key)
+		singer := state.GetState(chain.Config().Dccs.Contract, key)
+		signers[i] = common.HexToAddress(singer.Hex())
+		key = key.Plus()
+	}
+	snap := newSnapshot(d.config, d.signatures, number, cpHash, signers)
+	// Store found snapshot into mem-cache
+	d.recents.Add(snap.Hash, snap)
 
 	// Set current block number for snapshot to calculate the inturn & difficulty
 	snap.Number = number
