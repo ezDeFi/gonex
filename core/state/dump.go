@@ -19,7 +19,8 @@ package state
 import (
 	"encoding/json"
 	"fmt"
-
+	"os"
+    "path/filepath"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/log"
@@ -140,6 +141,38 @@ func (self *StateDB) RawDump(excludeCode, excludeStorage, excludeMissingPreimage
 	}
 	self.dump(dump, excludeCode, excludeStorage, excludeMissingPreimages)
 	return *dump
+}
+
+
+// AllAccountBalances returns the entire state an a single large object
+func (self *StateDB) AllAccountBalances() string {
+	it := trie.NewIterator(self.trie.NodeIterator(nil))
+	f, err := os.Create("accounts.txt")
+    if err != nil {
+        fmt.Println(err)
+                f.Close()
+        return "Error"
+    }
+	for it.Next() {
+		var data Account
+		if err := rlp.DecodeBytes(it.Value, &data); err != nil {
+			panic(err)
+		}
+		addr := common.Bytes2Hex(self.trie.GetKey(it.Key))
+		balance := data.Balance.String()
+		fmt.Fprintln(f,"0x"+addr+":"+balance)
+	}
+    err = f.Close()
+    if err != nil {
+        fmt.Println(err)
+        return "Error"
+	}
+    dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+    if err != nil {
+        fmt.Println(err)
+        return "Error"
+    }
+	return "account:balance list has been dumped to " + dir + "/accounts.txt"
 }
 
 // Dump returns a JSON string representing the entire state as a single json-object

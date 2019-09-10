@@ -319,6 +319,21 @@ func (api *PublicDebugAPI) DumpBlock(blockNr rpc.BlockNumber) (state.Dump, error
 	return stateDb.RawDump(false, false, true), nil
 }
 
+// AllAccountBalances retrieve total Balance of NTY.
+func (api *PublicDebugAPI) AllAccountBalances(blockNr rpc.BlockNumber) (string, error) {
+	var block *types.Block
+	block = api.eth.blockchain.GetBlockByNumber(uint64(blockNr))
+	if block == nil {
+		return "Error: ", fmt.Errorf("block #%d not found", blockNr)
+	}
+	stateDb, err := api.eth.BlockChain().StateAt(block.Root())
+	if err != nil {
+		return "Error: ", err
+	}
+	return stateDb.AllAccountBalances(),nil
+}
+
+
 // PrivateDebugAPI is the collection of Ethereum full node APIs exposed over
 // the private debugging endpoint.
 type PrivateDebugAPI struct {
