@@ -209,4 +209,47 @@ contract Absorbable is Orderbook {
         // totalBMT += useHaveAmount ? wantAMT : haveAMT;
         // emit SideFill(initiator, haveAMT, wantAMT);
     }
+
+    /// MUST BE REMOVED ///
+    function testAbsorb(
+        int absorption,
+        address initiator
+    )
+        external
+    {
+        bool isPreemptive = initiator != address(0x0);
+        int amount = absorption;
+        if (isPreemptive) {
+            amount /= 2;
+        }
+
+        dex.Book storage book = books[amount > 0 ? Ask : Bid];
+        bool useHaveAmount = book.haveToken == StablizeToken;
+
+        (uint totalBMT, uint totalAMT) = book.absorb(useHaveAmount, util.abs(amount));
+
+        if (!isPreemptive) {
+            return;
+        }
+
+        // preemptive
+        if (totalAMT == 0 || totalBMT == 0) {
+            // no main absorb, no side absorb
+            return;
+        }
+
+        // book.absorbPreemptive(useHaveAmount, util.abs(amount), lockdown.maker);
+        (uint haveAMT, uint wantAMT) = useHaveAmount ? (totalAMT, totalBMT) : (totalBMT, totalAMT);
+
+        if (haveAMT > book.haveToken.allowance(initiator, address(this)) ||
+            haveAMT > book.haveToken.balanceOf(initiator)) {
+            // not enough allowance for side absorption
+            return;
+        }
+
+        book.haveToken.transferFrom(initiator, book.haveToken.dex(), haveAMT);
+        book.haveToken.dexBurn(haveAMT);
+        book.wantToken.dexMint(wantAMT);
+        book.wantToken.transfer(initiator, wantAMT);
+    }
 }
