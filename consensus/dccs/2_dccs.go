@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
@@ -594,6 +595,7 @@ func (c *Context) finalizeAndAssemble2(header *types.Header, state *state.StateD
 // the local signing credentials.
 func (c *Context) seal2(block *types.Block, results chan<- *types.Block, stop <-chan struct{}) error {
 	header := block.Header()
+	c.debugAnchorChain(header)
 
 	// Sealing the genesis block is not supported
 	number := header.Number.Uint64()
@@ -667,6 +669,33 @@ func (c *Context) seal2(block *types.Block, results chan<- *types.Block, stop <-
 	}()
 
 	return nil
+}
+
+func (c *Context) debugAnchorChain(header *types.Header) {
+	var b strings.Builder
+	queue, err := c.getSealingQueue(header.ParentHash)
+	for anchor := c.getLinkDest(header); anchor != nil && err == nil; anchor, err = c.getAnchorDest(header) {
+		if header.Number.Cmp(anchor.Number) <= 0 {
+			break // no more anchor to process
+		}
+		anchorQueue, _ := c.getSealingQueue(anchor.ParentHash)
+		ratio, broken := queue.commonRatio(anchorQueue)
+		if b.Len() > 0 {
+			if broken {
+				b.WriteRune('=')
+			} else {
+				b.WriteRune('-')
+			}
+		}
+		fmt.Fprintf(&b, "(%v)%v", ratio.RatString(), anchor.Number)
+		header = anchor
+		queue = anchorQueue
+	}
+	if err != nil {
+		log.Error("Failed to crawl anchor chain", "number", header.Number, "err", err)
+	}
+	log.Error("*************************************************************")
+	log.Error(b.String())
 }
 
 func (c *Context) ecrecover(header *types.Header) (common.Address, error) {
