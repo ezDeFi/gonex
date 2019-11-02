@@ -273,6 +273,7 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	// scan backward from parent number for recents and difficulty
 	// somewhat probabilistically optimized, fairly safe nonetheless
 	for hash := parentHash; uint64(len(recents)) < maxDiff*2/3 && n > startLimit; n-- {
+		log.Trace("------------", "n", n)
 		header := c.getHeader(hash, n)
 		if header == nil {
 			log.Error("Header not found", "number", n, "hash", hash, "len(parents)", len(c.parents))
@@ -299,6 +300,7 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	// scan forward to collect the rest of the sealers
 	endLimit := n
 	for n := startLimit + 1; uint64(len(queue.active)) < maxDiff && n < endLimit; n++ {
+		log.Trace("++++++++++++", "n", n)
 		header := c.getHeaderByNumber(n)
 		if header == nil {
 			log.Error("Header not found", "number", n, "len(parents)", len(c.parents))
