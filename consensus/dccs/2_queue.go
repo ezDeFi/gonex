@@ -346,6 +346,7 @@ func (c *Context) crawlSealerApplications(header *types.Header) ([]SealerApplica
 	number := header.Number.Uint64()
 	apps := []SealerApplication{}
 	for header := c.getHeaderByHash(header.MixDigest); header != nil; header = c.getHeaderByHash(header.MixDigest) {
+		log.Trace("crawling", "appNumber", header.Number, "appNumber.Hash", header.Hash(), "cross-link", header.MixDigest)
 		if (header.MixDigest == common.Hash{}) {
 			// reach the CoLoa hardfork (new genesis)
 			break
