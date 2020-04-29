@@ -22,8 +22,11 @@ import (
 	"math"
 	"math/big"
 	"sort"
+	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/time/rate"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/prque"
@@ -255,7 +258,7 @@ type TxPool struct {
 	journal *txJournal  // Journal of local transaction to back up to disk
 
 	pending map[common.Address]*txList   // All currently processable transactions
-	queue   map[common.Address]*txList   // Queued but non-processable transactions
+	queue   map[common.Address]*txList   // Queued but no n-processable transactions
 	beats   map[common.Address]time.Time // Last heartbeat from each known account
 	all     *txLookup                    // All transactions to allow lookups
 	priced  *txPricedList                // All transactions sorted by price
@@ -268,6 +271,8 @@ type TxPool struct {
 	reorgDoneCh     chan chan struct{}
 	reorgShutdownCh chan struct{}  // requests shutdown of scheduleReorgLoop
 	wg              sync.WaitGroup // tracks loop, scheduleReorgLoop
+
+	throttler *Throttler
 }
 
 type txpoolResetRequest struct {
@@ -299,6 +304,7 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 		gasPrice:        new(big.Int).SetUint64(config.PriceLimit),
 		parityLimit:     config.ParityLimit,
 		parityPrice:     new(big.Int).SetUint64(config.ParityPrice),
+		throttler:       NewThrottler(rate.Every(3*time.Second), 18),
 	}
 	pool.locals = newAccountSet(pool.signer)
 	for _, addr := range config.Locals {
@@ -666,6 +672,14 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	}
 
 	return nil
+}
+
+// AllowN reports whether n tx(s) may be accepted for the provided remote host
+func (pool *TxPool) AllowN(remote string, n int) bool {
+	if idx := strings.IndexRune(remote, ':'); idx >= 0 {
+		remote = remote[:idx]
+	}
+	return pool.throttler.AllowN(remote, n)
 }
 
 // add validates a transaction and inserts it into the non-executable queue for later
