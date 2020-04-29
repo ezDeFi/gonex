@@ -95,9 +95,6 @@ type Ethereum struct {
 	networkID     uint64
 	netRPCService *ethapi.PublicNetAPI
 
-	txRateLimit float64
-	txRateBurst int
-
 	lock sync.RWMutex // Protects the variadic fields (e.g. gas price and etherbase)
 }
 

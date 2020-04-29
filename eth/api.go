@@ -162,10 +162,6 @@ func (api *PrivateMinerAPI) SetTxRateLimit(limit float64) bool {
 
 // SetTxRateBurst sets tx throttler limit burst for both peer and API.
 func (api *PrivateMinerAPI) SetTxRateBurst(burst int) bool {
-	api.e.lock.Lock()
-	api.e.txRateBurst = burst
-	api.e.lock.Unlock()
-
 	api.e.txPool.SetTxRateBurst(burst)
 	return true
 }
