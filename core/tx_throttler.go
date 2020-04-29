@@ -56,10 +56,7 @@ func (t *Throttler) peek(key string) (*rate.Limiter, bool) {
 
 // Allow reports whether one event may happen at time now for the provided key
 func (t *Throttler) Allow(key string) bool {
-	t.m.Lock()
-	defer t.m.Unlock()
-
-	return t.get(key).Allow()
+	return t.AllowN(key, 1)
 }
 
 // AllowN reports whether n events may happen at time now for the provided key
@@ -67,13 +64,19 @@ func (t *Throttler) AllowN(key string, n int) bool {
 	t.m.Lock()
 	defer t.m.Unlock()
 
-	return t.get(key).AllowN(time.Now(), n)
+	// WORKAROUND for issue https://github.com/golang/go/issues/18763
+	return t.get(key).AllowN(time.Now(), n) && t.limit > 0
 }
 
 // SetLimit sets a new Limit for all keys.
 func (t *Throttler) SetLimit(newLimit rate.Limit) {
 	t.m.Lock()
 	defer t.m.Unlock()
+
+	// WORKAROUND for issue https://github.com/golang/go/issues/18763
+	if float64(newLimit) < 1e-9 {
+		newLimit = rate.Limit(0)
+	}
 
 	t.limit = newLimit
 
