@@ -164,6 +164,16 @@ func (api *PrivateMinerAPI) SetTxLimitRate(limitRate float64) bool {
 	return true
 }
 
+// SetTxRateBurst sets tx throttler limit burst for both peer and API.
+func (api *PrivateMinerAPI) SetTxRateBurst(burst int) bool {
+	api.e.lock.Lock()
+	api.e.txRateBurst = burst
+	api.e.lock.Unlock()
+
+	api.e.txPool.SetTxRateBurst(burst)
+	return true
+}
+
 // PrivateAdminAPI is the collection of Ethereum full node-related APIs
 // exposed over the private admin endpoint.
 type PrivateAdminAPI struct {

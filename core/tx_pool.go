@@ -685,6 +685,12 @@ func (pool *TxPool) SetTxLimitRate(limitRate float64) {
 	}
 }
 
+// SetTxRateBurst updates tx throttler rate burst for each remote host.
+func (pool *TxPool) SetTxRateBurst(burst int) {
+	pool.throttler.SetBurst(burst)
+	log.Info("Transaction rate burst updated", "burst", burst)
+}
+
 // AllowN reports whether n tx(s) may be accepted for the provided remote host
 func (pool *TxPool) AllowN(remote string, n int) bool {
 	if idx := strings.IndexRune(remote, ':'); idx >= 0 {

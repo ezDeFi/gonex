@@ -643,6 +643,11 @@ web3._extend({
 			call: 'miner_setTxLimitRate',
 			params: 1,
 		}),
+		new web3._extend.Method({
+			name: 'setTxRateBurst',
+			call: 'miner_setTxRateBurst',
+			params: 1,
+		}),
 	],
 	properties: []
 });
