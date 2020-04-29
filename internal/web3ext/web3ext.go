@@ -639,8 +639,8 @@ web3._extend({
 			call: 'miner_getHashrate'
 		}),
 		new web3._extend.Method({
-			name: 'setTxLimitRate',
-			call: 'miner_setTxLimitRate',
+			name: 'setTxRateLimit',
+			call: 'miner_setTxRateLimit',
 			params: 1,
 		}),
 		new web3._extend.Method({

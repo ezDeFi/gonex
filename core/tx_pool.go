@@ -674,14 +674,14 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	return nil
 }
 
-// SetTxLimitRate updates tx throttler limit rate for each remote host.
-func (pool *TxPool) SetTxLimitRate(limitRate float64) {
+// SetTxRateLimit updates tx throttler rate limit for each remote host.
+func (pool *TxPool) SetTxRateLimit(limitRate float64) {
 	if limitRate < 0 {
 		pool.throttler.SetLimit(rate.Inf)
-		log.Info("Transaction limit rate disabled")
+		log.Info("Transaction rate limit disabled")
 	} else {
 		pool.throttler.SetLimit(rate.Limit(limitRate))
-		log.Info("Transaction limit rate updated", "rate", limitRate)
+		log.Info("Transaction rate limit updated", "rate", limitRate)
 	}
 }
 
