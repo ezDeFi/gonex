@@ -65,6 +65,10 @@ var (
 	// configured for the non-zero fee transaction.
 	ErrSpammyUnderpriced = errors.New("spammy transaction underpriced")
 
+	// ErrHeavyUnderpriced is returned if a transaction's gas price is below the minimum
+	// configured for the non-zero fee transaction.
+	ErrHeavyUnderpriced = errors.New("heavy transaction underpriced")
+
 	// ErrUnderparity is returned if a transaction's parity is below the minimum
 	// configured for the transaction pool.
 	ErrUnderparity = errors.New("transaction underparity")
@@ -162,6 +166,7 @@ type TxPoolConfig struct {
 	ParityPrice uint64 // Price (in wei) for 1 parity unit
 
 	SpammyAge        uint64 // Minimum account age (CurrentNumber-MRU) for a tx to be spammy
+	SpammyGas        uint64 // Minimum tx gas for a tx to be spammy
 	SpammyPriceLimit uint64 // PriceLimit for spammy tx
 
 	AccountSlots uint64 // Number of executable transaction slots guaranteed per account
@@ -185,6 +190,7 @@ var DefaultTxPoolConfig = TxPoolConfig{
 	ParityPrice: 13e15, // ~ 273 NTY ~ 0.01 USD for 21000 Tx Gas
 
 	SpammyAge:        10,
+	SpammyGas:        64000,
 	SpammyPriceLimit: 5e15,
 
 	AccountSlots: 16,
@@ -259,6 +265,7 @@ type TxPool struct {
 	parityPrice *big.Int
 
 	spammyAge        uint64
+	spammyGas        uint64
 	spammyPriceLimit uint64
 
 	istanbul bool // Fork indicator whether we are in the istanbul stage.
@@ -320,6 +327,7 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 		throttler:       NewThrottler(rate.Every(3*time.Second), 18),
 
 		spammyAge:        config.SpammyAge,
+		spammyGas:        config.SpammyGas,
 		spammyPriceLimit: config.SpammyPriceLimit,
 	}
 	pool.locals = newAccountSet(pool.signer)
@@ -630,6 +638,13 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	local = local || pool.locals.contains(from) // account may be local even if the transaction arrived from the network
 	if !local && pool.gasPrice.Cmp(gasPrice) > 0 {
 		return ErrUnderpriced
+	}
+
+	if tx.Gas() > pool.spammyGas {
+		// too heavy for zero-fee
+		if gasPrice.Uint64() < pool.spammyPriceLimit {
+			return ErrHeavyUnderpriced
+		}
 	}
 
 	nonce := pool.currentState.GetNonce(from)

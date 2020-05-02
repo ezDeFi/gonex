@@ -387,6 +387,11 @@ var (
 		Usage: "Minimum account age for spammy tx",
 		Value: eth.DefaultConfig.TxPool.SpammyAge,
 	}
+	TxPoolSpammyGasFlag = cli.Uint64Flag{
+		Name:  "txpool.spammygas",
+		Usage: "Maximum gas limit for spammy tx",
+		Value: eth.DefaultConfig.TxPool.SpammyGas,
+	}
 	TxPoolSpammyPriceLimitFlag = cli.Uint64Flag{
 		Name:  "txpool.spammypricelimit",
 		Usage: "PriceLimit for spammy tx",
@@ -1325,6 +1330,9 @@ func setTxPool(ctx *cli.Context, cfg *core.TxPoolConfig) {
 	}
 	if ctx.GlobalIsSet(TxPoolSpammyAgeFlag.Name) {
 		cfg.SpammyAge = ctx.GlobalUint64(TxPoolSpammyAgeFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolSpammyGasFlag.Name) {
+		cfg.SpammyGas = ctx.GlobalUint64(TxPoolSpammyGasFlag.Name)
 	}
 	if ctx.GlobalIsSet(TxPoolSpammyPriceLimitFlag.Name) {
 		cfg.SpammyPriceLimit = ctx.GlobalUint64(TxPoolSpammyPriceLimitFlag.Name)
