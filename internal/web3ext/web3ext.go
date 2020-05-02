@@ -638,6 +638,16 @@ web3._extend({
 			name: 'getHashrate',
 			call: 'miner_getHashrate'
 		}),
+		new web3._extend.Method({
+			name: 'setTxRateLimit',
+			call: 'miner_setTxRateLimit',
+			params: 1,
+		}),
+		new web3._extend.Method({
+			name: 'setTxRateBurst',
+			call: 'miner_setTxRateBurst',
+			params: 1,
+		}),
 	],
 	properties: []
 });

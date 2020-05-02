@@ -219,6 +219,14 @@ func (b *EthAPIBackend) SubscribeLogsEvent(ch chan<- []*types.Log) event.Subscri
 }
 
 func (b *EthAPIBackend) SendTx(ctx context.Context, signedTx *types.Transaction) error {
+	switch remote := ctx.Value("remote").(type) {
+	case string:
+		if !b.eth.txPool.AllowN(remote, 1) {
+			return errors.New(errorToString[ErrThrottled])
+		}
+	default:
+	}
+
 	return b.eth.txPool.AddLocal(signedTx)
 }
 
