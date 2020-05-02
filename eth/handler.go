@@ -727,16 +727,16 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 		if err := msg.Decode(&txs); err != nil {
 			return errResp(ErrDecode, "msg %v: %v", msg, err)
 		}
-		if !pm.txpool.AllowN(p.RemoteAddr().String(), len(txs)) {
-			log.Warn("Peer tx limit rate reached", "peer", p.RemoteAddr())
-			break
-		}
 		for i, tx := range txs {
 			// Validate and mark the remote transaction
 			if tx == nil {
 				return errResp(ErrDecode, "transaction %d is nil", i)
 			}
 			p.MarkTransaction(tx.Hash())
+		}
+		if !pm.txpool.AllowN(p.RemoteAddr().String(), len(txs)) {
+			log.Warn("Peer tx limit rate reached", "peer", p.RemoteAddr())
+			break
 		}
 		pm.txpool.AddRemotes(txs)
 
