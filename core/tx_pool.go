@@ -189,8 +189,8 @@ var DefaultTxPoolConfig = TxPoolConfig{
 	ParityLimit: types.ParityMax,
 	ParityPrice: 13e15, // ~ 273 NTY ~ 0.01 USD for 21000 Tx Gas
 
-	SpammyAge:        10,
-	SpammyGas:        64000,
+	SpammyAge:        0,
+	SpammyGas:        1 << 17,
 	SpammyPriceLimit: 5e15,
 
 	AccountSlots: 16,
