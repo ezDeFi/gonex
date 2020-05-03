@@ -165,6 +165,9 @@ type TxPoolConfig struct {
 	ParityLimit uint64 // Minimum parity to enforce for acceptance into the pool
 	ParityPrice uint64 // Price (in wei) for 1 parity unit
 
+	TxRateLimit float64
+	TxRateBurst uint64
+
 	FreeAgeMin      uint64 // Minimum account age (CurrentNumber-MRU) for zero-fee tx
 	FreeDataSizeMax uint64 // Maximum tx data accepted for zero-fee
 	NonFreePrice    uint64 // PriceLimit for spammy tx
@@ -188,6 +191,9 @@ var DefaultTxPoolConfig = TxPoolConfig{
 
 	ParityLimit: types.ParityMax,
 	ParityPrice: 13e15, // ~ 273 NTY ~ 0.01 USD for 21000 Tx Gas
+
+	TxRateLimit: 1.0 / 3, // 1 tx/3s
+	TxRateBurst: 18,
 
 	FreeAgeMin:      0,
 	FreeDataSizeMax: 4 + 32*16,
@@ -324,7 +330,7 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 		gasPrice:        new(big.Int).SetUint64(config.PriceLimit),
 		parityLimit:     config.ParityLimit,
 		parityPrice:     new(big.Int).SetUint64(config.ParityPrice),
-		throttler:       NewThrottler(rate.Every(3*time.Second), 18),
+		throttler:       NewThrottler(rate.Limit(config.TxRateLimit), int(config.TxRateBurst)),
 
 		freeAgeMin:      config.FreeAgeMin,
 		freeDataSizeMax: config.FreeDataSizeMax,

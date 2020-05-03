@@ -382,6 +382,16 @@ var (
 		Usage: "Price for a parity unit",
 		Value: eth.DefaultConfig.TxPool.ParityPrice,
 	}
+	TxPoolTxRateLimitFlag = cli.Float64Flag{
+		Name:  "txpool.txratelimit",
+		Usage: "Tx throttler rate limit for each remote host",
+		Value: eth.DefaultConfig.TxPool.TxRateLimit,
+	}
+	TxPoolTxRateBurstFlag = cli.Uint64Flag{
+		Name:  "txpool.txrateburst",
+		Usage: "Tx throttler rate burst for each remote host",
+		Value: eth.DefaultConfig.TxPool.TxRateBurst,
+	}
 	TxPoolFreeAgeMinFlag = cli.Uint64Flag{
 		Name:  "txpool.freeagemin",
 		Usage: "Minimum account age for zero-fee tx",

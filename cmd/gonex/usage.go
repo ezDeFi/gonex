@@ -141,6 +141,8 @@ var AppHelpFlagGroups = []flagGroup{
 			utils.TxPoolPriceBumpFlag,
 			utils.TxPoolParityLimitFlag,
 			utils.TxPoolParityPriceFlag,
+			utils.TxPoolTxRateLimitFlag,
+			utils.TxPoolTxRateBurstFlag,
 			utils.TxPoolFreeAgeMinFlag,
 			utils.TxPoolFreeDataSizeMaxFlag,
 			utils.TxPoolNonFreePriceFlag,
