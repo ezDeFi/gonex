@@ -717,6 +717,24 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	return nil
 }
 
+// SetNonFreePrice updates price limit for non-free tx.
+func (pool *TxPool) SetNonFreePrice(price uint64) {
+	pool.nonFreePrice = price
+	log.Info("Non-free price limit updated", "price", price)
+}
+
+// SetFreeDataSizeMax updates maxiumum data size for zero-fee tx.
+func (pool *TxPool) SetFreeDataSizeMax(size uint64) {
+	pool.freeDataSizeMax = size
+	log.Info("Maxiumum data size for zero-fee tx updated", "max size", size)
+}
+
+// SetFreeAgeMin updates minimum account age for zero-fee tx.
+func (pool *TxPool) SetFreeAgeMin(age uint64) {
+	pool.freeAgeMin = age
+	log.Info("Minimum account age for zero-fee tx updated", "min age", age)
+}
+
 // SetTxRateLimit updates tx throttler rate limit for each remote host.
 func (pool *TxPool) SetTxRateLimit(limitRate float64) {
 	if limitRate < 0 {

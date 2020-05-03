@@ -648,6 +648,21 @@ web3._extend({
 			call: 'miner_setTxRateBurst',
 			params: 1,
 		}),
+		new web3._extend.Method({
+			name: 'setNonFreePrice',
+			call: 'miner_setNonFreePrice',
+			params: 1,
+		}),
+		new web3._extend.Method({
+			name: 'setFreeDataSizeMax',
+			call: 'miner_setFreeDataSizeMax',
+			params: 1,
+		}),
+		new web3._extend.Method({
+			name: 'setFreeAgeMin',
+			call: 'miner_setFreeAgeMin',
+			params: 1,
+		}),
 	],
 	properties: []
 });
