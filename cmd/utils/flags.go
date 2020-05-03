@@ -382,6 +382,21 @@ var (
 		Usage: "Price for a parity unit",
 		Value: eth.DefaultConfig.TxPool.ParityPrice,
 	}
+	TxPoolFreeAgeMinFlag = cli.Uint64Flag{
+		Name:  "txpool.freeagemin",
+		Usage: "Minimum account age for zero-fee tx",
+		Value: eth.DefaultConfig.TxPool.FreeAgeMin,
+	}
+	TxPoolFreeDataSizeMaxFlag = cli.Uint64Flag{
+		Name:  "txpool.freedatasizemax",
+		Usage: "Maximum data size (in bytes) for zero-fee tx",
+		Value: eth.DefaultConfig.TxPool.FreeDataSizeMax,
+	}
+	TxPoolNonFreePriceFlag = cli.Uint64Flag{
+		Name:  "txpool.nonfreeprice",
+		Usage: "PriceLimit for spammy tx",
+		Value: eth.DefaultConfig.TxPool.NonFreePrice,
+	}
 	TxPoolAccountSlotsFlag = cli.Uint64Flag{
 		Name:  "txpool.accountslots",
 		Usage: "Minimum number of executable transaction slots guaranteed per account",
@@ -1309,6 +1324,18 @@ func setTxPool(ctx *cli.Context, cfg *core.TxPoolConfig) {
 	}
 	if ctx.GlobalIsSet(TxPoolParityLimitFlag.Name) {
 		cfg.ParityLimit = ctx.GlobalUint64(TxPoolParityLimitFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolParityPriceFlag.Name) {
+		cfg.ParityPrice = ctx.GlobalUint64(TxPoolParityPriceFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolFreeAgeMinFlag.Name) {
+		cfg.FreeAgeMin = ctx.GlobalUint64(TxPoolFreeAgeMinFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolFreeDataSizeMaxFlag.Name) {
+		cfg.FreeDataSizeMax = ctx.GlobalUint64(TxPoolFreeDataSizeMaxFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolNonFreePriceFlag.Name) {
+		cfg.NonFreePrice = ctx.GlobalUint64(TxPoolNonFreePriceFlag.Name)
 	}
 	if ctx.GlobalIsSet(TxPoolAccountSlotsFlag.Name) {
 		cfg.AccountSlots = ctx.GlobalUint64(TxPoolAccountSlotsFlag.Name)
