@@ -88,6 +88,7 @@ var (
 		utils.TxPoolPriceBumpFlag,
 		utils.TxPoolParityLimitFlag,
 		utils.TxPoolFreeAgeMinFlag,
+		utils.TxPoolFreeDataSizeMaxFlag,
 		utils.TxPoolNonFreePriceFlag,
 		utils.TxPoolAccountSlotsFlag,
 		utils.TxPoolGlobalSlotsFlag,
