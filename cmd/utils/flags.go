@@ -382,20 +382,20 @@ var (
 		Usage: "Price for a parity unit",
 		Value: eth.DefaultConfig.TxPool.ParityPrice,
 	}
-	TxPoolSpammyAgeFlag = cli.Uint64Flag{
-		Name:  "txpool.spammyage",
-		Usage: "Minimum account age for spammy tx",
-		Value: eth.DefaultConfig.TxPool.SpammyAge,
+	TxPoolFreeAgeMinFlag = cli.Uint64Flag{
+		Name:  "txpool.freeagemin",
+		Usage: "Minimum account age for zero-fee tx",
+		Value: eth.DefaultConfig.TxPool.FreeAgeMin,
 	}
-	TxPoolFreeDataSizeFlag = cli.Uint64Flag{
-		Name:  "txpool.spammygas",
-		Usage: "Maximum gas limit for spammy tx",
-		Value: eth.DefaultConfig.TxPool.FreeDataSize,
+	TxPoolFreeDataSizeMaxFlag = cli.Uint64Flag{
+		Name:  "txpool.freedatasizemax",
+		Usage: "Maximum data size (in bytes) for zero-fee tx",
+		Value: eth.DefaultConfig.TxPool.FreeDataSizeMax,
 	}
-	TxPoolSpammyPriceLimitFlag = cli.Uint64Flag{
-		Name:  "txpool.spammypricelimit",
+	TxPoolNonFreePriceFlag = cli.Uint64Flag{
+		Name:  "txpool.nonfreeprice",
 		Usage: "PriceLimit for spammy tx",
-		Value: eth.DefaultConfig.TxPool.SpammyPriceLimit,
+		Value: eth.DefaultConfig.TxPool.NonFreePrice,
 	}
 	TxPoolAccountSlotsFlag = cli.Uint64Flag{
 		Name:  "txpool.accountslots",
@@ -1328,14 +1328,14 @@ func setTxPool(ctx *cli.Context, cfg *core.TxPoolConfig) {
 	if ctx.GlobalIsSet(TxPoolParityPriceFlag.Name) {
 		cfg.ParityPrice = ctx.GlobalUint64(TxPoolParityPriceFlag.Name)
 	}
-	if ctx.GlobalIsSet(TxPoolSpammyAgeFlag.Name) {
-		cfg.SpammyAge = ctx.GlobalUint64(TxPoolSpammyAgeFlag.Name)
+	if ctx.GlobalIsSet(TxPoolFreeAgeMinFlag.Name) {
+		cfg.FreeAgeMin = ctx.GlobalUint64(TxPoolFreeAgeMinFlag.Name)
 	}
-	if ctx.GlobalIsSet(TxPoolFreeDataSizeFlag.Name) {
-		cfg.FreeDataSize = ctx.GlobalUint64(TxPoolFreeDataSizeFlag.Name)
+	if ctx.GlobalIsSet(TxPoolFreeDataSizeMaxFlag.Name) {
+		cfg.FreeDataSizeMax = ctx.GlobalUint64(TxPoolFreeDataSizeMaxFlag.Name)
 	}
-	if ctx.GlobalIsSet(TxPoolSpammyPriceLimitFlag.Name) {
-		cfg.SpammyPriceLimit = ctx.GlobalUint64(TxPoolSpammyPriceLimitFlag.Name)
+	if ctx.GlobalIsSet(TxPoolNonFreePriceFlag.Name) {
+		cfg.NonFreePrice = ctx.GlobalUint64(TxPoolNonFreePriceFlag.Name)
 	}
 	if ctx.GlobalIsSet(TxPoolAccountSlotsFlag.Name) {
 		cfg.AccountSlots = ctx.GlobalUint64(TxPoolAccountSlotsFlag.Name)

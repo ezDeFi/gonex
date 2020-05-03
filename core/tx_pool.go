@@ -165,9 +165,9 @@ type TxPoolConfig struct {
 	ParityLimit uint64 // Minimum parity to enforce for acceptance into the pool
 	ParityPrice uint64 // Price (in wei) for 1 parity unit
 
-	SpammyAge        uint64 // Minimum account age (CurrentNumber-MRU) for zero-fee tx
-	FreeDataSize     uint64 // Maximum tx data accepted for zero-fee
-	SpammyPriceLimit uint64 // PriceLimit for spammy tx
+	FreeAgeMin      uint64 // Minimum account age (CurrentNumber-MRU) for zero-fee tx
+	FreeDataSizeMax uint64 // Maximum tx data accepted for zero-fee
+	NonFreePrice    uint64 // PriceLimit for spammy tx
 
 	AccountSlots uint64 // Number of executable transaction slots guaranteed per account
 	GlobalSlots  uint64 // Maximum number of executable transaction slots for all accounts
@@ -189,9 +189,9 @@ var DefaultTxPoolConfig = TxPoolConfig{
 	ParityLimit: types.ParityMax,
 	ParityPrice: 13e15, // ~ 273 NTY ~ 0.01 USD for 21000 Tx Gas
 
-	SpammyAge:        0,
-	FreeDataSize:     4 + 32*16,
-	SpammyPriceLimit: 5e15,
+	FreeAgeMin:      0,
+	FreeDataSizeMax: 4 + 32*16,
+	NonFreePrice:    5e15,
 
 	AccountSlots: 16,
 	GlobalSlots:  4096,
@@ -264,9 +264,9 @@ type TxPool struct {
 	parityLimit uint64
 	parityPrice *big.Int
 
-	spammyAge        uint64
-	freeDataSize     uint64
-	spammyPriceLimit uint64
+	freeAgeMin      uint64
+	freeDataSizeMax uint64
+	nonFreePrice    uint64
 
 	istanbul bool // Fork indicator whether we are in the istanbul stage.
 
@@ -326,9 +326,9 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 		parityPrice:     new(big.Int).SetUint64(config.ParityPrice),
 		throttler:       NewThrottler(rate.Every(3*time.Second), 18),
 
-		spammyAge:        config.SpammyAge,
-		freeDataSize:     config.FreeDataSize,
-		spammyPriceLimit: config.SpammyPriceLimit,
+		freeAgeMin:      config.FreeAgeMin,
+		freeDataSizeMax: config.FreeDataSizeMax,
+		nonFreePrice:    config.NonFreePrice,
 	}
 	pool.locals = newAccountSet(pool.signer)
 	for _, addr := range config.Locals {
@@ -640,9 +640,9 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return ErrUnderpriced
 	}
 
-	if uint64(len(tx.Data())) > pool.freeDataSize {
+	if uint64(len(tx.Data())) > pool.freeDataSizeMax {
 		// too heavy for zero-fee
-		if gasPrice.Uint64() < pool.spammyPriceLimit {
+		if gasPrice.Uint64() < pool.nonFreePrice {
 			return ErrHeavyUnderpriced
 		}
 	}
@@ -668,9 +668,9 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 		accAge := pool.chain.CurrentBlock().NumberU64() - mruNumber
 
-		if accAge < pool.spammyAge {
+		if accAge < pool.freeAgeMin {
 			// too young for zero-fee
-			if gasPrice.Uint64() < pool.spammyPriceLimit {
+			if gasPrice.Uint64() < pool.nonFreePrice {
 				return ErrSpammyUnderpriced
 			}
 		}
