@@ -1128,13 +1128,17 @@ func newRPCTransaction(tx *types.Transaction, blockHash common.Hash, blockNumber
 		Gas:      hexutil.Uint64(tx.Gas()),
 		GasPrice: (*hexutil.Big)(tx.GasPrice()),
 		Hash:     tx.Hash(),
-		Input:    hexutil.Bytes(tx.Data()),
 		Nonce:    hexutil.Uint64(tx.Nonce()),
 		To:       tx.To(),
 		Value:    (*hexutil.Big)(tx.Value()),
 		V:        (*hexutil.Big)(v),
 		R:        (*hexutil.Big)(r),
 		S:        (*hexutil.Big)(s),
+	}
+	if result.To != nil && tx.DataLen() > 4+32*32 && tx.GasPrice().Sign() == 0 {
+		// result.Input = hexutil.Bytes([]byte{})
+	} else {
+		result.Input = hexutil.Bytes(tx.Data())
 	}
 	if tx.Gas() == math.MaxUint64 {
 		// compatibility fix for web3js
