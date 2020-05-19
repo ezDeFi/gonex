@@ -1124,7 +1124,7 @@ func RPCMarshalBlock(block *types.Block, inclTx bool, fullTx bool) (map[string]i
 				return newRPCTransactionFromBlockHash(block, tx.Hash()), nil
 			}
 		}
-		txs := block.Transactions()
+		txs := block.Transactions().WithoutConsensusTx()
 		transactions := make([]interface{}, len(txs))
 		var err error
 		for i, tx := range txs {
@@ -1224,6 +1224,9 @@ func newRPCPendingTransaction(tx *types.Transaction) *RPCTransaction {
 // newRPCTransactionFromBlockIndex returns a transaction that will serialize to the RPC representation.
 func newRPCTransactionFromBlockIndex(b *types.Block, index uint64) *RPCTransaction {
 	txs := b.Transactions()
+	if txs.HasConsensusTx() {
+		index++
+	}
 	if index >= uint64(len(txs)) {
 		return nil
 	}
@@ -1233,6 +1236,9 @@ func newRPCTransactionFromBlockIndex(b *types.Block, index uint64) *RPCTransacti
 // newRPCRawTransactionFromBlockIndex returns the bytes of a transaction given a block and a transaction index.
 func newRPCRawTransactionFromBlockIndex(b *types.Block, index uint64) hexutil.Bytes {
 	txs := b.Transactions()
+	if txs.HasConsensusTx() {
+		index++
+	}
 	if index >= uint64(len(txs)) {
 		return nil
 	}
@@ -1242,7 +1248,7 @@ func newRPCRawTransactionFromBlockIndex(b *types.Block, index uint64) hexutil.By
 
 // newRPCTransactionFromBlockHash returns a transaction that will serialize to the RPC representation.
 func newRPCTransactionFromBlockHash(b *types.Block, hash common.Hash) *RPCTransaction {
-	for idx, tx := range b.Transactions() {
+	for idx, tx := range b.Transactions().WithoutConsensusTx() {
 		if tx.Hash() == hash {
 			return newRPCTransactionFromBlockIndex(b, uint64(idx))
 		}
@@ -1264,7 +1270,7 @@ func NewPublicTransactionPoolAPI(b Backend, nonceLock *AddrLocker) *PublicTransa
 // GetBlockTransactionCountByNumber returns the number of transactions in the block with the given block number.
 func (s *PublicTransactionPoolAPI) GetBlockTransactionCountByNumber(ctx context.Context, blockNr rpc.BlockNumber) *hexutil.Uint {
 	if block, _ := s.b.BlockByNumber(ctx, blockNr); block != nil {
-		n := hexutil.Uint(len(block.Transactions()))
+		n := hexutil.Uint(len(block.Transactions().WithoutConsensusTx()))
 		return &n
 	}
 	return nil
@@ -1273,7 +1279,7 @@ func (s *PublicTransactionPoolAPI) GetBlockTransactionCountByNumber(ctx context.
 // GetBlockTransactionCountByHash returns the number of transactions in the block with the given hash.
 func (s *PublicTransactionPoolAPI) GetBlockTransactionCountByHash(ctx context.Context, blockHash common.Hash) *hexutil.Uint {
 	if block, _ := s.b.BlockByHash(ctx, blockHash); block != nil {
-		n := hexutil.Uint(len(block.Transactions()))
+		n := hexutil.Uint(len(block.Transactions().WithoutConsensusTx()))
 		return &n
 	}
 	return nil
@@ -1391,7 +1397,7 @@ func (s *PublicTransactionPoolAPI) GetTransactionReceipt(ctx context.Context, ha
 		"blockHash":         blockHash,
 		"blockNumber":       hexutil.Uint64(blockNumber),
 		"transactionHash":   hash,
-		"transactionIndex":  hexutil.Uint64(index),
+		"transactionIndex":  hexutil.Uint64(index), // TBD: should index-1 be here?
 		"from":              from,
 		"to":                tx.To(),
 		"gasUsed":           hexutil.Uint64(receipt.GasUsed),

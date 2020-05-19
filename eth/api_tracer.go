@@ -204,7 +204,7 @@ func (api *PrivateDebugAPI) traceChain(ctx context.Context, start, end *types.Bl
 				signer := types.MakeSigner(api.eth.blockchain.Config(), task.block.Number())
 
 				// Trace all the transactions contained within
-				for i, tx := range task.block.Transactions() {
+				for i, tx := range task.block.Transactions().WithoutConsensusTx() {
 					msg, _ := tx.AsMessage(signer)
 					vmctx := core.NewEVMContext(msg, task.block.Header(), api.eth.blockchain, nil)
 
@@ -279,7 +279,7 @@ func (api *PrivateDebugAPI) traceChain(ctx context.Context, start, end *types.Bl
 			}
 			// Send the block over to the concurrent tracers (if not in the fast-forward phase)
 			if number > origin {
-				txs := block.Transactions()
+				txs := block.Transactions().WithoutConsensusTx()
 
 				select {
 				case tasks <- &blockTraceTask{statedb: statedb.Copy(), block: block, rootref: proot, results: make([]*txTraceResult, len(txs))}:
@@ -462,7 +462,7 @@ func (api *PrivateDebugAPI) traceBlock(ctx context.Context, block *types.Block, 
 	var (
 		signer = types.MakeSigner(api.eth.blockchain.Config(), block.Number())
 
-		txs     = block.Transactions()
+		txs     = block.Transactions().WithoutConsensusTx()
 		results = make([]*txTraceResult, len(txs))
 
 		pend = new(sync.WaitGroup)
@@ -564,7 +564,7 @@ func (api *PrivateDebugAPI) standardTraceBlockToFile(ctx context.Context, block 
 		signer = types.MakeSigner(api.eth.blockchain.Config(), block.Number())
 		dumps  []string
 	)
-	for i, tx := range block.Transactions() {
+	for i, tx := range block.Transactions().WithoutConsensusTx() {
 		// Prepare the trasaction for un-traced execution
 		var (
 			msg, _ = tx.AsMessage(signer)
