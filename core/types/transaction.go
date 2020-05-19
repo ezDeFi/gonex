@@ -115,6 +115,11 @@ func newTransaction(nonce uint64, to *common.Address, amount *big.Int, gasLimit 
 	return &Transaction{data: d}
 }
 
+// IsConsensus returns whether the tx is consensus
+func (tx *Transaction) IsConsensus() bool {
+	return tx.data.V.Sign() == 0
+}
+
 // ChainId returns which chain id this transaction was signed for (if at all)
 func (tx *Transaction) ChainId() *big.Int {
 	return deriveChainId(tx.data.V)
@@ -281,6 +286,20 @@ func (tx *Transaction) RawSignatureValues() (v, r, s *big.Int) {
 
 // Transactions is a Transaction slice type for basic sorting.
 type Transactions []*Transaction
+
+// WithoutConsensusTx removes the first tx if it's consensus
+func (s Transactions) WithoutConsensusTx() Transactions {
+	if s.HasConsensusTx() {
+		// remove the consensus txs
+		return s[1:]
+	}
+	return s
+}
+
+// HasConsensusTx rturns whether there's a consensus tx in the list
+func (s Transactions) HasConsensusTx() bool {
+	return len(s) > 0 && s[0].IsConsensus()
+}
 
 // Len returns the length of s.
 func (s Transactions) Len() int { return len(s) }
