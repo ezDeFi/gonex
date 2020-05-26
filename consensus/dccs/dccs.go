@@ -189,7 +189,7 @@ func (d *Dccs) VerifyHeader(chain consensus.ChainReader, header *types.Header, s
 			chain:  chain,
 			engine: d,
 		}
-		return context.verifyHeader2()
+		return context.verifyHeader2(seal)
 	}
 	if chain.Config().IsThangLong(header.Number) {
 		return d.verifyHeader1(chain, header, nil, seal)
@@ -204,6 +204,9 @@ func (d *Dccs) VerifyHeaders(chain consensus.ChainReader, headers []*types.Heade
 	abort := make(chan struct{})
 	results := make(chan error, len(headers))
 
+	// it's fast sync if one of the seal flag is false
+	fastSync := contains(seals, false)
+
 	go func() {
 		for i, header := range headers {
 			var err error
@@ -214,7 +217,10 @@ func (d *Dccs) VerifyHeaders(chain consensus.ChainReader, headers []*types.Heade
 					chain:   chain,
 					engine:  d,
 				}
-				err = context.verifyHeader2()
+				// force full verification for the last header in batch, otherwise,
+				// let the consensus decide which header to fully verify
+				seal := !fastSync || i == len(seals)-1
+				err = context.verifyHeader2(seal)
 			} else if chain.Config().IsThangLong(header.Number) {
 				err = d.verifyHeader1(chain, header, headers[:i], seals[i])
 			} else {
@@ -502,4 +508,16 @@ func ecrecover(header *types.Header, sigcache *lru.ARCCache) (common.Address, er
 
 	sigcache.Add(hash, signer)
 	return signer, nil
+}
+
+func contains(hackstack []bool, needle bool) bool {
+	if hackstack == nil || len(hackstack) == 0 {
+		return false
+	}
+	for _, h := range hackstack {
+		if h == needle {
+			return true
+		}
+	}
+	return false
 }
