@@ -192,9 +192,9 @@ func (d *Dccs) VerifyHeader(chain consensus.ChainReader, header *types.Header, s
 		return context.verifyHeader2()
 	}
 	if chain.Config().IsThangLong(header.Number) {
-		return d.verifyHeader1(chain, header, nil)
+		return d.verifyHeader1(chain, header, nil, seal)
 	}
-	return d.verifyHeader(chain, header, nil)
+	return d.verifyHeader(chain, header, nil, seal)
 }
 
 // VerifyHeaders is similar to VerifyHeader, but verifies a batch of headers. The
@@ -216,9 +216,9 @@ func (d *Dccs) VerifyHeaders(chain consensus.ChainReader, headers []*types.Heade
 				}
 				err = context.verifyHeader2()
 			} else if chain.Config().IsThangLong(header.Number) {
-				err = d.verifyHeader1(chain, header, headers[:i])
+				err = d.verifyHeader1(chain, header, headers[:i], seals[i])
 			} else {
-				err = d.verifyHeader(chain, header, headers[:i])
+				err = d.verifyHeader(chain, header, headers[:i], seals[i])
 			}
 
 			select {
