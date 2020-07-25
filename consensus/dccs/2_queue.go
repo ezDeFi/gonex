@@ -31,6 +31,9 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+const MajorityDividend = 3
+const MajorityDivisor = 4
+
 type SealingQueue struct {
 	hash       common.Hash                 // hash of the header
 	sealer     common.Address              // sealer address of the header
@@ -81,7 +84,8 @@ func (q *SealingQueue) commonRatio(r *SealingQueue) (*big.Rat, bool) {
 	}
 	ratio := big.NewRat(int64(common), int64(len(larger)))
 	// common must be more than super majority of both queues
-	broken := common*3 <= qLen*2 || common*3 <= rLen*2
+	broken := common*MajorityDivisor <= qLen*MajorityDividend ||
+		common*MajorityDivisor <= rLen*MajorityDividend
 	return ratio, broken
 }
 
@@ -216,7 +220,7 @@ func (q *SealingQueue) sealerFromDifficulty(difficulty uint64) common.Address {
 	return queue[pos]
 }
 
-// recents len is MIN(lastActiveLen,activeLen)*2/3
+// recents len is MIN(lastActiveLen,activeLen)*3/4
 func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error) {
 	if q, ok := c.engine.sealingQueueCache.Get(parentHash); ok {
 		// in-memory SealingQueue found
@@ -272,7 +276,7 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	}
 	// scan backward from parent number for recents and difficulty
 	// somewhat probabilistically optimized, fairly safe nonetheless
-	for hash := parentHash; uint64(len(recents)) < maxDiff*2/3 && n > startLimit; n-- {
+	for hash := parentHash; uint64(len(recents)) < maxDiff*MajorityDividend/MajorityDivisor && n > startLimit; n-- {
 		header := c.getHeader(hash, n)
 		if header == nil {
 			log.Error("Header not found", "number", n, "hash", hash, "len(parents)", len(c.parents))
@@ -330,7 +334,7 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	log.Trace("Sealer applications", "apps", b.String())
 
 	// truncate the extra recents
-	for i := len(queue.active) * 2 / 3; i < len(recents); i++ {
+	for i := len(queue.active) * MajorityDividend / MajorityDivisor; i < len(recents); i++ {
 		delete(queue.recent, recents[i])
 	}
 
