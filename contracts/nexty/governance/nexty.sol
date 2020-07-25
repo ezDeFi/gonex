@@ -1,7 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.6.2;
 
-import "node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "node_modules/openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 
 /**
  * @title Nexty sealers management smart contract
@@ -58,9 +57,6 @@ contract NextyGovernance {
     // minimum number of blocks signer has to wait from leaving block to withdraw the fund
     uint256 public stakeLockHeight;
 
-    // NTF token contract, unit used to join Nexty sealers
-    IERC20 public token;
-
     event Deposited(address _sealer, uint _amount);
     event Joined(address _sealer, address _signer);
     event Left(address _sealer, address _signer);
@@ -106,8 +102,7 @@ contract NextyGovernance {
     /**
     * contract initialize
     */
-    constructor(address _token, uint256 _stakeRequire, uint256 _stakeLockHeight, address[] memory _signers) public {
-        token = IERC20(_token);
+    constructor(uint256 _stakeRequire, uint256 _stakeLockHeight, address[] memory _signers) public {
         stakeRequire = _stakeRequire;
         stakeLockHeight = _stakeLockHeight;
         for (uint i = 0; i < _signers.length; i++) {
@@ -133,22 +128,23 @@ contract NextyGovernance {
         for (uint i = 0; i < signers.length; i++) {
             if (_signer == signers[i]) {
                 signers[i] = signers[signers.length - 1];
-                signers.length--;
+                signers.pop();
                 return;
             }
         }
     }
 
-    /**
-    * Transfer the NTF from token holder to registration contract.
-    * Sealer might have to approve contract to transfer an amount of NTF before calling this function.
-    * @param _amount NTF Tokens to deposit
-    */
-    function deposit(uint256 _amount) public returns (bool) {
-        token.transferFrom(msg.sender, address(this), _amount);
+    function deposit() external payable {
+        _deposit(msg.value);
+    }
+
+    receive() external payable {
+        _deposit(msg.value);
+    }
+
+    function _deposit(uint256 _amount) internal {
         account[msg.sender].balance = (account[msg.sender].balance).add(_amount);
         emit Deposited(msg.sender, _amount);
-        return true;
     }
 
     /**
@@ -188,7 +184,7 @@ contract NextyGovernance {
         uint256 amount = account[msg.sender].balance;
         account[msg.sender].balance = 0;
         account[msg.sender].status = Status.WITHDRAWN;
-        token.transfer(msg.sender, amount);
+        msg.sender.transfer(amount);
         emit Withdrawn(msg.sender, amount);
         return true;
     }

@@ -4,11 +4,10 @@
   "description": "Nexty Consensus Contract",
   "scripts": {
     "compile": "solc nexty.sol",
-    "build": "../../../build/bin/abigen -sol=nexty.sol --pkg=contract -out=nexty.go"
+    "build": "../../../build/bin/abigen -sol=nexty.sol --pkg=governance -out=nexty.go"
   },
   "author": "nexty.io",
   "dependencies": {
-    "openzeppelin-solidity": "^2.1.2"
+    "@openzeppelin/contracts": "^3.1.0"
   }
 }
-
