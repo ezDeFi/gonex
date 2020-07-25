@@ -340,6 +340,18 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	}
 	log.Trace("Sealer applications", "apps", b.String())
 
+	// the first sealer applications is in the genesis extra
+	if parent.Number.Uint64() < c.engine.config.LeakDuration {
+		sealers := c.genesisSealers()
+		count := int(c.engine.config.LeakDuration - parent.Number.Uint64())
+		if len(sealers) < count {
+			count = len(sealers)
+		}
+		for i := 0; i < count; i++ {
+			addActive(sealers[i])
+		}
+	}
+
 	// truncate the extra recents
 	for i := len(queue.active) * MajorityDividend / MajorityDivisor; i < len(recents); i++ {
 		delete(queue.recent, recents[i])
@@ -348,6 +360,21 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	// Store found snapshot into mem-cache
 	c.engine.sealingQueueCache.Add(queue.hash, &queue)
 	return &queue, nil
+}
+
+// sealer in genesis extra reversed
+func (c *Context) genesisSealers() []common.Address {
+	c.engine.genesisSealersOnce.Do(func() {
+		genesis := c.chain.GetHeaderByNumber(0)
+		extra := genesis.Extra[32 : len(genesis.Extra)-65]
+		// assert: len(extra) % common.AddressLength == 0
+		sealers := make([]common.Address, 0, len(extra)/common.AddressLength)
+		for index := len(extra) - common.AddressLength; index >= 0; index -= common.AddressLength {
+			sealers = append(sealers, common.BytesToAddress(extra[index:index+common.AddressLength]))
+		}
+		c.engine.genesisSealers = sealers
+	})
+	return c.engine.genesisSealers
 }
 
 // crawl back the sealer applications skip-list

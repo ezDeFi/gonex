@@ -768,6 +768,10 @@ func (d *Dccs) calcDelayTimeForOffset(pos int) time.Duration {
 }
 
 func (c *Context) ecrecover(header *types.Header) (common.Address, error) {
+	if header.Number.Sign() == 0 {
+		// use the last address recorded in extra field of genesis block
+		return c.genesisSealers()[0], nil
+	}
 	return ecrecover(header, c.engine.signatures)
 }
 

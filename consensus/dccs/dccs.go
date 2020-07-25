@@ -130,6 +130,9 @@ type Dccs struct {
 	config *params.DccsConfig // Consensus engine configuration parameters
 	db     ethdb.Database     // Database to store and retrieve snapshot checkpoints
 
+	genesisSealers     []common.Address
+	genesisSealersOnce sync.Once
+
 	recents    *lru.ARCCache // Snapshots for recent block to speed up reorgs
 	signatures *lru.ARCCache // Signatures of recent blocks to speed up mining
 
