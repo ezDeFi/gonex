@@ -366,17 +366,15 @@ contract Preemptivable is Absorbable {
 
     // expensive calculation, only consensus can affort this
     function winningProposal() internal view returns(address, uint) {
-        int globalRequirement = int(globalSuccessRank - globalSuccessRank / PARAM_TOLERANCE);
+        int rankRequirement = int(globalSuccessRank - globalSuccessRank / PARAM_TOLERANCE);
+        uint durationRequirement = globalLockdownExpiration / MIN_VOTING_DURATION;
         int bestRank = 0;
         address bestMaker = ZERO_ADDRESS;
+        bool enoughVotingTime;
         for (uint i = 0; i < proposals.count(); ++i) {
             absn.Proposal storage proposal = proposals.get(i);
-            if (block.number - proposal.number < globalLockdownExpiration / MIN_VOTING_DURATION) {
-                // not enough time for voting
-                continue;
-            }
             int rank = calcRank(proposal);
-            if (rank < globalRequirement) {
+            if (rank < rankRequirement) {
                 // not good enough
                 continue;
             }
@@ -384,6 +382,13 @@ contract Preemptivable is Absorbable {
                 bestRank = rank;
                 bestMaker = proposal.maker;
             }
+            // there's atleast 1 activable proposal
+            if (!enoughVotingTime && durationRequirement <= block.number - proposal.number) {
+                enoughVotingTime = true;
+            }
+        }
+        if (!enoughVotingTime) {
+            return (ZERO_ADDRESS, 0);
         }
         return (bestMaker, uint(bestRank));
     }
