@@ -502,8 +502,7 @@ func (pool *TxPool) SetParityLimit(parityLimit uint64) {
 	defer pool.mu.Unlock()
 
 	pool.parityLimit = parityLimit
-	if parityLimit == types.ParityUndefined ||
-		!pool.chainconfig.IsThangLong(pool.chain.CurrentBlock().Number()) {
+	if parityLimit == types.ParityUndefined {
 		return
 	}
 	for _, tx := range pool.priced.Cap(func(tx *types.Transaction) bool {
@@ -659,26 +658,23 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return ErrNonceTooLow
 	}
 
-	var mruNumber uint64
-	if pool.chainconfig.IsThangLong(pool.chain.CurrentBlock().Number()) {
-		mruNumber = pool.currentState.GetMRUNumber(from)
-		if mruNumber == 0 {
-			if !pool.currentState.Exist(from) {
-				// new account is treated as freshly used
-				mruNumber = pool.chain.CurrentBlock().NumberU64()
-			} else {
-				// old account from pre-hardfork
-				mruNumber = pool.chainconfig.Dccs.ThangLongBlock.Uint64()
-			}
+	mruNumber := pool.currentState.GetMRUNumber(from)
+	if mruNumber == 0 {
+		if !pool.currentState.Exist(from) {
+			// new account is treated as freshly used
+			mruNumber = pool.chain.CurrentBlock().NumberU64()
+		} else {
+			// // old account from pre-hardfork
+			// mruNumber = pool.chainconfig.Dccs.ThangLongBlock.Uint64()
 		}
+	}
 
-		accAge := pool.chain.CurrentBlock().NumberU64() - mruNumber
+	accAge := pool.chain.CurrentBlock().NumberU64() - mruNumber
 
-		if accAge < pool.freeAgeMin {
-			// too young for zero-fee
-			if gasPrice.Uint64() < pool.nonFreePrice {
-				return ErrSpammyUnderpriced
-			}
+	if accAge < pool.freeAgeMin {
+		// too young for zero-fee
+		if gasPrice.Uint64() < pool.nonFreePrice {
+			return ErrSpammyUnderpriced
 		}
 	}
 
@@ -697,27 +693,25 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return ErrIntrinsicGas
 	}
 
-	if pool.chainconfig.IsThangLong(pool.chain.CurrentBlock().Number()) {
-		if !tx.HasParity() {
-			parity := mruNumber + extrinsicParity(tx)
+	if !tx.HasParity() {
+		parity := mruNumber + extrinsicParity(tx)
 
-			if gasPrice.Sign() > 0 {
-				priceParity := gasPrice.Div(gasPrice, pool.parityPrice).Uint64()
+		if gasPrice.Sign() > 0 {
+			priceParity := gasPrice.Div(gasPrice, pool.parityPrice).Uint64()
 
-				if parity <= priceParity {
-					// ParityMin (1) has the highest priority
-					parity = types.ParityMin
-				} else {
-					parity -= priceParity
-				}
+			if parity <= priceParity {
+				// ParityMin (1) has the highest priority
+				parity = types.ParityMin
+			} else {
+				parity -= priceParity
 			}
-
-			tx.SetParity(parity)
 		}
 
-		if !local && pool.parityLimit < tx.Parity() {
-			return ErrUnderparity
-		}
+		tx.SetParity(parity)
+	}
+
+	if !local && pool.parityLimit < tx.Parity() {
+		return ErrUnderparity
 	}
 
 	return nil

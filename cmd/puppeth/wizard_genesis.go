@@ -29,11 +29,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/deployer"
-	"github.com/ethereum/go-ethereum/contracts/nexty/ntf"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
@@ -116,15 +112,12 @@ func (w *wizard) makeGenesis() {
 		genesis.Difficulty = big.NewInt(1)
 		genesis.Config.Dccs = &params.DccsConfig{
 			Period: 2,
-			Epoch:  30000,
+
 			// Stake params
-			StakeRequire:    100,
+			StakeRequire:    20000,
 			StakeLockHeight: 24 * 60 * 60 / 2,
-			// ThangLong hardfork
-			ThangLongBlock: common.Big0,
-			ThangLongEpoch: 3000,
-			// CoLoa hardfork
-			CoLoaBlock:              common.Big0,
+
+			// r2PoS
 			LeakDuration:            1024,
 			ApplicationConfirmation: 128,
 			RandomSeedIteration:     20000000, // around 128 seconds
@@ -139,10 +132,6 @@ func (w *wizard) makeGenesis() {
 		fmt.Println()
 		fmt.Println("How many seconds should blocks take? (default = 2)")
 		genesis.Config.Dccs.Period = uint64(w.readDefaultInt(2))
-
-		fmt.Println()
-		fmt.Println("How many blocks should epoch take? (default = 30000)")
-		genesis.Config.Dccs.Epoch = uint64(w.readDefaultInt(30000))
 
 		// We also need the initial list of signers
 		fmt.Println()
@@ -172,51 +161,14 @@ func (w *wizard) makeGenesis() {
 		}
 
 		fmt.Println()
-		fmt.Printf("Which block should Thang Long come into effect? (default = %v)\n", genesis.Config.Dccs.ThangLongBlock)
-		genesis.Config.Dccs.ThangLongBlock = w.readDefaultBigInt(genesis.Config.Dccs.ThangLongBlock)
-
-		fmt.Println()
-		fmt.Printf("How many blocks should epoch take after the Thang Long hardfork? (default = %v)\n", genesis.Config.Dccs.ThangLongEpoch)
-		genesis.Config.Dccs.ThangLongEpoch = uint64(w.readDefaultInt(int(genesis.Config.Dccs.ThangLongEpoch)))
-
-		fmt.Println()
-		fmt.Printf("How many NTF is required to join sealing? (default = %v)\n", genesis.Config.Dccs.StakeRequire)
+		fmt.Printf("How many coin is required to join sealing? (default = %v)\n", genesis.Config.Dccs.StakeRequire)
 		genesis.Config.Dccs.StakeRequire = uint64(w.readDefaultInt(int(genesis.Config.Dccs.StakeRequire)))
 
 		fmt.Println()
-		fmt.Printf("How many block to lock the NTF after a sealer leaving? (default = %v)\n", genesis.Config.Dccs.StakeLockHeight)
+		fmt.Printf("How many block to lock the coin after a sealer leaving? (default = %v)\n", genesis.Config.Dccs.StakeLockHeight)
 		genesis.Config.Dccs.StakeLockHeight = uint64(w.readDefaultInt(int(genesis.Config.Dccs.StakeLockHeight)))
 
-		// Generate nexty token foundation contract
-		fmt.Println()
-		fmt.Println("Which account is allowed to be the onwer of NTF token contract? (optional)")
-		var onwer *common.Address
-		if address := w.readAddress(); address != nil {
-			onwer = address
-		}
-		if onwer != nil {
-			code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
-				address, _, _, err := ntf.DeployNtfToken(auth, sim, *onwer)
-				return address, err
-			})
-			if err != nil {
-				fmt.Println("Can't deploy nexty foundation token smart contract")
-				return
-			}
-
-			genesis.Alloc[params.TokenAddress] = core.GenesisAccount{
-				Balance: big.NewInt(0),
-				Code:    code,
-				Storage: storage,
-			}
-		}
-
-		// CoLoa hardfork enabled
-		fmt.Println()
-		fmt.Printf("Which block should CoLoa come into effect? (default = %v)\n", genesis.Config.Dccs.CoLoaBlock)
-		genesis.Config.Dccs.CoLoaBlock = w.readDefaultBigInt(genesis.Config.Dccs.CoLoaBlock)
-		genesis.Config.IstanbulBlock = genesis.Config.Dccs.CoLoaBlock
-
+		// r2PoS
 		fmt.Println()
 		fmt.Printf("After how many block of inactivity should a sealer is kicked out? (default = %v)\n", genesis.Config.Dccs.LeakDuration)
 		genesis.Config.Dccs.LeakDuration = uint64(w.readDefaultInt(int(genesis.Config.Dccs.LeakDuration)))
@@ -371,12 +323,6 @@ func (w *wizard) manageGenesis() {
 		w.conf.Genesis.Config.PetersburgBlock = w.readDefaultBigInt(w.conf.Genesis.Config.PetersburgBlock)
 		if w.conf.Genesis.Config.PetersburgBlock == nil {
 			w.conf.Genesis.Config.PetersburgBlock = w.conf.Genesis.Config.ConstantinopleBlock
-		}
-
-		if w.conf.Genesis.Config.Dccs != nil {
-			fmt.Println()
-			fmt.Printf("Which block should ThangLong come into effect? (default = %v)\n", w.conf.Genesis.Config.Dccs.ThangLongBlock)
-			w.conf.Genesis.Config.Dccs.ThangLongBlock = w.readDefaultBigInt(w.conf.Genesis.Config.Dccs.ThangLongBlock)
 		}
 
 		fmt.Println()

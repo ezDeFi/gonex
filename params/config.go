@@ -42,7 +42,6 @@ var (
 	GoerliGenesisHash  = common.HexToHash("0xbf7e331f7f7c1dd2e05159666b3bf8bc7a8a3a9eb1d518969eab529dd9b88c1a")
 	ZeroAddress        = common.HexToAddress("0x0000000000000000000000000000000000000000")
 	ExecAddress        = common.HexToAddress("0x1111111111111111111111111111111111111111")
-	TokenAddress       = common.HexToAddress("0x2c783ad80ff980ec75468477e3dd9f86123ecbda") // NTF token contract address
 	GovernanceAddress  = common.HexToAddress("0x12345")
 	// CoLoa contract addresses
 	SeigniorageAddress   = common.HexToAddress("0x23456") // Seigniorage contract address
@@ -75,24 +74,20 @@ var (
 		HomesteadBlock:      big.NewInt(1),
 		DAOForkBlock:        nil,
 		DAOForkSupport:      true,
-		EIP150Block:         big.NewInt(2),
+		EIP150Block:         big.NewInt(1),
 		EIP150Hash:          common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000"),
-		EIP155Block:         big.NewInt(3),
+		EIP155Block:         big.NewInt(1),
 		EIP158Block:         big.NewInt(3),
 		ByzantiumBlock:      big.NewInt(4),
-		ConstantinopleBlock: big.NewInt(15360000),
-		PetersburgBlock:     big.NewInt(15360000),
-		IstanbulBlock:       big.NewInt(25600000),
+		ConstantinopleBlock: big.NewInt(4),
+		PetersburgBlock:     big.NewInt(4),
+		IstanbulBlock:       big.NewInt(4),
 		Dccs: &DccsConfig{
 			Period: BlockSeconds,
-			Epoch:  30000,
-			// ThangLong hard-fork
-			StakeRequire:    50000,
+			// Stake params
+			StakeRequire:    20000,
 			StakeLockHeight: 30000,
-			ThangLongBlock:  big.NewInt(15360000),
-			ThangLongEpoch:  3000,
-			// CoLoa hard-fork
-			CoLoaBlock:              big.NewInt(25600000),
+			// r2PoS
 			LeakDuration:            1024,
 			ApplicationConfirmation: 128,
 			RandomSeedIteration:     20000000, // around 128 seconds
@@ -138,19 +133,15 @@ var (
 		EIP155Block:         big.NewInt(3),
 		EIP158Block:         big.NewInt(3),
 		ByzantiumBlock:      big.NewInt(4),
-		ConstantinopleBlock: big.NewInt(300000),
-		PetersburgBlock:     big.NewInt(300000),
-		IstanbulBlock:       big.NewInt(4295000),
+		ConstantinopleBlock: big.NewInt(4),
+		PetersburgBlock:     big.NewInt(4),
+		IstanbulBlock:       big.NewInt(4),
 		Dccs: &DccsConfig{
 			Period: 2,
-			Epoch:  30000,
-			// ThangLong hard-fork
-			StakeRequire:    500,
+			// Stake params
+			StakeRequire:    20000,
 			StakeLockHeight: 3000,
-			ThangLongBlock:  big.NewInt(300000),
-			ThangLongEpoch:  300,
-			// CoLoa hard-fork
-			CoLoaBlock:              big.NewInt(4295000),
+			// r2PoS
 			LeakDuration:            MainnetChainConfig.Dccs.LeakDuration / 10,
 			ApplicationConfirmation: MainnetChainConfig.Dccs.ApplicationConfirmation / 10,
 			RandomSeedIteration:     MainnetChainConfig.Dccs.RandomSeedIteration / 10,
@@ -206,23 +197,7 @@ var (
 	}
 
 	// DccsChainConfig contains the chain parameters to run a node on the Nexty test network.
-	DccsChainConfig = &ChainConfig{
-		ChainID:             big.NewInt(66666),
-		HomesteadBlock:      big.NewInt(1),
-		DAOForkBlock:        nil,
-		DAOForkSupport:      true,
-		EIP150Block:         big.NewInt(2),
-		EIP150Hash:          common.HexToHash("0x9b095b36c15eaf13044373aef8ee0bd3a382a5abb92e402afa44b8249c3a90e9"),
-		EIP155Block:         big.NewInt(3),
-		EIP158Block:         big.NewInt(3),
-		ByzantiumBlock:      big.NewInt(1035301),
-		ConstantinopleBlock: nil,
-		PetersburgBlock:     nil,
-		Dccs: &DccsConfig{
-			Period: 2,
-			Epoch:  30000,
-		},
-	}
+	DccsChainConfig = MainnetChainConfig
 
 	// RinkebyTrustedCheckpoint contains the light client trusted checkpoint for the Rinkeby test network.
 	RinkebyTrustedCheckpoint = &TrustedCheckpoint{
@@ -303,7 +278,7 @@ var (
 	//
 	// This configuration is intentionally not using keyed fields to force anyone
 	// adding flags to the config to also have to set these fields.
-	AllDccsProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, &DccsConfig{Period: 0, Epoch: 30000, ThangLongBlock: big.NewInt(0), ThangLongEpoch: 3000}}
+	AllDccsProtocolChanges = &ChainConfig{big.NewInt(1337), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, &DccsConfig{Period: 0}}
 
 	TestChainConfig = &ChainConfig{big.NewInt(1), big.NewInt(0), nil, false, big.NewInt(0), common.Hash{}, big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), big.NewInt(0), nil, nil, new(EthashConfig), nil, nil}
 	TestRules       = TestChainConfig.Rules(new(big.Int))
@@ -406,71 +381,29 @@ func (c *CliqueConfig) String() string {
 // All epoch changing hardforks must have the activate block number divisible by both old and new epoch.
 type DccsConfig struct {
 	Period uint64 `json:"period"` // Number of seconds between blocks to enforce
-	Epoch  uint64 `json:"epoch"`  // Epoch length to reset votes and checkpoint
 	// Governance contract stake params
 	StakeRequire    uint64 `json:"stakeRequire"`    // stake requirement
 	StakeLockHeight uint64 `json:"stakeLockHeight"` // lock time (in blocks) after leaving
-	// ThangLong hardfork
-	ThangLongBlock *big.Int `json:"thangLongBlock,omitempty"` // ThangLong switch block (nil = no fork, 0 = already activated)
-	ThangLongEpoch uint64   `json:"thangLongEpoch"`           // Epoch length to reset votes and checkpoint
-	// CoLoa hardfork
-	CoLoaBlock              *big.Int `json:"coLoaBlock,omitempty"`
-	LeakDuration            uint64   `json:"leakDuration,omitempty"` // Inactivity leak duration in blocks
-	ApplicationConfirmation uint64   `json:"applicationConfirmation,omitempty"`
-	RandomSeedIteration     uint64   `json:"randomSeedIteration,omitempty"`
-	PriceSamplingDuration   uint64   `json:"priceSamplingDuration"` // number of blocks to take price samples (a week)
-	PriceSamplingInterval   uint64   `json:"priceSamplingInterval"` // the largest prime number of blocks in 10 minutes
-	AbsorptionDuration      uint64   `json:"absorptionDuration"`    // each block can absorb a maximum of targetAbsorption/absorptionDuration (half a week)
-	AbsorptionExpiration    uint64   `json:"absorptionExpiration"`  // number of blocks that the absorption will be expired (a week)
-	SlashingRate            uint64   `json:"slashingRate"`          // slashing rate
-	LockdownExpiration      uint64   `json:"lockdownExpiration"`    // number of blocks that the lockdown will be expired (2 weeks)
+	// r2PoS
+	LeakDuration            uint64 `json:"leakDuration,omitempty"` // Inactivity leak duration in blocks
+	ApplicationConfirmation uint64 `json:"applicationConfirmation,omitempty"`
+	RandomSeedIteration     uint64 `json:"randomSeedIteration,omitempty"`
+	PriceSamplingDuration   uint64 `json:"priceSamplingDuration"` // number of blocks to take price samples (a week)
+	PriceSamplingInterval   uint64 `json:"priceSamplingInterval"` // the largest prime number of blocks in 10 minutes
+	AbsorptionDuration      uint64 `json:"absorptionDuration"`    // each block can absorb a maximum of targetAbsorption/absorptionDuration (half a week)
+	AbsorptionExpiration    uint64 `json:"absorptionExpiration"`  // number of blocks that the absorption will be expired (a week)
+	SlashingRate            uint64 `json:"slashingRate"`          // slashing rate
+	LockdownExpiration      uint64 `json:"lockdownExpiration"`    // number of blocks that the lockdown will be expired (2 weeks)
 }
 
 // IsPriceBlock returns whether a block could include a price
 func (c *DccsConfig) IsPriceBlock(number uint64) bool {
-	if c.IsCoLoa(new(big.Int).SetUint64(number)) {
-		return number%c.PriceSamplingInterval == 0
-	}
-	return false
-}
-
-// PositionInEpoch returns the offset of a block from the start of an epoch
-func (c *DccsConfig) PositionInEpoch(number uint64) uint64 {
-	if c.IsThangLong(new(big.Int).SetUint64(number)) {
-		return number % c.ThangLongEpoch
-	}
-	return number % c.Epoch
-}
-
-// IsCheckpoint returns whether a block is at the start of an epoch
-func (c *DccsConfig) IsCheckpoint(number uint64) bool {
-	return c.PositionInEpoch(number) == 0
-}
-
-// Checkpoint returns the epoch block for this block
-func (c *DccsConfig) Checkpoint(number uint64) uint64 {
-	return number - c.PositionInEpoch(number)
-}
-
-// Snapshot returns the snapshot block for this block's epoch.
-// Snapshot is (Checkpoint - CanonicalDepth) for ThangLong consensus.
-func (c *DccsConfig) Snapshot(number uint64) uint64 {
-	// Get the checkpoint first
-	cp := c.Checkpoint(number)
-	// Get genesis block as checkpoint for 1st epoch
-	if cp <= CanonicalDepth {
-		return 0
-	}
-	// Get the state from canonical chain to ensure the chain and state are not in sidefork
-	return cp - CanonicalDepth
+	return number%c.PriceSamplingInterval == 0
 }
 
 // String implements the stringer interface, returning the consensus engine details.
 func (c *DccsConfig) String() string {
-	return fmt.Sprintf("dccs {ThangLong: %v Epoch: %v CoLoa: %v LeakDuration: %v ApplicationConfirmation: %v RandomSeedIteration: %v PriceSamplingDuration: %v PriceSamplingInterval: %v AbsorptionDuration: %v AbsorptionExpiration: %v SlashingRate: %v LockdownExpiration: %v}",
-		c.ThangLongBlock,
-		c.ThangLongEpoch,
-		c.CoLoaBlock,
+	return fmt.Sprintf("dccs {LeakDuration: %v ApplicationConfirmation: %v RandomSeedIteration: %v PriceSamplingDuration: %v PriceSamplingInterval: %v AbsorptionDuration: %v AbsorptionExpiration: %v SlashingRate: %v LockdownExpiration: %v}",
 		c.LeakDuration,
 		c.ApplicationConfirmation,
 		c.RandomSeedIteration,
@@ -562,54 +495,6 @@ func (c *ChainConfig) IsIstanbul(num *big.Int) bool {
 // IsEWASM returns whether num represents a block number after the EWASM fork
 func (c *ChainConfig) IsEWASM(num *big.Int) bool {
 	return isForked(c.EWASMBlock, num)
-}
-
-// IsThangLongPreparationBlock returns whether num represents a block number exactly at the ThangLong Preparation
-func (c *ChainConfig) IsThangLongPreparationBlock(num *big.Int) bool {
-	return c.Dccs != nil && c.Dccs.ThangLongBlock != nil && c.Dccs.IsThangLongPreparationBlock(num)
-}
-
-// IsSnapshotBlock returns whether num represents a block number exactly at the snapshot block of an epoch.
-func (c *ChainConfig) IsSnapshotBlock(num *big.Int) bool {
-	if c.Dccs == nil || c.Dccs.ThangLongBlock == nil {
-		return false
-	}
-	forBlock := new(big.Int).SetUint64(CanonicalDepth)
-	forBlock.Add(num, forBlock)
-	return c.Dccs.IsThangLong(forBlock) && c.Dccs.IsCheckpoint(forBlock.Uint64())
-}
-
-// IsThangLongPreparationBlock returns whether num represents a block number exactly at the ThangLong Preparation
-// ThangLong preparation block is hard-coded to 32 blocks before the ThangLong hard-fork
-func (c *DccsConfig) IsThangLongPreparationBlock(num *big.Int) bool {
-	if c.ThangLongBlock == nil {
-		return false
-	}
-	preparationBlock := big.NewInt(1)
-	if c.ThangLongBlock.Cmp(common.Big32) > 0 {
-		preparationBlock = preparationBlock.Sub(c.ThangLongBlock, common.Big32)
-	}
-	return preparationBlock.Cmp(num) == 0
-}
-
-// IsThangLong returns whether num represents a block number after the ThangLong fork
-func (c *ChainConfig) IsThangLong(num *big.Int) bool {
-	return c.Dccs != nil && c.Dccs.IsThangLong(num)
-}
-
-// IsThangLong returns whether num represents a block number after the ThangLong fork
-func (c *DccsConfig) IsThangLong(num *big.Int) bool {
-	return isForked(c.ThangLongBlock, num)
-}
-
-// IsCoLoa returns whether num represents a block number after the CoLoa fork
-func (c *ChainConfig) IsCoLoa(num *big.Int) bool {
-	return c.Dccs != nil && c.Dccs.IsCoLoa(num)
-}
-
-// IsCoLoa returns whether num represents a block number after the CoLoa fork
-func (c *DccsConfig) IsCoLoa(num *big.Int) bool {
-	return isForked(c.CoLoaBlock, num)
 }
 
 // CheckCompatible checks whether scheduled fork transitions have been imported
@@ -704,9 +589,7 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 		return newCompatError("ewasm fork block", c.EWASMBlock, newcfg.EWASMBlock)
 	}
 	if c.Dccs != nil && newcfg.Dccs != nil {
-		if isForkIncompatible(c.Dccs.ThangLongBlock, newcfg.Dccs.ThangLongBlock, head) {
-			return newCompatError("Thang Long fork block", c.Dccs.ThangLongBlock, newcfg.Dccs.ThangLongBlock)
-		}
+		// isForkIncompatible for future DCCS hardfork
 	}
 	return nil
 }
@@ -794,7 +677,5 @@ func (c *ChainConfig) Rules(num *big.Int) Rules {
 		IsConstantinople: c.IsConstantinople(num),
 		IsPetersburg:     c.IsPetersburg(num),
 		IsIstanbul:       c.IsIstanbul(num),
-		IsThangLong:      c.IsThangLong(num),
-		IsCoLoa:          c.IsCoLoa(num),
 	}
 }

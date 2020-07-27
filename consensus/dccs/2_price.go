@@ -73,13 +73,13 @@ func newPriceEngine(conf *params.DccsConfig, priceServiceURL string) *PriceEngin
 	maxPriceCount := int(conf.PriceSamplingDuration / conf.PriceSamplingInterval)
 	e.headerPrices, err = lru.New(maxPriceCount * 3 / 2) // add some extra buffer for values in forks
 	if err != nil {
-		log.Crit("Unable to create the header price cache", "CoLoa block", conf.CoLoaBlock, "pricesCount", (conf.PriceSamplingDuration / conf.PriceSamplingInterval), "error", err)
+		log.Crit("Unable to create the header price cache", "pricesCount", (conf.PriceSamplingDuration / conf.PriceSamplingInterval), "error", err)
 		return nil
 	}
 
 	e.medianPrices, err = lru.New(medianPriceCacheSize)
 	if err != nil {
-		log.Crit("Unable to create the median price cache", "CoLoa block", conf.CoLoaBlock, "medianPriceCacheSize", medianPriceCacheSize, "error", err)
+		log.Crit("Unable to create the median price cache", "medianPriceCacheSize", medianPriceCacheSize, "error", err)
 	}
 
 	go e.fetchingLoop()

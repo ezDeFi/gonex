@@ -554,16 +554,14 @@ func (s *Service) assembleBlockStats(block *types.Block) *blockStats {
 		}
 		uncles = block.Uncles()
 
-		if s.eth.BlockChain().Config().IsCoLoa(header.Number) {
-			d, _ := s.engine.(*dccs.Dccs)
-			c := dccs.NewContext(d, s.eth.BlockChain())
-			number := header.Number.Uint64()
-			price = c.BlockPriceStat(number)
-			priceMedian = c.MedianPriceStat(number)
-			toAbsorb = dccs.RemainToAbsorbStat(s.eth.BlockChain(), number)
-			absorbed = dccs.AbsorbedStat(s.eth.BlockChain(), number)
-			supplySTB = dccs.StableSupplyStat(s.eth.BlockChain(), number)
-		}
+		d, _ := s.engine.(*dccs.Dccs)
+		c := dccs.NewContext(d, s.eth.BlockChain())
+		number := header.Number.Uint64()
+		price = c.BlockPriceStat(number)
+		priceMedian = c.MedianPriceStat(number)
+		toAbsorb = dccs.RemainToAbsorbStat(s.eth.BlockChain(), number)
+		absorbed = dccs.AbsorbedStat(s.eth.BlockChain(), number)
+		supplySTB = dccs.StableSupplyStat(s.eth.BlockChain(), number)
 	} else {
 		// Light nodes would need on-demand lookups for transactions/uncles, skip
 		if block != nil {

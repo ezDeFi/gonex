@@ -18,15 +18,14 @@ package dccs
 
 import (
 	"context"
+	"errors"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/rpc"
 )
 
 // API is a user facing RPC API to allow controlling the signer and voting
@@ -34,64 +33,6 @@ import (
 type API struct {
 	chain consensus.ChainReader
 	dccs  *Dccs
-}
-
-// GetSnapshot retrieves the state snapshot at a given block.
-func (api *API) GetSnapshot(number *rpc.BlockNumber) (*Snapshot, error) {
-	// Retrieve the requested block number (or current if none requested)
-	var header *types.Header
-	if number == nil || *number == rpc.LatestBlockNumber {
-		header = api.chain.CurrentHeader()
-	} else {
-		header = api.chain.GetHeaderByNumber(uint64(number.Int64()))
-	}
-	// Ensure we have an actually valid block and return its snapshot
-	if header == nil {
-		return nil, errUnknownBlock
-	}
-	return api.dccs.snapshot1(api.chain, header, nil)
-}
-
-// GetSnapshotAtHash retrieves the state snapshot at a given block.
-func (api *API) GetSnapshotAtHash(hash common.Hash) (*Snapshot, error) {
-	header := api.chain.GetHeaderByHash(hash)
-	if header == nil {
-		return nil, errUnknownBlock
-	}
-	return api.dccs.snapshot1(api.chain, header, nil)
-}
-
-// GetSigners retrieves the list of authorized signers at the specified block.
-func (api *API) GetSigners(number *rpc.BlockNumber) ([]Signer, error) {
-	// Retrieve the requested block number (or current if none requested)
-	var header *types.Header
-	if number == nil || *number == rpc.LatestBlockNumber {
-		header = api.chain.CurrentHeader()
-	} else {
-		header = api.chain.GetHeaderByNumber(uint64(number.Int64()))
-	}
-	// Ensure we have an actually valid block and return the signers from its snapshot
-	if header == nil {
-		return nil, errUnknownBlock
-	}
-	snap, err := api.dccs.snapshot1(api.chain, header, nil)
-	if err != nil {
-		return nil, err
-	}
-	return snap.signers1(), nil
-}
-
-// GetSignersAtHash retrieves the list of authorized signers at the specified block.
-func (api *API) GetSignersAtHash(hash common.Hash) ([]Signer, error) {
-	header := api.chain.GetHeaderByHash(hash)
-	if header == nil {
-		return nil, errUnknownBlock
-	}
-	snap, err := api.dccs.snapshot1(api.chain, header, nil)
-	if err != nil {
-		return nil, err
-	}
-	return snap.signers1(), nil
 }
 
 // Proposals returns the current proposals the node tries to uphold and vote on.
@@ -227,12 +168,12 @@ func (d *Dccs) getJoinedSigners(chain consensus.ChainReader) ([]common.Address, 
 	state, err := chain.State()
 	if state == nil || err != nil {
 		log.Trace("Head state not available", "err", err)
-		return nil, errSnapshotNotAvailable
+		return nil, errors.New("Head state not available")
 	}
 	size := state.GetCodeSize(params.GovernanceAddress)
 	if size <= 0 || state.Error() != nil {
 		log.Trace("Snapshot contract state not available", "err", state.Error())
-		return nil, errSnapshotNotAvailable
+		return nil, errors.New("Governance contract not available")
 	}
 	index := common.BigToHash(common.Big0)
 	result := state.GetState(params.GovernanceAddress, index)

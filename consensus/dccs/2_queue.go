@@ -54,6 +54,13 @@ func addressesHash(adrs []common.Address) common.Hash {
 	return common.BytesToHash(hasher.Sum(nil))
 }
 
+// signersAscending implements the sort interface to allow sorting a list of addresses
+type signersAscending []common.Address
+
+func (s signersAscending) Len() int           { return len(s) }
+func (s signersAscending) Less(i, j int) bool { return bytes.Compare(s[i][:], s[j][:]) < 0 }
+func (s signersAscending) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
 func (q *SealingQueue) sealersDigest() common.Hash {
 	q.digestOnce.Do(func() {
 		active := make([]common.Address, 0, len(q.active))
