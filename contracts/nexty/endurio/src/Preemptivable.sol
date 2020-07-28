@@ -32,11 +32,11 @@ contract Preemptivable is Absorbable {
     event Unlock(address indexed maker);
 
     address constant ZERO_ADDRESS = address(0x0);
-    uint constant SLASHING_RATE_ZOOM = 1000;
+    uint constant SLASHING_RATE_ONE = 1e18;
 
     // adapting global default parameters, only used if proposal maker doesn't specify them
     uint internal globalLockdownExpiration = 2 weeks / 2 seconds;
-    uint internal globalSlashingRate = SLASHING_RATE_ZOOM; // neuture rate
+    uint internal globalSlashingRate = SLASHING_RATE_ONE;
 
     // adapting global requirement
     uint internal globalSuccessRank = 0;
@@ -169,7 +169,7 @@ contract Preemptivable is Absorbable {
         }
 
         // lockdown violated
-        uint toSlash = util.mulCap(util.abs(deviation), lockdown.slashingFactor);
+        uint toSlash = util.mulCap(util.abs(deviation), lockdown.slashingFactor) / SLASHING_RATE_ONE;
         if (lockdown.stake < toSlash) {
             toSlash = lockdown.stake;
         }
@@ -215,7 +215,7 @@ contract Preemptivable is Absorbable {
         } else {
             proposal.slashingRate = globalSlashingRate;
         }
-        uint slashingFactor = util.mulCap(stake, proposal.slashingRate) / SLASHING_RATE_ZOOM / util.abs(amount);
+        uint slashingFactor = util.mulCap(stake, proposal.slashingRate) / util.abs(amount);
         require(slashingFactor > 0, "slashing factor calculated to zero");
 
         if (lockdownExpiration > 0) {
@@ -320,7 +320,7 @@ contract Preemptivable is Absorbable {
     // trigger an absorption from a maker's proposal
     function triggerPreemptive(absn.Proposal storage proposal) internal {
         proposal.votes.clear(); // clear the votes (consensus only)
-        uint slashingFactor = util.mulCap(proposal.stake, proposal.slashingRate) / SLASHING_RATE_ZOOM / util.abs(proposal.amount);
+        uint slashingFactor = util.mulCap(proposal.stake, proposal.slashingRate) / util.abs(proposal.amount);
         lockdown = absn.Preemptive(
             proposal.maker,
             proposal.amount,

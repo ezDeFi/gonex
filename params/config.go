@@ -97,7 +97,7 @@ var (
 			AbsorptionDuration:    7 * 24 * 60 * 60 / BlockSeconds / 2, // half a week
 			AbsorptionExpiration:  7 * 24 * 60 * 60 / BlockSeconds,     // a week
 			LockdownExpiration:    7 * 24 * 60 * 60 / BlockSeconds * 2, // 2 weeks
-			SlashingRate:          1000,
+			SlashingRate:          1e18,
 		},
 	}
 
