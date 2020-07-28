@@ -403,7 +403,10 @@ func (c *DccsConfig) IsPriceBlock(number uint64) bool {
 
 // String implements the stringer interface, returning the consensus engine details.
 func (c *DccsConfig) String() string {
-	return fmt.Sprintf("dccs {LeakDuration: %v ApplicationConfirmation: %v RandomSeedIteration: %v PriceSamplingDuration: %v PriceSamplingInterval: %v AbsorptionDuration: %v AbsorptionExpiration: %v SlashingRate: %v LockdownExpiration: %v}",
+	return fmt.Sprintf("dccs {Period: %v StakeRequire: %v StakeLockHeight: %v LeakDuration: %v ApplicationConfirmation: %v RandomSeedIteration: %v PriceSamplingDuration: %v PriceSamplingInterval: %v AbsorptionDuration: %v AbsorptionExpiration: %v SlashingRate: %v LockdownExpiration: %v}",
+		c.Period,
+		c.StakeRequire,
+		c.StakeLockHeight,
 		c.LeakDuration,
 		c.ApplicationConfirmation,
 		c.RandomSeedIteration,
