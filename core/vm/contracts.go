@@ -79,7 +79,7 @@ var PrecompiledContractsIstanbul = map[common.Address]PrecompiledContract{
 }
 
 // PrecompiledContractsCoLoa contains the default set of pre-compiled Ethereum
-// contracts used in the CoLoa release.
+// contracts used in the new chain release.
 var PrecompiledContractsCoLoa = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{1}): &ecrecover{},
 	common.BytesToAddress([]byte{2}): &sha256hash{},

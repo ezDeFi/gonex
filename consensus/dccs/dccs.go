@@ -144,7 +144,7 @@ type Dccs struct {
 
 	accManager *accounts.Manager
 
-	// CoLoa hard-fork
+	// r2PoS
 	sealingQueueCache *lru.ARCCache // SealingQueue of recent blocks
 	extDataCache      *lru.ARCCache // ExtendedData of recent blocks
 	anchorExtraCache  *lru.ARCCache // Recently assembled anchor extra bytes

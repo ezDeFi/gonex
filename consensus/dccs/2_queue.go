@@ -383,7 +383,7 @@ func (c *Context) crawlSealerApplications(header *types.Header) ([]SealerApplica
 	apps := []SealerApplication{}
 	for header := c.getHeaderByHash(header.MixDigest); header != nil; header = c.getHeaderByHash(header.MixDigest) {
 		if (header.MixDigest == common.Hash{}) {
-			// reach the CoLoa hardfork (new genesis)
+			// reach the new genesis (block 1)
 			break
 		}
 		appConfirmedNumber := header.Number.Uint64() + c.engine.config.ApplicationConfirmation

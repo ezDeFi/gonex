@@ -572,7 +572,7 @@ func (c *Context) initialize2(header *types.Header, state *state.StateDB) (types
 		}
 		log.Info("⚙ Successfully deploy governance contract")
 
-		if err := deployCoLoaContracts(c.chain, header, state); err != nil {
+		if err := deployStablecoinContracts(c.chain, header, state); err != nil {
 			log.Error("Failed to deploy stablecoin contracts", "err", err)
 			return nil, nil, err
 		}
@@ -775,7 +775,7 @@ func (c *Context) ecrecover(header *types.Header) (common.Address, error) {
 	return ecrecover(header, c.engine.signatures)
 }
 
-func deployCoLoaContracts(chain consensus.ChainReader, header *types.Header, state *state.StateDB) error {
+func deployStablecoinContracts(chain consensus.ChainReader, header *types.Header, state *state.StateDB) error {
 	// Deploy Seigniorage Contract
 	{
 		// Generate contract code and data using a simulated backend

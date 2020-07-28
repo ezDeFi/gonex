@@ -148,7 +148,8 @@ func AbsorbedStat(chain consensus.ChainReader, number uint64) string {
 		return "No New Supply"
 	}
 	absorbed := supply.Sub(supply, oldSupply)
-	return fmt.Sprint(float64(absorbed.Int64()) / 1000000)
+	f, _ := new(big.Rat).SetFrac(absorbed, common.Big1e18).Float64()
+	return fmt.Sprint(f)
 }
 
 // RemainToAbsorbStat returns ethstats data for stablecoin supply remain to absorb
@@ -178,7 +179,8 @@ func RemainToAbsorbStat(chain consensus.ChainReader, number uint64) string {
 	if !hasAbsorption || remain == nil {
 		return "0"
 	}
-	return fmt.Sprint(float64(remain.Int64()) / 1000000)
+	f, _ := new(big.Rat).SetFrac(remain, common.Big1e18).Float64()
+	return fmt.Sprint(f)
 }
 
 // StableSupplyStat returns ethstats data for stablecoin supply
@@ -201,7 +203,8 @@ func StableSupplyStat(chain consensus.ChainReader, number uint64) string {
 	if supply == nil {
 		return "No Supply"
 	}
-	return fmt.Sprint(float64(supply.Uint64()) / 1000000)
+	f, _ := new(big.Rat).SetFrac(supply, common.Big1e18).Float64()
+	return fmt.Sprint(f)
 }
 
 // GetStableTokenSupply returns the current supply of the stable token in the stateDB
