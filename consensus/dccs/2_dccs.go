@@ -71,6 +71,8 @@ var (
 	errNoEligibleAccount = errors.New("no eligible account for sealing")
 )
 
+var blockReward = common.Big2e14 // 0.0002 coin
+
 // Init the second hardfork of DCCS consensus
 func (d *Dccs) init2() *Dccs {
 	// d.init1()
@@ -595,20 +597,16 @@ func (c *Context) initialize2(header *types.Header, state *state.StateDB) (types
 	return txs, receipts, nil
 }
 
-// finalize2 implements consensus.Engine, ensuring no uncles are set, nor block
-// rewards given, and returns the final block.
+// finalize2 implements consensus.Engine, ensuring no uncles are set and returns the final block.
 func (c *Context) finalize2(header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
-	// Calculate any block reward for the sealer and commit the final state root
-	c.engine.calculateRewards(c.chain, state, header)
+	state.AddBalance(header.Coinbase, blockReward)
 	header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
 	header.UncleHash = types.EmptyUncleHash
 }
 
-// finalizeAndAssemble2 implements consensus.Engine, ensuring no uncles are set, nor block
-// rewards given, and returns the final block.
+// finalizeAndAssemble2 implements consensus.Engine, ensuring no uncles are set and returns the final block.
 func (c *Context) finalizeAndAssemble2(header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (block *types.Block, err error) {
-	// Calculate any block reward for the sealer and commit the final state root
-	c.engine.calculateRewards(c.chain, state, header)
+	state.AddBalance(header.Coinbase, blockReward)
 	header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
 	header.UncleHash = types.EmptyUncleHash
 
@@ -635,45 +633,6 @@ func deployConsensusContracts(state *state.StateDB, chainConfig *params.ChainCon
 	}
 
 	return nil
-}
-
-var (
-	rewards = []*big.Int{
-		big.NewInt(1e+4),
-		big.NewInt(5e+3),
-		big.NewInt(25e+2),
-		big.NewInt(1250),
-		big.NewInt(625),
-		big.NewInt(500),
-	} // rewards per year in percent of current total supply
-	initialSupply = big.NewInt(18e+10)   // initial total supply in NTY
-	blockPerYear  = big.NewInt(15778476) // Number of blocks per year with blocktime = 2s
-)
-
-// calculateRewards calculate reward for block sealer
-func (d *Dccs) calculateRewards(chain consensus.ChainReader, state *state.StateDB, header *types.Header) {
-	number := header.Number.Uint64()
-	yo := number / blockPerYear.Uint64()
-	per := yo
-	if per > 5 {
-		per = 5
-	}
-	totalSupply := new(big.Int).Mul(initialSupply, big.NewInt(1e+18)) // total supply in Wei
-	for i := uint64(1); i <= yo; i++ {
-		r := i
-		if r > 5 {
-			r = 5
-		}
-		totalReward := new(big.Int).Mul(totalSupply, rewards[r])
-		totalReward = totalReward.Div(totalReward, big.NewInt(1e+5))
-		totalSupply = totalSupply.Add(totalSupply, totalReward)
-	}
-	totalYearReward := new(big.Int).Mul(totalSupply, rewards[per])
-	totalYearReward = totalYearReward.Div(totalYearReward, big.NewInt(1e+5))
-	log.Trace("Total reward for current year", "reward", totalYearReward, "total sypply", totalSupply)
-	blockReward := new(big.Int).Div(totalYearReward, blockPerYear)
-	log.Trace("Give reward for sealer", "beneficiary", header.Coinbase, "reward", blockReward, "number", number, "hash", header.Hash)
-	state.AddBalance(header.Coinbase, blockReward)
 }
 
 // seal2 implements consensus.Engine, attempting to create a sealed block using
