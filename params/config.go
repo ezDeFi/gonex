@@ -71,17 +71,17 @@ var (
 	// MainnetChainConfig is the chain parameters to run a node on the main network.
 	MainnetChainConfig = &ChainConfig{
 		ChainID:             big.NewInt(66666),
-		HomesteadBlock:      big.NewInt(1),
+		HomesteadBlock:      common.Big0,
 		DAOForkBlock:        nil,
 		DAOForkSupport:      true,
-		EIP150Block:         big.NewInt(1),
-		EIP150Hash:          common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000"),
-		EIP155Block:         big.NewInt(1),
-		EIP158Block:         big.NewInt(3),
-		ByzantiumBlock:      big.NewInt(4),
-		ConstantinopleBlock: big.NewInt(4),
-		PetersburgBlock:     big.NewInt(4),
-		IstanbulBlock:       big.NewInt(4),
+		EIP150Block:         common.Big0,
+		EIP150Hash:          common.Hash{},
+		EIP155Block:         common.Big0,
+		EIP158Block:         common.Big0,
+		ByzantiumBlock:      common.Big0,
+		ConstantinopleBlock: common.Big0,
+		PetersburgBlock:     common.Big0,
+		IstanbulBlock:       common.Big0,
 		Dccs: &DccsConfig{
 			Period: BlockSeconds,
 			// Stake params
@@ -125,32 +125,32 @@ var (
 	// TestnetChainConfig contains the chain parameters to run a node on the Dccs test network.
 	TestnetChainConfig = &ChainConfig{
 		ChainID:             big.NewInt(111111),
-		HomesteadBlock:      big.NewInt(1),
+		HomesteadBlock:      common.Big0,
 		DAOForkBlock:        nil,
 		DAOForkSupport:      true,
-		EIP150Block:         big.NewInt(2),
-		EIP150Hash:          common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000000000"),
-		EIP155Block:         big.NewInt(3),
-		EIP158Block:         big.NewInt(3),
-		ByzantiumBlock:      big.NewInt(4),
-		ConstantinopleBlock: big.NewInt(4),
-		PetersburgBlock:     big.NewInt(4),
-		IstanbulBlock:       big.NewInt(4),
+		EIP150Block:         common.Big0,
+		EIP150Hash:          common.Hash{},
+		EIP155Block:         common.Big0,
+		EIP158Block:         common.Big0,
+		ByzantiumBlock:      common.Big0,
+		ConstantinopleBlock: common.Big0,
+		PetersburgBlock:     common.Big0,
+		IstanbulBlock:       common.Big0,
 		Dccs: &DccsConfig{
-			Period: 2,
+			Period: BlockSeconds,
 			// Stake params
-			StakeRequire:    20000,
-			StakeLockHeight: 3000,
+			StakeRequire:    MainnetChainConfig.Dccs.StakeRequire,
+			StakeLockHeight: 60 / BlockSeconds, // 1 minute lock
 			// r2PoS
 			LeakDuration:            MainnetChainConfig.Dccs.LeakDuration / 10,
 			ApplicationConfirmation: MainnetChainConfig.Dccs.ApplicationConfirmation / 10,
-			RandomSeedIteration:     MainnetChainConfig.Dccs.RandomSeedIteration / 10,
+			RandomSeedIteration:     MainnetChainConfig.Dccs.RandomSeedIteration,
 
-			PriceSamplingDuration: MainnetChainConfig.Dccs.PriceSamplingDuration / 100,
-			PriceSamplingInterval: MainnetChainConfig.Dccs.PriceSamplingInterval / 100,
-			AbsorptionDuration:    MainnetChainConfig.Dccs.AbsorptionDuration / 100,
-			AbsorptionExpiration:  MainnetChainConfig.Dccs.AbsorptionExpiration / 100,
-			LockdownExpiration:    MainnetChainConfig.Dccs.LockdownExpiration / 100,
+			PriceSamplingInterval: 60 / BlockSeconds, // 1 minute
+			PriceSamplingDuration: MainnetChainConfig.Dccs.PriceSamplingDuration / 1024,
+			AbsorptionDuration:    MainnetChainConfig.Dccs.AbsorptionDuration / 1024,
+			AbsorptionExpiration:  MainnetChainConfig.Dccs.AbsorptionExpiration / 1024,
+			LockdownExpiration:    MainnetChainConfig.Dccs.LockdownExpiration / 1024,
 			SlashingRate:          MainnetChainConfig.Dccs.SlashingRate,
 		},
 	}
