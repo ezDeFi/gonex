@@ -128,7 +128,7 @@ func (q *SealingQueue) sortedQueue() []common.Address {
 		s.queue[0] = q.sealer
 		for adr := range q.active {
 			_, recentlySigned := q.recent[adr]
-			if !recentlySigned {
+			if !recentlySigned && adr != q.sealer {
 				s.queue = append(s.queue, adr)
 				// TODO: pre-calculate the shuffling hash here
 			}
