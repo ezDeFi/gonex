@@ -366,7 +366,7 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 func (c *Context) genesisSealers() []common.Address {
 	c.engine.genesisSealersOnce.Do(func() {
 		genesis := c.chain.GetHeaderByNumber(0)
-		extra := genesis.Extra[32 : len(genesis.Extra)-65]
+		extra := genesis.Extra
 		// assert: len(extra) % common.AddressLength == 0
 		sealers := make([]common.Address, 0, len(extra)/common.AddressLength)
 		for index := len(extra) - common.AddressLength; index >= 0; index -= common.AddressLength {

@@ -155,9 +155,9 @@ func (w *wizard) makeGenesis() {
 				}
 			}
 		}
-		genesis.ExtraData = make([]byte, 32+len(signers)*common.AddressLength+65)
+		genesis.ExtraData = make([]byte, len(signers)*common.AddressLength)
 		for i, signer := range signers {
-			copy(genesis.ExtraData[32+i*common.AddressLength:], signer[:])
+			copy(genesis.ExtraData[i*common.AddressLength:], signer[:])
 		}
 
 		fmt.Println()
