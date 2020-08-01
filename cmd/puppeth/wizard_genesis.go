@@ -206,7 +206,7 @@ func (w *wizard) makeGenesis() {
 		// Read the address of the account to fund
 		if address := w.readAddress(); address != nil {
 			genesis.Alloc[*address] = core.GenesisAccount{
-				Balance: common.Big1e27,
+				Balance: common.Big1e24,
 			}
 			continue
 		}
