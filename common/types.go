@@ -373,3 +373,15 @@ func (ma *MixedcaseAddress) ValidChecksum() bool {
 func (ma *MixedcaseAddress) Original() string {
 	return ma.original
 }
+
+// StorageKey returns the storage hash key for delegated key
+func StorageKey(path string, kind byte) (hash Hash, err error) {
+	switch kind {
+	case 0x0:
+		copy(hash[:31], []byte(path))
+		hash[31] = kind
+		return hash, nil
+	default:
+		return hash, fmt.Errorf("Unknown StorageKey type: %x for path %v", kind, path)
+	}
+}

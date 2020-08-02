@@ -32,6 +32,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/prque"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/metrics"
@@ -146,6 +147,7 @@ const (
 // some pre checks in tx pool and event subscribers.
 type blockChain interface {
 	CurrentBlock() *types.Block
+	GetHeader(common.Hash, uint64) *types.Header
 	GetBlock(hash common.Hash, number uint64) *types.Block
 	StateAt(root common.Hash) (*state.StateDB, error)
 
@@ -611,6 +613,32 @@ func extrinsicParity(tx *types.Transaction) uint64 {
 	return (tx.Gas() - params.TxGas/2) / params.TxGas
 }
 
+func (pool *TxPool) createPaymentContext(tx *types.Transaction) (*PaymentContext, error) {
+	msg, err := tx.AsMessage(pool.signer)
+	if err != nil {
+		return nil, err
+	}
+	from := msg.From()
+	// Create a new context to be used in the EVM environment
+	context := NewEVMContext(msg, pool.chain.CurrentBlock().Header(), pool.chain, &from)
+	// Create a new environment which holds all relevant information
+	// about the transaction and calling mechanisms.
+	evm := vm.NewEVM(context, pool.currentState, pool.chainconfig, vm.Config{})
+
+	key := common.BytesToHash([]byte("TokenPayerCode"))
+	payerContract := common.BytesToAddress(pool.currentState.GetState(from, key).Bytes())
+	if payerContract == params.ZeroAddress {
+		// use the default TokenPayer contract deployed by the consensus
+		payerContract = params.TokenPayerAddress
+	}
+
+	return &PaymentContext{
+		evm:           evm,
+		payerContract: payerContract,
+		msg:           &msg,
+	}, nil
+}
+
 // validateTx checks whether a transaction is valid according to the consensus
 // rules and adheres to some heuristic limits of the local node (price and size).
 func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
@@ -679,10 +707,58 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	}
 
 	balance := pool.currentState.GetBalance(from)
-	// Transactor should have enough funds to cover the costs
-	// cost == V + GP * GL
-	if balance.Cmp(tx.Cost()) < 0 {
-		return ErrInsufficientFunds
+
+	if balance.Cmp(tx.Fee()) >= 0 {
+		// Transactor should have enough funds to cover the costs
+		// cost == V + GP * GL
+		if balance.Cmp(tx.Cost()) < 0 {
+			return ErrInsufficientFunds
+		}
+	} else {
+		// can it be paid by token?
+		log.Error("=========================================================================")
+		context, err := pool.createPaymentContext(tx)
+		if err != nil {
+			return err
+		}
+
+		to := context.msg.To()
+		if to != nil && *to == params.ExecAddress {
+			// TxCode can be postpaid
+			// TODO: heuristically verify that the tx can be postpaid
+			// tx.AsMessage()
+		} else {
+			paymentGas := tx.Gas()
+
+			paymentGasUsed := paymentGas
+			token, price, payGasLimit, paymentGas, vmerr := context.Payment(paymentGas)
+			paymentGasUsed -= paymentGas
+			if vmerr != nil {
+				return fmt.Errorf("VM returned with error for token payment query: %v", vmerr.Error())
+			}
+			if token == nil || params.ZeroAddress == *token || price.Sign() <= 0 {
+				return fmt.Errorf("token payment unavailable")
+			}
+			log.Error("==================== to pay", "token", token.Hex(), "price", price)
+			// TODO: check if miner should accept the token
+			// TODO: check if the price is right
+			prepaidGas := new(big.Int).SetUint64(tx.Gas() + paymentGasUsed + payGasLimit)
+			prepaidFee := prepaidGas.Mul(prepaidGas, gasPrice)
+			prepaidToken := new(big.Int).Lsh(prepaidFee, 128)
+			prepaidToken = prepaidToken.Div(prepaidToken, price)
+			if prepaidToken.Sign() <= 0 {
+				prepaidToken.SetUint64(1) // zero token fee is not allowed
+			}
+			// TODO: state.Prepare(tx.Hash(), emptyHash, 0)
+			snapshot := context.evm.StateDB.Snapshot()
+			_, vmerr = context.Pay(&context.evm.Coinbase, token, prepaidToken, payGasLimit)
+			context.evm.StateDB.RevertToSnapshot(snapshot)
+			if vmerr != nil {
+				return fmt.Errorf("VM returned with error for token payment pre-paid: %v", vmerr.Error())
+			}
+			// TODO: state.Logs() => check the transfer log
+			log.Error("**************** sucess", "prepaidGas", prepaidGas, "prepaidFee", prepaidFee, "prepaidToken", prepaidToken, "token", token)
+		}
 	}
 	// Ensure the transaction has more gas than the basic tx fee.
 	intrGas, err := IntrinsicGas(tx.Data(), tx.To() == nil, true, pool.istanbul)
@@ -697,6 +773,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		parity := mruNumber + extrinsicParity(tx)
 
 		if gasPrice.Sign() > 0 {
+			// TODO: apply token price here
 			priceParity := gasPrice.Div(gasPrice, pool.parityPrice).Uint64()
 
 			if parity <= priceParity {

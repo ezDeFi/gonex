@@ -296,7 +296,16 @@ func (l *txList) Filter(costLimit *big.Int, gasLimit uint64) (types.Transactions
 	l.gascap = gasLimit
 
 	// Filter out all the transactions above the account's funds
-	removed := l.txs.Filter(func(tx *types.Transaction) bool { return tx.Cost().Cmp(costLimit) > 0 || tx.Gas() > gasLimit })
+	removed := l.txs.Filter(func(tx *types.Transaction) bool {
+		if tx.Gas() > gasLimit {
+			return true
+		}
+		if tx.Fee().Cmp(costLimit) > 0 {
+			// fee is paid by token
+			return false
+		}
+		return tx.Cost().Cmp(costLimit) > 0
+	})
 
 	// If the list was strict, filter anything above the lowest nonce
 	var invalids types.Transactions

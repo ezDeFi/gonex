@@ -18,6 +18,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 
@@ -171,10 +172,20 @@ func (st *StateTransition) buyGas() error {
 	return nil
 }
 
+func (st *StateTransition) borrowGas() error {
+	if err := st.gp.SubGas(st.msg.Gas()); err != nil {
+		return err
+	}
+	st.gas += st.msg.Gas()
+
+	st.initialGas = st.msg.Gas()
+	return nil
+}
+
 func (st *StateTransition) preCheck() error {
 	if st.msg.From() == params.ZeroAddress {
 		// ignore nonce for consensus tx
-		return st.buyGas()
+		return nil
 	}
 	// Make sure this transaction's nonce is correct.
 	if st.msg.CheckNonce() {
@@ -185,18 +196,94 @@ func (st *StateTransition) preCheck() error {
 			return ErrNonceTooLow
 		}
 	}
-	return st.buyGas()
+	return nil
 }
 
 // TransitionDb will transition the state by applying the current message and
 // returning the result including the used gas. It returns an error if failed.
 // An error indicates a consensus issue.
 func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bool, err error) {
+	msg := st.msg
 	if err = st.preCheck(); err != nil {
 		return
 	}
-	msg := st.msg
-	sender := vm.AccountRef(msg.From())
+
+	var (
+		from     = msg.From()
+		gasPrice = msg.GasPrice()
+		sender   = vm.AccountRef(from)
+		evm      = st.evm
+
+		paymentGasUsed uint64
+
+		// vm errors do not effect consensus and are therefor
+		// not assigned to err, except for insufficient balance
+		// error.
+		vmerr error
+	)
+
+	// vlp = value + gasLimit * gasPrice
+	vlp := new(big.Int).SetUint64(msg.Gas())
+	vlp = vlp.Mul(vlp, gasPrice)
+	vlp = vlp.Add(vlp, msg.Value())
+	payByToken := st.state.GetBalance(st.msg.From()).Cmp(vlp) < 0
+
+	if !payByToken {
+		if err = st.buyGas(); err != nil {
+			return
+		}
+	} else {
+		log.Error("----- PayByToken", "msg", msg)
+
+		if err = st.borrowGas(); err != nil {
+			return
+		}
+		log.Error("Gas borrowed", "st.gas", st.gas)
+
+		key := common.BytesToHash([]byte("TokenPayerCode"))
+		payerContract := common.BytesToAddress(st.state.GetState(from, key).Bytes())
+		if payerContract == params.ZeroAddress {
+			// use the default TokenPayer contract deployed by the consensus
+			payerContract = params.TokenPayerAddress
+		}
+
+		paymentContext := &PaymentContext{
+			evm:           st.evm,
+			payerContract: payerContract,
+			msg:           msg,
+		}
+
+		// TODO: put everthing in a func, if it failed, rollback to snapshot, and pay all gasLimit
+		paymentGas := msg.Gas() // limit the payment gas to tx gas limit
+
+		paymentGasUsed += paymentGas
+		token, price, payGasLimit, paymentGas, vmerr := paymentContext.Payment(paymentGas)
+		paymentGasUsed -= paymentGas
+		log.Error("============= paymentContext.Payment", "gas used", paymentGasUsed)
+		if vmerr != nil {
+			log.Debug("VM returned with error for token payment query", "err", vmerr)
+			return ret, paymentGasUsed, vmerr != nil, vmerr
+		}
+		if token == nil || params.ZeroAddress == *token || price.Sign() <= 0 {
+			err = fmt.Errorf("token payment unavailable")
+			return ret, st.gasUsed(), vmerr != nil, err
+		}
+		prepaidGas := new(big.Int).SetUint64(msg.Gas() + paymentGasUsed + payGasLimit)
+		prepaidFee := prepaidGas.Mul(prepaidGas, gasPrice)
+		prepaidToken := new(big.Int).Lsh(prepaidFee, 128)
+		prepaidToken = prepaidToken.Div(prepaidToken, price)
+		if prepaidToken.Sign() <= 0 {
+			prepaidToken.SetUint64(1) // zero token fee is not allowed
+		}
+		log.Error("**************** token pre-paid", "coinbase", st.evm.Coinbase.Hex(), "token", token.Hex(), "prepaid fee", prepaidToken)
+		payGasRemain, vmerr := paymentContext.Pay(&st.evm.Coinbase, token, prepaidToken, payGasLimit)
+		paymentGasUsed -= payGasLimit - payGasRemain
+		if vmerr != nil {
+			log.Debug("VM returned with error for token payment pre-paid", "err", vmerr)
+			return ret, paymentGasUsed, vmerr != nil, vmerr
+		}
+	}
+
 	homestead := st.evm.ChainConfig().IsHomestead(st.evm.BlockNumber)
 	istanbul := st.evm.ChainConfig().IsIstanbul(st.evm.BlockNumber)
 	contractCreation := msg.To() == nil
@@ -211,13 +298,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		return nil, 0, false, err
 	}
 
-	var (
-		evm = st.evm
-		// vm errors do not effect consensus and are therefor
-		// not assigned to err, except for insufficient balance
-		// error.
-		vmerr error
-	)
 	if contractCreation {
 		ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)
 	} else {
@@ -226,7 +306,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 			st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
 		}
 		if txCode {
-			ret, st.gas, vmerr = evm.ExecCall(sender, st.data, st.gas, st.value)
+			ret, st.gas, vmerr = evm.ExecCall(sender, st.data, vm.ExecCodeSignature, st.gas, st.value)
 		} else {
 			ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
 		}
@@ -241,12 +321,17 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 			return nil, 0, false, vmerr
 		}
 	}
-	st.refundGas()
-	st.state.AddBalance(st.evm.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
+
+	if payByToken {
+		st.refundBorrowedGas()
+	} else {
+		st.refundGas()
+		st.state.AddBalance(st.evm.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
+	}
 
 	st.updateMRU()
 
-	return ret, st.gasUsed(), vmerr != nil, err
+	return ret, st.gasUsed() + paymentGasUsed, vmerr != nil, err
 }
 
 // updateMRU updates the accumulating Most Frequently Used number,
@@ -306,6 +391,19 @@ func (st *StateTransition) refundGas() {
 	// Return ETH for remaining gas, exchanged at the original rate.
 	remaining := new(big.Int).Mul(new(big.Int).SetUint64(st.gas), st.gasPrice)
 	st.state.AddBalance(st.msg.From(), remaining)
+
+	// Also return remaining gas to the block gas counter so it is
+	// available for the next transaction.
+	st.gp.AddGas(st.gas)
+}
+
+func (st *StateTransition) refundBorrowedGas() {
+	// Apply refund counter, capped to half of the used gas.
+	refund := st.gasUsed() / 2
+	if refund > st.state.GetRefund() {
+		refund = st.state.GetRefund()
+	}
+	st.gas += refund
 
 	// Also return remaining gas to the block gas counter so it is
 	// available for the next transaction.

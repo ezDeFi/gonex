@@ -47,6 +47,10 @@ var (
 	SeigniorageAddress   = common.HexToAddress("0x23456") // Seigniorage contract address
 	VolatileTokenAddress = common.HexToAddress("0x34567") // WNTY token contract address
 	StableTokenAddress   = common.HexToAddress("0x45678") // NEWSD token contract address
+	// Token fee contract addresses
+	TokenPayerAddress = common.HexToAddress("0x56789") // Default PayByToken contract
+	TokenPriceAddress = common.HexToAddress("0x6789A") // Default TokenPrice contract
+	TokenPriceAdmin   = common.HexToAddress("0xC06F7cF8C9e8a8D39b0dF5A105d66127912Bc980")
 )
 
 // TrustedCheckpoints associates each known checkpoint with the genesis hash of

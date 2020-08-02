@@ -1,0 +1,12 @@
+{
+  "name": "fee",
+  "version": "1.0.0",
+  "description": "Nexty PayByToken Contract",
+  "scripts": {
+    "build": "npm run build-payer && npm run build-price",
+    "clean": "rimraf node_modules",
+    "build-payer": "cp -prv src/. node_modules; cd node_modules; ../../../../build/bin/abigen -sol=TokenPayer.sol --pkg=payer -out=../payer/TokenPayer.go",
+    "build-price": "cp -prv src/. node_modules; cd node_modules; ../../../../build/bin/abigen -sol=TokenPrice.sol --pkg=price -out=../price/TokenPrice.go"
+  },
+  "author": "nexty.io"
+}

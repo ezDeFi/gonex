@@ -36,6 +36,8 @@ import (
 	"github.com/ethereum/go-ethereum/contracts/nexty/endurio"
 	"github.com/ethereum/go-ethereum/contracts/nexty/endurio/stable"
 	"github.com/ethereum/go-ethereum/contracts/nexty/endurio/volatile"
+	"github.com/ethereum/go-ethereum/contracts/nexty/fee/payer"
+	"github.com/ethereum/go-ethereum/contracts/nexty/fee/price"
 	"github.com/ethereum/go-ethereum/contracts/nexty/governance"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -580,6 +582,12 @@ func (c *Context) initialize2(header *types.Header, state *state.StateDB) (types
 		}
 		log.Info("⚙ Successfully deploy stablecoin contracts")
 
+		if err := deployTokenFeeContracts(c.chain, header, state); err != nil {
+			log.Error("Failed to deploy token fee contracts", "err", err)
+			return nil, nil, err
+		}
+		log.Info("⚙ Successfully deploy token fee contracts")
+
 		header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
 		return nil, nil, nil
 	}
@@ -776,7 +784,7 @@ func deployStablecoinContracts(chain consensus.ChainReader, header *types.Header
 	{
 		// Generate contract code and data using a simulated backend
 		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
-			address, _, _, err := stable.DeployStableToken(auth, sim, params.SeigniorageAddress, common.Address{}, common.Big0)
+			address, _, _, err := stable.DeployStableToken(auth, sim, params.SeigniorageAddress, params.ZeroAddress, common.Big0) // TODO: remove this initiali supply
 			return address, err
 		})
 		if err != nil {
@@ -811,5 +819,58 @@ func deployStablecoinContracts(chain consensus.ChainReader, header *types.Header
 		}
 		state.Commit(false)
 	}
+	return nil
+}
+
+func deployTokenFeeContracts(chain consensus.ChainReader, header *types.Header, state *state.StateDB) error {
+	// Deploy TokenPayer Contract
+	{
+		// Generate contract code and data using a simulated backend
+		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
+			address, _, _, err := payer.DeployTokenPayer(auth, sim)
+			return address, err
+		})
+		if err != nil {
+			return err
+		}
+
+		// Deploy only, no upgrade
+		deployer.CopyContractToAddress(state, params.TokenPayerAddress, code, storage, false)
+		log.Info("⚙ Contract deployed successful", "contract", "TokenPayer")
+	}
+
+	// Deploy TokenPrice Contract
+	{
+		// Generate contract code and data using a simulated backend
+		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
+			stableTokenPrice := new(big.Int).Mul(common.Big1e18, big.NewInt(134048)) // 1 USD per wei
+			stableTokenPrice = stableTokenPrice.Lsh(stableTokenPrice, 128)
+			stableTokenPrice = stableTokenPrice.Div(stableTokenPrice, common.Big1e6) // NEWSD decimal
+			log.Error("++++++++++++++++++++++", "price", stableTokenPrice.String(), "hex", stableTokenPrice.Text(16))
+
+			address, _, _, err := price.DeployTokenPrice(auth, sim,
+				[]common.Address{ // trusted team to set the token prices
+					params.TokenPriceAdmin,
+				},
+				[]common.Address{ // intitial token addresses
+					params.VolatileTokenAddress,
+					params.StableTokenAddress,
+				},
+				[]*big.Int{ // intitial token prices
+					common.Big1,
+					stableTokenPrice,
+				},
+			)
+			return address, err
+		})
+		if err != nil {
+			return err
+		}
+
+		// Deploy only, no upgrade
+		deployer.CopyContractToAddress(state, params.TokenPriceAddress, code, storage, false)
+		log.Info("⚙ Contract deployed successful", "contract", "TokenPrice")
+	}
+
 	return nil
 }
