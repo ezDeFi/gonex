@@ -50,7 +50,6 @@ var (
 	// Token fee contract addresses
 	TokenPayerAddress = common.HexToAddress("0x56789") // Default PayByToken contract
 	TokenPriceAddress = common.HexToAddress("0x6789A") // Default TokenPrice contract
-	TokenPriceAdmin   = common.HexToAddress("0xC06F7cF8C9e8a8D39b0dF5A105d66127912Bc980")
 )
 
 // TrustedCheckpoints associates each known checkpoint with the genesis hash of
@@ -95,13 +94,17 @@ var (
 			LeakDuration:            1024,
 			ApplicationConfirmation: 128,
 			RandomSeedIteration:     20000000, // around 128 seconds
-
+			// Stablecoin
 			PriceSamplingDuration: 7 * 24 * 60 * 60 / BlockSeconds,     // a week
 			PriceSamplingInterval: 10 * 60 / BlockSeconds,              // 10 minutes
 			AbsorptionDuration:    7 * 24 * 60 * 60 / BlockSeconds / 2, // half a week
 			AbsorptionExpiration:  7 * 24 * 60 * 60 / BlockSeconds,     // a week
 			LockdownExpiration:    7 * 24 * 60 * 60 / BlockSeconds * 2, // 2 weeks
 			SlashingRate:          1e18,
+			// TokenFee
+			TokenPriceAdmins: []common.Address{
+				common.HexToAddress("0xC06F7cF8C9e8a8D39b0dF5A105d66127912Bc980"),
+			},
 		},
 	}
 
@@ -149,13 +152,17 @@ var (
 			LeakDuration:            MainnetChainConfig.Dccs.LeakDuration / 10,
 			ApplicationConfirmation: MainnetChainConfig.Dccs.ApplicationConfirmation / 10,
 			RandomSeedIteration:     MainnetChainConfig.Dccs.RandomSeedIteration,
-
+			// Stablecoin
 			PriceSamplingInterval: 60 / BlockSeconds, // 1 minute
 			PriceSamplingDuration: MainnetChainConfig.Dccs.PriceSamplingDuration / 1024,
 			AbsorptionDuration:    MainnetChainConfig.Dccs.AbsorptionDuration / 1024,
 			AbsorptionExpiration:  MainnetChainConfig.Dccs.AbsorptionExpiration / 1024,
 			LockdownExpiration:    MainnetChainConfig.Dccs.LockdownExpiration / 1024,
 			SlashingRate:          MainnetChainConfig.Dccs.SlashingRate,
+			// TokenFee
+			TokenPriceAdmins: []common.Address{
+				common.HexToAddress("0xC06F7cF8C9e8a8D39b0dF5A105d66127912Bc980"),
+			},
 		},
 	}
 
@@ -395,12 +402,15 @@ type DccsConfig struct {
 	LeakDuration            uint64 `json:"leakDuration,omitempty"` // Inactivity leak duration in blocks
 	ApplicationConfirmation uint64 `json:"applicationConfirmation,omitempty"`
 	RandomSeedIteration     uint64 `json:"randomSeedIteration,omitempty"`
-	PriceSamplingDuration   uint64 `json:"priceSamplingDuration"` // number of blocks to take price samples (a week)
-	PriceSamplingInterval   uint64 `json:"priceSamplingInterval"` // the largest prime number of blocks in 10 minutes
-	AbsorptionDuration      uint64 `json:"absorptionDuration"`    // each block can absorb a maximum of targetAbsorption/absorptionDuration (half a week)
-	AbsorptionExpiration    uint64 `json:"absorptionExpiration"`  // number of blocks that the absorption will be expired (a week)
-	SlashingRate            uint64 `json:"slashingRate"`          // slashing rate
-	LockdownExpiration      uint64 `json:"lockdownExpiration"`    // number of blocks that the lockdown will be expired (2 weeks)
+	// Stablecoin
+	PriceSamplingDuration uint64 `json:"priceSamplingDuration"` // number of blocks to take price samples (a week)
+	PriceSamplingInterval uint64 `json:"priceSamplingInterval"` // the largest prime number of blocks in 10 minutes
+	AbsorptionDuration    uint64 `json:"absorptionDuration"`    // each block can absorb a maximum of targetAbsorption/absorptionDuration (half a week)
+	AbsorptionExpiration  uint64 `json:"absorptionExpiration"`  // number of blocks that the absorption will be expired (a week)
+	SlashingRate          uint64 `json:"slashingRate"`          // slashing rate
+	LockdownExpiration    uint64 `json:"lockdownExpiration"`    // number of blocks that the lockdown will be expired (2 weeks)
+	// Token fee
+	TokenPriceAdmins []common.Address // list of token price admin
 }
 
 // IsPriceBlock returns whether a block could include a price

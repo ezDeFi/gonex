@@ -112,22 +112,22 @@ func (w *wizard) makeGenesis() {
 		genesis.Difficulty = big.NewInt(1)
 		genesis.Config.Dccs = &params.DccsConfig{
 			Period: 2,
-
 			// Stake params
 			StakeRequire:    20000,
 			StakeLockHeight: 24 * 60 * 60 / 2,
-
 			// r2PoS
 			LeakDuration:            1024,
 			ApplicationConfirmation: 128,
 			RandomSeedIteration:     20000000, // around 128 seconds
-
+			// Stablecoin
 			PriceSamplingDuration: params.MainnetChainConfig.Dccs.PriceSamplingDuration,
 			PriceSamplingInterval: params.MainnetChainConfig.Dccs.PriceSamplingInterval,
 			AbsorptionDuration:    params.MainnetChainConfig.Dccs.AbsorptionDuration,
 			AbsorptionExpiration:  params.MainnetChainConfig.Dccs.AbsorptionExpiration,
 			LockdownExpiration:    params.MainnetChainConfig.Dccs.LockdownExpiration,
 			SlashingRate:          params.MainnetChainConfig.Dccs.SlashingRate,
+			// TokenFee
+			TokenPriceAdmins: params.MainnetChainConfig.Dccs.TokenPriceAdmins,
 		}
 		fmt.Println()
 		fmt.Println("How many seconds should blocks take? (default = 2)")
@@ -195,6 +195,8 @@ func (w *wizard) makeGenesis() {
 		genesis.Config.Dccs.LockdownExpiration = uint64(params.MainnetChainConfig.Dccs.LockdownExpiration / rate)
 
 		genesis.Config.Dccs.SlashingRate = uint64(params.MainnetChainConfig.Dccs.SlashingRate)
+
+		// TODO: TokenPriceAdmins
 
 	default:
 		log.Crit("Invalid consensus engine choice", "choice", choice)

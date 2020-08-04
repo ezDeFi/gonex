@@ -843,15 +843,14 @@ func deployTokenFeeContracts(chain consensus.ChainReader, header *types.Header, 
 	{
 		// Generate contract code and data using a simulated backend
 		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
+			// TODO: remove initialized token prices
 			stableTokenPrice := new(big.Int).Mul(common.Big1e18, big.NewInt(134048)) // 1 USD per wei
 			stableTokenPrice = stableTokenPrice.Lsh(stableTokenPrice, 128)
 			stableTokenPrice = stableTokenPrice.Div(stableTokenPrice, common.Big1e6) // NEWSD decimal
 			log.Error("++++++++++++++++++++++", "price", stableTokenPrice.String(), "hex", stableTokenPrice.Text(16))
 
 			address, _, _, err := price.DeployTokenPrice(auth, sim,
-				[]common.Address{ // trusted team to set the token prices
-					params.TokenPriceAdmin,
-				},
+				chain.Config().Dccs.TokenPriceAdmins,
 				[]common.Address{ // intitial token addresses
 					params.VolatileTokenAddress,
 					params.StableTokenAddress,

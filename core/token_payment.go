@@ -18,10 +18,13 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/log"
+	"github.com/ethereum/go-ethereum/params"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -43,7 +46,52 @@ type PaymentContext struct {
 	msg           Message
 }
 
-func (context *PaymentContext) Payment(gas uint64) (*common.Address, *big.Int, uint64, uint64, error) {
+func NewPaymentContext(evm *vm.EVM, msg Message) *PaymentContext {
+	key := common.BytesToHash([]byte("TokenPayerCode"))
+	payerContract := common.BytesToAddress(evm.StateDB.GetState(msg.From(), key).Bytes())
+	if payerContract == params.ZeroAddress {
+		// use the default TokenPayer contract deployed by the consensus
+		payerContract = params.TokenPayerAddress
+	}
+	return &PaymentContext{
+		evm:           evm,
+		payerContract: payerContract,
+		msg:           msg,
+	}
+}
+
+// TODO: if failed, rollback to snapshot, and pay all gasLimit
+func (context *PaymentContext) Prepaid() error {
+	msg := context.msg
+	msgGas := msg.Gas()
+
+	// use the msg gas limit for payment gas limit
+	token, price, payGasLimit, remainGas, vmerr := context.payment(msgGas)
+	if vmerr != nil {
+		log.Debug("VM returned with error for token payment query", "err", vmerr)
+		return vmerr
+	}
+	if token == nil || params.ZeroAddress == *token || price.Sign() <= 0 {
+		return fmt.Errorf("token payment unavailable")
+	}
+	used := msgGas - remainGas
+	gasToPay := new(big.Int).SetUint64(msgGas)                      // safe
+	gasToPay = gasToPay.Add(gasToPay, new(big.Int).SetUint64(used)) // safe
+	gasToPay = gasToPay.Add(gasToPay, payGasLimit)                  // safe
+	feeToPay := gasToPay.Mul(gasToPay, msg.GasPrice())
+	log.Error("============= context.Prepaid", "used", used, "gas", gasToPay, "fee", feeToPay)
+
+	tokenToPay := new(big.Int).Lsh(feeToPay, 128)
+	tokenToPay = tokenToPay.Div(tokenToPay, price)
+	if tokenToPay.Sign() <= 0 {
+		tokenToPay.SetUint64(1) // zero token fee is not allowed
+	}
+	log.Error("**************** token pre-paid", "coinbase", context.evm.Coinbase.Hex(), "token", token.Hex(), "amount", tokenToPay)
+	_, vmerr = context.pay(&context.evm.Coinbase, token, tokenToPay, payGasLimit.Uint64())
+	return vmerr
+}
+
+func (context *PaymentContext) payment(gas uint64) (*common.Address, *big.Int, *big.Int, uint64, error) {
 	msg := context.msg
 	evm := context.evm
 
@@ -54,7 +102,7 @@ func (context *PaymentContext) Payment(gas uint64) (*common.Address, *big.Int, u
 		[]common.Hash{}, // TODO
 	)
 	if err != nil {
-		return nil, nil, 0, gas, err
+		return nil, nil, nil, gas, err
 	}
 
 	input = append(IPayerFuncSigPayment, input...)
@@ -62,24 +110,24 @@ func (context *PaymentContext) Payment(gas uint64) (*common.Address, *big.Int, u
 	ret, gas, err := evm.CallCode(vm.AccountRef(msg.From()), context.payerContract, input, gas, common.Big0)
 	if err != nil {
 		if len(evm.FailureReason) > 0 {
-			return nil, nil, 0, gas, errors.New(evm.FailureReason)
+			return nil, nil, nil, gas, errors.New(evm.FailureReason)
 		}
-		return nil, nil, 0, gas, err
+		return nil, nil, nil, gas, err
 	}
 	if len(ret) != 32*3 {
-		return nil, nil, 0, gas, errors.New("invalid payer payment method outputs size")
+		return nil, nil, nil, gas, errors.New("invalid payer payment method outputs size")
 	}
 	outputs := map[string]interface{}{}
 	if err := abiIPayerFuncPayment.Outputs.UnpackIntoMap(outputs, ret); err != nil {
-		return nil, nil, 0, gas, err
+		return nil, nil, nil, gas, err
 	}
 	token := outputs["token"].(common.Address)
 	price := outputs["price"].(*big.Int)
-	payGasLimit := outputs["payGasLimit"].(*big.Int).Uint64()
+	payGasLimit := outputs["payGasLimit"].(*big.Int)
 	return &token, price, payGasLimit, gas, nil
 }
 
-func (context *PaymentContext) Pay(coinbase *common.Address, token *common.Address, fee *big.Int, gas uint64) (uint64, error) {
+func (context *PaymentContext) pay(coinbase *common.Address, token *common.Address, fee *big.Int, gas uint64) (uint64, error) {
 	input, err := abiIPayerFuncPay.Inputs.Pack(
 		coinbase,
 		token,
