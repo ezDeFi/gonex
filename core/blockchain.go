@@ -114,6 +114,7 @@ type CacheConfig struct {
 	TrieDirtyLimit      int           // Memory limit (MB) at which to start flushing dirty trie nodes to disk
 	TrieDirtyDisabled   bool          // Whether to disable trie write caching and GC altogether (archive node)
 	TrieTimeLimit       time.Duration // Time limit after which to flush the current in-memory trie to disk
+	RollbackNumber      *big.Int
 }
 
 // BlockChain represents the canonical chain given a database with a genesis
@@ -181,7 +182,7 @@ type BlockChain struct {
 // NewBlockChain returns a fully initialised block chain using information
 // available in the database. It initialises the default Ethereum Validator and
 // Processor.
-func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, chainConfig *params.ChainConfig, engine consensus.Engine, vmConfig vm.Config, shouldPreserve func(block *types.Block) bool, rollbackNumber *big.Int) (*BlockChain, error) {
+func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, chainConfig *params.ChainConfig, engine consensus.Engine, vmConfig vm.Config, shouldPreserve func(block *types.Block) bool) (*BlockChain, error) {
 	if cacheConfig == nil {
 		cacheConfig = &CacheConfig{
 			TrieCleanLimit: 256,
@@ -242,13 +243,13 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, chainConfig *par
 		return nil, err
 	}
 
-	if rollbackNumber != nil {
+	if cacheConfig.RollbackNumber != nil {
 		number := bc.CurrentHeader().Number.Uint64()
 		var rollback uint64
-		if rollbackNumber.Sign() >= 0 {
-			rollback = rollbackNumber.Uint64()
+		if cacheConfig.RollbackNumber.Sign() >= 0 {
+			rollback = cacheConfig.RollbackNumber.Uint64()
 		} else {
-			r := uint64(-rollbackNumber.Int64())
+			r := uint64(-cacheConfig.RollbackNumber.Int64())
 			if number > r {
 				rollback = number - r
 			}
