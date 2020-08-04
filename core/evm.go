@@ -46,10 +46,11 @@ type ChainContext interface {
 func NewEVMContext(msg Message, header *types.Header, chain HeaderReader, author *common.Address) vm.Context {
 	// If we don't have an explicit author (i.e. not mining), extract from the header
 	var beneficiary common.Address
-	if author == nil {
-		beneficiary, _ = chain.(ChainContext).Engine().Author(header) // Ignore error, we're past header validation
-	} else {
+	if author != nil {
 		beneficiary = *author
+	} else {
+		// use header.Coinbase here instead of chain.(ChainContext).Engine().Author(header)
+		beneficiary = header.Coinbase
 	}
 	return vm.Context{
 		CanTransfer: CanTransfer,
