@@ -176,7 +176,7 @@ func (st *StateTransition) buyGas() error {
 
 	if st.payByToken {
 		paymentContext := NewPaymentContext(st.evm, st.msg)
-		return paymentContext.Prepaid()
+		return paymentContext.Prepay()
 	}
 
 	st.state.SubBalance(st.msg.From(), mgval)

@@ -714,7 +714,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		if err != nil {
 			return err
 		}
-		if err = paymentContext.Prepaid(); err != nil {
+		if err = paymentContext.Prepay(); err != nil {
 			return err
 		}
 		// TODO: check if miner should accept the token

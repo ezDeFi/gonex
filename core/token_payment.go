@@ -61,7 +61,7 @@ func NewPaymentContext(evm *vm.EVM, msg Message) *PaymentContext {
 }
 
 // TODO: if failed, rollback to snapshot, and pay all gasLimit
-func (context *PaymentContext) Prepaid() error {
+func (context *PaymentContext) Prepay() error {
 	msg := context.msg
 	msgGas := msg.Gas()
 
