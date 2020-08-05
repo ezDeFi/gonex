@@ -618,9 +618,8 @@ func (pool *TxPool) createPaymentContext(tx *types.Transaction) (*PaymentContext
 	if err != nil {
 		return nil, err
 	}
-	from := msg.From()
 	// Create a new context to be used in the EVM environment
-	context := NewEVMContext(msg, pool.chain.CurrentBlock().Header(), pool.chain, &from)
+	context := NewEVMContext(msg, pool.chain.CurrentBlock().Header(), pool.chain, nil) // TODO: use random author here instead of nil to maximize the estimated gas
 	// Create a new environment which holds all relevant information
 	// about the transaction and calling mechanisms.
 	evm := vm.NewEVM(context, pool.currentState, pool.chainconfig, vm.Config{})
@@ -696,6 +695,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	}
 
 	balance := pool.currentState.GetBalance(from)
+	gas := tx.Gas()
 
 	// Transactor should have enough funds to cover the costs
 	// cost == V + GP * GL
@@ -714,7 +714,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		if err != nil {
 			return errors.New("Token Payment Context: " + err.Error())
 		}
-		if err = paymentContext.Pay(); err != nil {
+		if gas, err = paymentContext.Pay(gas); err != nil {
 			return errors.New("Token Payment: " + err.Error())
 		}
 		// TODO: check if paymentContext.gas is acceptable
@@ -728,7 +728,8 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	if err != nil {
 		return err
 	}
-	if tx.Gas() < intrGas {
+	log.Error("=========================", "gas", gas, "intrGas", intrGas)
+	if gas < intrGas {
 		return ErrIntrinsicGas
 	}
 

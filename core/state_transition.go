@@ -160,11 +160,14 @@ func (st *StateTransition) useGas(amount uint64) error {
 
 func (st *StateTransition) buyGas() error {
 	mgval := new(big.Int).Mul(new(big.Int).SetUint64(st.msg.Gas()), st.gasPrice)
-	vlp := new(big.Int).Add(mgval, st.msg.Value())
-	st.payByToken = st.state.GetBalance(st.msg.From()).Cmp(vlp) < 0
-	// 	if st.state.GetBalance(st.msg.From()).Cmp(mgval) < 0 {
-	// 		return errInsufficientBalanceForGas
-	// 	}
+	// if st.state.GetBalance(st.msg.From()).Cmp(mgval) < 0 {
+	// 	return errInsufficientBalanceForGas
+	// }
+	if st.msg.From() != params.ZeroAddress {
+		vlp := new(big.Int).Add(mgval, st.msg.Value())
+		st.payByToken = st.state.GetBalance(st.msg.From()).Cmp(vlp) < 0
+		log.Error("~~~~~~~~~~~~~~~~~~~~~", "?", st.payByToken, "balance", st.state.GetBalance(st.msg.From()), "vlp", vlp)
+	}
 	if err := st.gp.SubGas(st.msg.Gas()); err != nil {
 		return err
 	}
@@ -174,7 +177,8 @@ func (st *StateTransition) buyGas() error {
 
 	if st.payByToken {
 		paymentContext := NewPaymentContext(st.evm, st.msg)
-		if err := paymentContext.Pay(); err != nil {
+		var err error
+		if st.gas, err = paymentContext.Pay(st.gas); err != nil {
 			return fmt.Errorf("%v: %v", "Token Payment", err.Error())
 		}
 		return nil
@@ -230,10 +234,17 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	contractCreation := msg.To() == nil
 	txCode := msg.To() != nil && *msg.To() == params.ExecAddress
 
+	if msg.From() != params.ZeroAddress {
+		log.Error("---------------------------- intrinsic")
+	}
+
 	// Pay intrinsic gas
 	gas, err := IntrinsicGas(st.data, contractCreation, homestead, istanbul)
 	if err != nil {
 		return nil, 0, false, err
+	}
+	if msg.From() != params.ZeroAddress {
+		log.Error("---------------------------- use", "st.gas", st.gas, "intrGas", gas)
 	}
 	if err = st.useGas(gas); err != nil {
 		return nil, 0, false, err

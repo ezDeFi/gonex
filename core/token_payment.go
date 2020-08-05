@@ -42,7 +42,6 @@ var tokenPayerKey = common.BytesToHash([]byte("TokenPayer"))
 type PaymentContext struct {
 	evm      *vm.EVM
 	contract common.Address
-	gas      *big.Int
 	msg      Message
 }
 
@@ -52,51 +51,49 @@ func NewPaymentContext(evm *vm.EVM, msg Message) *PaymentContext {
 	if contract == params.ZeroAddress {
 		contract = params.TokenPayerAddress
 	}
-	gas := new(big.Int).SetBytes(payer[20:])
-	if gas.Sign() == 0 {
-		gas = params.TokenPayerGas
-	}
 	return &PaymentContext{
 		evm:      evm,
 		contract: contract,
-		gas:      gas,
 		msg:      msg,
 	}
 }
 
-func (context *PaymentContext) Pay() error {
+func (context *PaymentContext) Pay(gas uint64) (uint64, error) {
 	msg := context.msg
 	evm := context.evm
 
 	input, err := abiIPayerFuncPay.Inputs.Pack(
 		evm.Coinbase,
-		context.gas,
+		common.Big0,
 		msg.To(),
 		new(big.Int).SetUint64(msg.Gas()),
 		msg.GasPrice())
 	if err != nil {
-		return err
+		return gas, err
 	}
 	input = append(IPayerFuncSigPay, input...)
 
-	ret, remain, err := evm.CallCode(
+	log.Error("++Pay", "before", gas)
+
+	ret, gas, err := evm.CallCode(
 		vm.AccountRef(msg.From()),
 		context.contract,
 		input,
-		context.gas.Uint64(),
+		gas,
 		common.Big0)
+	log.Error("++Pay", "after", gas)
 	if err == nil {
-		log.Error("================", "payment gas used", context.gas.Uint64()-remain)
-		return nil
+		// log.Error("================", "payment gas used", context.gas.Uint64()-remain)
+		return gas, nil
 	}
 
 	if len(evm.FailureReason) > 0 {
-		return errors.New(evm.FailureReason)
+		return gas, errors.New(evm.FailureReason)
 	}
 	// provide extra user friendly revert error
 	reason := params.GetSolidityRevertMessage(ret)
 	if len(reason) > 0 {
-		return errors.New(reason)
+		return gas, errors.New(reason)
 	}
-	return err
+	return gas, err
 }
