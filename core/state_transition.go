@@ -18,6 +18,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 
@@ -160,13 +161,10 @@ func (st *StateTransition) useGas(amount uint64) error {
 func (st *StateTransition) buyGas() error {
 	mgval := new(big.Int).Mul(new(big.Int).SetUint64(st.msg.Gas()), st.gasPrice)
 	vlp := new(big.Int).Add(mgval, st.msg.Value())
-	if st.state.GetBalance(st.msg.From()).Cmp(vlp) < 0 {
-		st.payByToken = true
-		// } else {
-		// 	if st.state.GetBalance(st.msg.From()).Cmp(mgval) < 0 {
-		// 		return errInsufficientBalanceForGas
-		// 	}
-	}
+	st.payByToken = st.state.GetBalance(st.msg.From()).Cmp(vlp) < 0
+	// 	if st.state.GetBalance(st.msg.From()).Cmp(mgval) < 0 {
+	// 		return errInsufficientBalanceForGas
+	// 	}
 	if err := st.gp.SubGas(st.msg.Gas()); err != nil {
 		return err
 	}
@@ -176,7 +174,10 @@ func (st *StateTransition) buyGas() error {
 
 	if st.payByToken {
 		paymentContext := NewPaymentContext(st.evm, st.msg)
-		return paymentContext.Prepay()
+		if err := paymentContext.Pay(); err != nil {
+			return fmt.Errorf("%v: %v", "Token Payment", err.Error())
+		}
+		return nil
 	}
 
 	st.state.SubBalance(st.msg.From(), mgval)
@@ -238,6 +239,10 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		return nil, 0, false, err
 	}
 
+	if msg.From() != params.ZeroAddress {
+		log.Error("----------------------------", "before", st.gasUsed())
+	}
+
 	if contractCreation {
 		ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)
 	} else {
@@ -251,6 +256,9 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 			ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
 		}
 	}
+	if msg.From() != params.ZeroAddress {
+		log.Error("----------------------------", "after", st.gasUsed())
+	}
 	if vmerr != nil {
 		log.Debug("VM returned with error", "err", vmerr)
 		// The only possible consensus-error would be if there wasn't
@@ -263,6 +271,10 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	}
 
 	st.refundGas()
+
+	if msg.From() != params.ZeroAddress {
+		log.Error("----------------------------", "after refund", st.gasUsed())
+	}
 
 	// token fee is already pre-paid
 	if !st.payByToken {

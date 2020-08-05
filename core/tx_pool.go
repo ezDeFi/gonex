@@ -700,7 +700,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	// Transactor should have enough funds to cover the costs
 	// cost == V + GP * GL
 	if balance.Cmp(tx.Value()) < 0 {
-		return ErrInsufficientFunds
+		return fmt.Errorf("%v, balance=%v, value=%v", ErrInsufficientFunds.Error(), balance, tx.Value())
 	}
 	if balance.Cmp(tx.Cost()) < 0 {
 		// // TODO: special handling for txcode post-paid?
@@ -712,11 +712,12 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		// }
 		paymentContext, err := pool.createPaymentContext(tx)
 		if err != nil {
-			return err
+			return errors.New("Token Payment Context: " + err.Error())
 		}
-		if err = paymentContext.Prepay(); err != nil {
-			return err
+		if err = paymentContext.Pay(); err != nil {
+			return errors.New("Token Payment: " + err.Error())
 		}
+		// TODO: check if paymentContext.gas is acceptable
 		// TODO: check if miner should accept the token
 		// TODO: check if the price is right
 		// TODO: state.Prepare(tx.Hash(), emptyHash, 0)

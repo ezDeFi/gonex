@@ -615,12 +615,11 @@ func (_IERC20 *IERC20Filterer) ParseTransfer(log types.Log) (*IERC20Transfer, er
 }
 
 // IPayerABI is the input ABI used to generate the binding from.
-const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGas\",\"type\":\"uint256\"},{\"internalType\":\"bytes4\",\"name\":\"txMethodSig\",\"type\":\"bytes4\"},{\"internalType\":\"bytes32[]\",\"name\":\"txMethodParams\",\"type\":\"bytes32[]\"}],\"name\":\"payment\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"payGasLimit\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"paymentGas\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // IPayerFuncSigs maps the 4-byte function signature to its string representation.
 var IPayerFuncSigs = map[string]string{
-	"b3d76188": "pay(address,address,uint256)",
-	"dd50295e": "payment(address,uint256,bytes4,bytes32[])",
+	"8a198d1e": "pay(address,uint256,address,uint256,uint256)",
 }
 
 // IPayer is an auto generated Go binding around an Ethereum contract.
@@ -765,46 +764,25 @@ func (_IPayer *IPayerTransactorRaw) Transact(opts *bind.TransactOpts, method str
 	return _IPayer.Contract.contract.Transact(opts, method, params...)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
+// Pay is a paid mutator transaction binding the contract method 0x8a198d1e.
 //
-// Solidity: function pay(address coinbase, address token, uint256 value) returns()
-func (_IPayer *IPayerTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, token common.Address, value *big.Int) (*types.Transaction, error) {
-	return _IPayer.contract.Transact(opts, "pay", coinbase, token, value)
+// Solidity: function pay(address coinbase, uint256 paymentGas, address txTo, uint256 txGas, uint256 txGasPrice) returns()
+func (_IPayer *IPayerTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, paymentGas *big.Int, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
+	return _IPayer.contract.Transact(opts, "pay", coinbase, paymentGas, txTo, txGas, txGasPrice)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
+// Pay is a paid mutator transaction binding the contract method 0x8a198d1e.
 //
-// Solidity: function pay(address coinbase, address token, uint256 value) returns()
-func (_IPayer *IPayerSession) Pay(coinbase common.Address, token common.Address, value *big.Int) (*types.Transaction, error) {
-	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, token, value)
+// Solidity: function pay(address coinbase, uint256 paymentGas, address txTo, uint256 txGas, uint256 txGasPrice) returns()
+func (_IPayer *IPayerSession) Pay(coinbase common.Address, paymentGas *big.Int, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
+	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, paymentGas, txTo, txGas, txGasPrice)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
+// Pay is a paid mutator transaction binding the contract method 0x8a198d1e.
 //
-// Solidity: function pay(address coinbase, address token, uint256 value) returns()
-func (_IPayer *IPayerTransactorSession) Pay(coinbase common.Address, token common.Address, value *big.Int) (*types.Transaction, error) {
-	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, token, value)
-}
-
-// Payment is a paid mutator transaction binding the contract method 0xdd50295e.
-//
-// Solidity: function payment(address to, uint256 txGas, bytes4 txMethodSig, bytes32[] txMethodParams) returns(address token, uint256 price, uint256 payGasLimit)
-func (_IPayer *IPayerTransactor) Payment(opts *bind.TransactOpts, to common.Address, txGas *big.Int, txMethodSig [4]byte, txMethodParams [][32]byte) (*types.Transaction, error) {
-	return _IPayer.contract.Transact(opts, "payment", to, txGas, txMethodSig, txMethodParams)
-}
-
-// Payment is a paid mutator transaction binding the contract method 0xdd50295e.
-//
-// Solidity: function payment(address to, uint256 txGas, bytes4 txMethodSig, bytes32[] txMethodParams) returns(address token, uint256 price, uint256 payGasLimit)
-func (_IPayer *IPayerSession) Payment(to common.Address, txGas *big.Int, txMethodSig [4]byte, txMethodParams [][32]byte) (*types.Transaction, error) {
-	return _IPayer.Contract.Payment(&_IPayer.TransactOpts, to, txGas, txMethodSig, txMethodParams)
-}
-
-// Payment is a paid mutator transaction binding the contract method 0xdd50295e.
-//
-// Solidity: function payment(address to, uint256 txGas, bytes4 txMethodSig, bytes32[] txMethodParams) returns(address token, uint256 price, uint256 payGasLimit)
-func (_IPayer *IPayerTransactorSession) Payment(to common.Address, txGas *big.Int, txMethodSig [4]byte, txMethodParams [][32]byte) (*types.Transaction, error) {
-	return _IPayer.Contract.Payment(&_IPayer.TransactOpts, to, txGas, txMethodSig, txMethodParams)
+// Solidity: function pay(address coinbase, uint256 paymentGas, address txTo, uint256 txGas, uint256 txGasPrice) returns()
+func (_IPayer *IPayerTransactorSession) Pay(coinbase common.Address, paymentGas *big.Int, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
+	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, paymentGas, txTo, txGas, txGasPrice)
 }
 
 // TokenPriceABI is the input ABI used to generate the binding from.
@@ -820,7 +798,7 @@ var TokenPriceFuncSigs = map[string]string{
 }
 
 // TokenPriceBin is the compiled bytecode used for deploying new contracts.
-var TokenPriceBin = "0x608060405234801561001057600080fd5b5060405161051e38038061051e8339818101604052606081101561003357600080fd5b810190808051604051939291908464010000000082111561005357600080fd5b90830190602082018581111561006857600080fd5b825186602082028301116401000000008211171561008557600080fd5b82525081516020918201928201910280838360005b838110156100b257818101518382015260200161009a565b50505050905001604052602001805160405193929190846401000000008211156100db57600080fd5b9083019060208201858111156100f057600080fd5b825186602082028301116401000000008211171561010d57600080fd5b82525081516020918201928201910280838360005b8381101561013a578181015183820152602001610122565b505050509050016040526020018051604051939291908464010000000082111561016357600080fd5b90830190602082018581111561017857600080fd5b825186602082028301116401000000008211171561019557600080fd5b82525081516020918201928201910280838360005b838110156101c25781810151838201526020016101aa565b5050505090500160405250505060008090505b8351811015610208576102008482815181106101ed57fe5b602002602001015161025c60201b60201c565b6001016101d5565b5060005b82518110156102535761024b83828151811061022457fe5b602002602001015183838151811061023857fe5b602002602001015161029960201b60201c565b60010161020c565b505050506102ed565b6102966102816a5465616d4d656d6265722d60a81b836102d560201b6101d01760201c565b60001960001b6102e960201b6101e81760201c565b50565b6102d16102be6a546f6b656e50726963652d60a81b846102d560201b6101d01760201c565b8260001b6102e960201b6101e81760201c565b5050565b6000828152600b82905280601f5392915050565b9055565b610222806102fc6000396000f3fe608060405234801561001057600080fd5b50600436106100565760003560e01c8062e4768b1461005b57806341976e09146100895780635994d984146100c1578063654b8c2a146100c9578063c9969bcf146100d1575b600080fd5b6100876004803603604081101561007157600080fd5b506001600160a01b0381351690602001356100d9565b005b6100af6004803603602081101561009f57600080fd5b50356001600160a01b0316610138565b60408051918252519081900360200190f35b6100af610160565b6100af610166565b6100af610178565b6100e23361018a565b61012a576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61013482826101af565b5050565b600061015a6101556a546f6b656e50726963652d60a81b846101d0565b6101e4565b92915050565b60001981565b6a5465616d4d656d6265722d60a81b81565b6a546f6b656e50726963652d60a81b81565b60006101a76101556a5465616d4d656d6265722d60a81b846101d0565b151592915050565b6101346101ca6a546f6b656e50726963652d60a81b846101d0565b826101e8565b6000828152600b82905280601f5392915050565b5490565b905556fea2646970667358221220bbe4e3af55d84fab59ac2b3200ca3d8250c3b08d6d04f212bf0e58bde27e619864736f6c63430006040033"
+var TokenPriceBin = "0x608060405234801561001057600080fd5b5060405161051e38038061051e8339818101604052606081101561003357600080fd5b810190808051604051939291908464010000000082111561005357600080fd5b90830190602082018581111561006857600080fd5b825186602082028301116401000000008211171561008557600080fd5b82525081516020918201928201910280838360005b838110156100b257818101518382015260200161009a565b50505050905001604052602001805160405193929190846401000000008211156100db57600080fd5b9083019060208201858111156100f057600080fd5b825186602082028301116401000000008211171561010d57600080fd5b82525081516020918201928201910280838360005b8381101561013a578181015183820152602001610122565b505050509050016040526020018051604051939291908464010000000082111561016357600080fd5b90830190602082018581111561017857600080fd5b825186602082028301116401000000008211171561019557600080fd5b82525081516020918201928201910280838360005b838110156101c25781810151838201526020016101aa565b5050505090500160405250505060008090505b8351811015610208576102008482815181106101ed57fe5b602002602001015161025c60201b60201c565b6001016101d5565b5060005b82518110156102535761024b83828151811061022457fe5b602002602001015183838151811061023857fe5b602002602001015161029960201b60201c565b60010161020c565b505050506102ed565b6102966102816a5465616d4d656d6265722d60a81b836102d560201b61018a1760201c565b60001960001b6102e960201b61019e1760201c565b50565b6102d16102be6a546f6b656e50726963652d60a81b846102d560201b61018a1760201c565b8260001b6102e960201b61019e1760201c565b5050565b6000828152600b82905280601f5392915050565b9055565b610222806102fc6000396000f3fe608060405234801561001057600080fd5b50600436106100565760003560e01c8062e4768b1461005b57806341976e09146100895780635994d984146100c1578063654b8c2a146100c9578063c9969bcf146100d1575b600080fd5b6100876004803603604081101561007157600080fd5b506001600160a01b0381351690602001356100d9565b005b6100af6004803603602081101561009f57600080fd5b50356001600160a01b0316610138565b60408051918252519081900360200190f35b6100af610160565b6100af610166565b6100af610178565b6100e2336101a2565b61012a576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61013482826101c7565b5050565b600061015a6101556a546f6b656e50726963652d60a81b8461018a565b6101e8565b92915050565b60001981565b6a5465616d4d656d6265722d60a81b81565b6a546f6b656e50726963652d60a81b81565b6000828152600b82905280601f5392915050565b9055565b60006101bf6101556a5465616d4d656d6265722d60a81b8461018a565b151592915050565b6101346101e26a546f6b656e50726963652d60a81b8461018a565b8261019e565b549056fea264697066735822122070ae1e5eed502f98f5dfaff56e357e2220599765ef1b302f237040838132234864736f6c63430006080033"
 
 // DeployTokenPrice deploys a new Ethereum contract, binding an instance of TokenPrice to it.
 func DeployTokenPrice(auth *bind.TransactOpts, backend bind.ContractBackend, team []common.Address, tokens []common.Address, prices []*big.Int) (common.Address, *types.Transaction, *TokenPrice, error) {
@@ -1087,7 +1065,7 @@ func (_TokenPrice *TokenPriceTransactorSession) SetPrice(token common.Address, p
 const DsABI = "[]"
 
 // DsBin is the compiled bytecode used for deploying new contracts.
-var DsBin = "0x60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122029136e0c7497f95a20c6079b34f36f2cba9e2ad98f2b4210505fa1965368037664736f6c63430006040033"
+var DsBin = "0x60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220337e96c083dd16b45f3b38c2b571b9ca820f4cc0ffa563a3b43084d03ae14edc64736f6c63430006080033"
 
 // DeployDs deploys a new Ethereum contract, binding an instance of Ds to it.
 func DeployDs(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Ds, error) {
