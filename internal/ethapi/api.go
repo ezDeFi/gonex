@@ -826,7 +826,7 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 		log.Warn("Caller gas above allowance, capping", "requested", gas, "cap", globalGasCap)
 		gas = globalGasCap.Uint64()
 	}
-	gasPrice := new(big.Int).SetUint64(defaultGasPrice)
+	gasPrice := common.Big0
 	if args.GasPrice != nil {
 		gasPrice = args.GasPrice.ToInt()
 	}
