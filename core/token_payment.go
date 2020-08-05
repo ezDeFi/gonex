@@ -22,7 +22,6 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -72,17 +71,13 @@ func (context *PaymentContext) Pay(gas uint64) (uint64, error) {
 	}
 	input = append(IPayerFuncSigPay, input...)
 
-	log.Error("++Pay", "before", gas)
-
 	ret, gas, err := evm.CallCode(
 		vm.AccountRef(msg.From()),
 		context.contract,
 		input,
 		gas,
 		common.Big0)
-	log.Error("++Pay", "after", gas)
 	if err == nil {
-		// log.Error("================", "payment gas used", context.gas.Uint64()-remain)
 		return gas, nil
 	}
 

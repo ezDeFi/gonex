@@ -166,7 +166,6 @@ func (st *StateTransition) buyGas() error {
 	if st.msg.From() != params.ZeroAddress {
 		vlp := new(big.Int).Add(mgval, st.msg.Value())
 		st.payByToken = st.state.GetBalance(st.msg.From()).Cmp(vlp) < 0
-		log.Error("~~~~~~~~~~~~~~~~~~~~~", "?", st.payByToken, "balance", st.state.GetBalance(st.msg.From()), "vlp", vlp)
 	}
 	if err := st.gp.SubGas(st.msg.Gas()); err != nil {
 		return err
@@ -234,24 +233,13 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	contractCreation := msg.To() == nil
 	txCode := msg.To() != nil && *msg.To() == params.ExecAddress
 
-	if msg.From() != params.ZeroAddress {
-		log.Error("---------------------------- intrinsic")
-	}
-
 	// Pay intrinsic gas
 	gas, err := IntrinsicGas(st.data, contractCreation, homestead, istanbul)
 	if err != nil {
 		return nil, 0, false, err
 	}
-	if msg.From() != params.ZeroAddress {
-		log.Error("---------------------------- use", "st.gas", st.gas, "intrGas", gas)
-	}
 	if err = st.useGas(gas); err != nil {
 		return nil, 0, false, err
-	}
-
-	if msg.From() != params.ZeroAddress {
-		log.Error("----------------------------", "before", st.gasUsed())
 	}
 
 	if contractCreation {
@@ -267,9 +255,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 			ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
 		}
 	}
-	if msg.From() != params.ZeroAddress {
-		log.Error("----------------------------", "after", st.gasUsed())
-	}
 	if vmerr != nil {
 		log.Debug("VM returned with error", "err", vmerr)
 		// The only possible consensus-error would be if there wasn't
@@ -282,10 +267,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	}
 
 	st.refundGas()
-
-	if msg.From() != params.ZeroAddress {
-		log.Error("----------------------------", "after refund", st.gasUsed())
-	}
 
 	// token fee is already pre-paid
 	if !st.payByToken {
