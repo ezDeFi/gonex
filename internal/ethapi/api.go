@@ -783,7 +783,10 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 				addr = accounts[0].Address
 			}
 		}
+		// `from` field is not set so only the state result is matter, the tx result will probablly wrong
+		state.SetBalance(addr, math.MaxBig256)
 	} else {
+		// the `from` balance is preserved to get the most corrected tx result
 		addr = *args.From
 	}
 	// Override the fields of specified contracts before execution.
