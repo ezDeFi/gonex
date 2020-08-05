@@ -126,6 +126,7 @@ func (w *wizard) makeGenesis() {
 			AbsorptionExpiration:  params.MainnetChainConfig.Dccs.AbsorptionExpiration,
 			LockdownExpiration:    params.MainnetChainConfig.Dccs.LockdownExpiration,
 			SlashingRate:          params.MainnetChainConfig.Dccs.SlashingRate,
+			StablecoinPrefund:     params.TestnetAdmin,
 			// TokenFee
 			TokenPriceAdmins: params.MainnetChainConfig.Dccs.TokenPriceAdmins,
 		}

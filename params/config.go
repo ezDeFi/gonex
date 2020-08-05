@@ -50,6 +50,8 @@ var (
 	// Token fee contract addresses
 	TokenPayerAddress = common.HexToAddress("0x56789") // Default PayByToken contract
 	TokenPriceAddress = common.HexToAddress("0x6789A") // Default TokenPrice contract
+	// Testnet Params
+	TestnetAdmin = common.HexToAddress("0x1367fc3B5C3cE52D61347c0FE2216E576cb2060E")
 )
 
 // TrustedCheckpoints associates each known checkpoint with the genesis hash of
@@ -159,9 +161,10 @@ var (
 			AbsorptionExpiration:  MainnetChainConfig.Dccs.AbsorptionExpiration / 1024,
 			LockdownExpiration:    MainnetChainConfig.Dccs.LockdownExpiration / 1024,
 			SlashingRate:          MainnetChainConfig.Dccs.SlashingRate,
+			StablecoinPrefund:     TestnetAdmin,
 			// TokenFee
 			TokenPriceAdmins: []common.Address{
-				common.HexToAddress("0xC06F7cF8C9e8a8D39b0dF5A105d66127912Bc980"),
+				TestnetAdmin,
 			},
 		},
 	}
@@ -409,6 +412,7 @@ type DccsConfig struct {
 	AbsorptionExpiration  uint64 `json:"absorptionExpiration"`  // number of blocks that the absorption will be expired (a week)
 	SlashingRate          uint64 `json:"slashingRate"`          // slashing rate
 	LockdownExpiration    uint64 `json:"lockdownExpiration"`    // number of blocks that the lockdown will be expired (2 weeks)
+	StablecoinPrefund     common.Address
 	// Token fee
 	TokenPriceAdmins []common.Address // list of token price admin
 }
