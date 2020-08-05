@@ -783,12 +783,9 @@ func deployStablecoinContracts(chain consensus.ChainReader, header *types.Header
 	{
 		// Generate contract code and data using a simulated backend
 		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
-			amount := common.Big0
-			prefund := chain.Config().Dccs.StablecoinPrefund
-			if prefund != params.ZeroAddress {
-				amount = common.Big1000
-			}
-			address, _, _, err := stable.DeployStableToken(auth, sim, params.SeigniorageAddress, prefund, amount)
+			address, _, _, err := stable.DeployStableToken(auth, sim, params.SeigniorageAddress,
+				chain.Config().Dccs.TestnetSTBPrefundAddress,
+				chain.Config().Dccs.TestnetSTBPrefundAmount)
 			return address, err
 		})
 		if err != nil {
@@ -835,7 +832,7 @@ func deployTokenPaymentContracts(chain consensus.ChainReader, header *types.Head
 			stablePrice := big.NewInt(20)
 			stablePrice = stablePrice.Mul(stablePrice, common.Big1e18)
 			address, _, _, err := fee.DeployTokenPayment(auth, sim,
-				chain.Config().Dccs.TokenPriceAdmins,
+				chain.Config().Dccs.TokenPaymentAdmins,
 				[]common.Address{ // intitial token addresses
 					params.VolatileTokenAddress,
 					params.StableTokenAddress,

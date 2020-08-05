@@ -126,9 +126,11 @@ func (w *wizard) makeGenesis() {
 			AbsorptionExpiration:  params.MainnetChainConfig.Dccs.AbsorptionExpiration,
 			LockdownExpiration:    params.MainnetChainConfig.Dccs.LockdownExpiration,
 			SlashingRate:          params.MainnetChainConfig.Dccs.SlashingRate,
-			StablecoinPrefund:     params.TestnetAdmin,
-			// TokenFee
-			TokenPriceAdmins: params.MainnetChainConfig.Dccs.TokenPriceAdmins,
+			// TokenPayment
+			TokenPaymentAdmins: params.TestnetChainConfig.Dccs.TokenPaymentAdmins,
+			// Testnet params
+			TestnetSTBPrefundAddress: params.TestnetChainConfig.Dccs.TestnetSTBPrefundAddress,
+			TestnetSTBPrefundAmount:  params.TestnetChainConfig.Dccs.TestnetSTBPrefundAmount,
 		}
 		fmt.Println()
 		fmt.Println("How many seconds should blocks take? (default = 2)")
@@ -197,7 +199,13 @@ func (w *wizard) makeGenesis() {
 
 		genesis.Config.Dccs.SlashingRate = uint64(params.MainnetChainConfig.Dccs.SlashingRate)
 
-		// TODO: TokenPriceAdmins
+		fmt.Println()
+		fmt.Println("Which account should be the admin of the RegNet?")
+		if address := w.readAddress(); address != nil {
+			genesis.Config.Dccs.TestnetSTBPrefundAddress = *address
+			// override the TokenPaymentAdmins
+			genesis.Config.Dccs.TokenPaymentAdmins = []common.Address{*address}
+		}
 
 	default:
 		log.Crit("Invalid consensus engine choice", "choice", choice)
