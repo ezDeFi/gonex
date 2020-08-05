@@ -35,59 +35,19 @@ contract TokenPayer is IPayer {
      */
     function pay(
         address coinbase,
-        uint paymentGas,
         address txTo,
         uint txGas,
         uint txGasPrice
     ) external override {
         (address token, uint price) = _payment(txTo);
         // require(token != address(0x0) && price > 0, "payment not available");
-        uint gas = paymentGas + txGas;
-        // require(gas >= txGas, "total gas overflow");
-        uint fee = gas * txGasPrice;
-        // require(fee > 0 && fee / gas == txGasPrice, "fee overflow");
+        uint fee = txGas * txGasPrice;
+        // require(fee > 0 && fee / txGas == txGasPrice, "fee overflow");
         // require(fee * (10**18) / (10**18) == fee, "token overflow");
         uint tokenToPay = fee * (10**18) / price;
         // require(tokenToPay > 0, "zero token fee");
-        // revert(uint2str(tokenToPay));
-        // uint balance = IERC20(token).balanceOf(msg.sender);
-        // revert(uint2str(balance));
-        // ds.store("abc", "cde");
-        // IERC20(token).approve(coinbase, tokenToPay);
         IERC20(token).transfer(coinbase, tokenToPay);
     }
-
-    // /* bytes32 (fixed-size array) to string (dynamically-sized array) */
-    // function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
-    //     uint8 i = 0;
-    //     while(i < 32 && _bytes32[i] != 0) {
-    //         i++;
-    //     }
-    //     bytes memory bytesArray = new bytes(i);
-    //     for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
-    //         bytesArray[i] = _bytes32[i];
-    //     }
-    //     return string(bytesArray);
-    // }
-
-    // function uint2str(uint _i) internal pure returns (string memory _uintAsString) {
-    //     if (_i == 0) {
-    //         return "0";
-    //     }
-    //     uint j = _i;
-    //     uint len;
-    //     while (j != 0) {
-    //         len++;
-    //         j /= 10;
-    //     }
-    //     bytes memory bstr = new bytes(len);
-    //     uint k = len - 1;
-    //     while (_i != 0) {
-    //         bstr[k--] = byte(uint8(48 + _i % 10));
-    //         _i /= 10;
-    //     }
-    //     return string(bstr);
-    // }
 
     function _payment(
         address to

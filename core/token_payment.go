@@ -30,9 +30,9 @@ import (
 )
 
 // IPayerABI is the input ABI used to generate the binding from.
-const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"paymentGas\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
-var IPayerFuncSigPay = []byte{0x8a, 0x19, 0x8d, 0x1e} // pay(address,uint256,address,uint256,uint256)
+var IPayerFuncSigPay = []byte{0xdd, 0x9a, 0x76, 0xff} // pay(address,address,uint256,uint256)
 
 var abiPayer, _ = abi.JSON(strings.NewReader(IPayerABI))
 var abiIPayerFuncPay, _ = abiPayer.MethodById(IPayerFuncSigPay)
@@ -64,7 +64,6 @@ func (context *PaymentContext) Pay(gas uint64) (uint64, error) {
 
 	input, err := abiIPayerFuncPay.Inputs.Pack(
 		evm.Coinbase,
-		common.Big0,
 		msg.To(),
 		new(big.Int).SetUint64(msg.Gas()),
 		msg.GasPrice())
