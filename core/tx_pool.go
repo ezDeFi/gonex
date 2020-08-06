@@ -624,7 +624,7 @@ func (pool *TxPool) createPaymentContext(tx *types.Transaction) (*PaymentContext
 	// about the transaction and calling mechanisms.
 	evm := vm.NewEVM(context, pool.currentState, pool.chainconfig, vm.Config{})
 
-	return NewPaymentContext(evm, msg), nil
+	return NewPaymentContext(evm, msg)
 }
 
 // validateTx checks whether a transaction is valid according to the consensus
@@ -738,7 +738,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		if err != nil {
 			return fmt.Errorf("%v%v", params.FeePrefix, err.Error())
 		}
-		ret, _, vmerr := paymentContext.Pay(tx.Gas() - intrGas)
+		ret, vmerr := paymentContext.Pay()
 		if vmerr != nil {
 			// provide extra user friendly revert reason
 			evm := paymentContext.evm

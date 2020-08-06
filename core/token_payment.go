@@ -38,43 +38,54 @@ var abiIPayerFuncPay, _ = abiPayer.MethodById(IPayerFuncSigPay)
 var tokenPayerKey = common.BytesToHash([]byte("TokenPayer"))
 
 type PaymentContext struct {
-	evm      *vm.EVM
-	contract common.Address
-	msg      Message
+	evm        *vm.EVM
+	contract   common.Address
+	input      []byte
+	msg        Message
+	paymentGas uint64 // paymentGas
 }
 
-func NewPaymentContext(evm *vm.EVM, msg Message) *PaymentContext {
+func NewPaymentContext(evm *vm.EVM, msg Message) (*PaymentContext, error) {
 	payer := evm.StateDB.GetState(msg.From(), tokenPayerKey)
 	contract := common.BytesToAddress(payer[:20])
 	if contract == params.ZeroAddress {
 		contract = params.TokenPayerAddress
 	}
-	return &PaymentContext{
-		evm:      evm,
-		contract: contract,
-		msg:      msg,
+	// payer[20:24] unused
+	paymentGas := new(big.Int).SetBytes(payer[24:]).Uint64()
+	if paymentGas == 0 {
+		paymentGas = params.TokenPayementGas
 	}
-}
 
-func (context *PaymentContext) Pay(gas uint64) ([]byte, uint64, error) {
-	msg := context.msg
-	evm := context.evm
+	gasToPay := new(big.Int).SetUint64(paymentGas)
+	gasToPay = gasToPay.Add(gasToPay, new(big.Int).SetUint64(msg.Gas()))
 
-	// TODO: move this to constructor, err != vmerr
 	input, err := abiIPayerFuncPay.Inputs.Pack(
 		evm.Coinbase,
 		msg.To(),
-		new(big.Int).SetUint64(msg.Gas()),
+		gasToPay,
 		msg.GasPrice())
 	if err != nil {
-		return nil, gas, err
+		return nil, err
 	}
 	input = append(IPayerFuncSigPay, input...)
 
-	return evm.CallCode(
-		vm.AccountRef(msg.From()),
+	return &PaymentContext{
+		evm:        evm,
+		contract:   contract,
+		input:      input,
+		msg:        msg,
+		paymentGas: paymentGas,
+	}, nil
+}
+
+func (context *PaymentContext) Pay() ([]byte, error) {
+	ret, _, err := context.evm.CallCode(
+		vm.AccountRef(context.msg.From()),
 		context.contract,
-		input,
-		gas,
+		context.input,
+		context.paymentGas,
 		common.Big0)
+
+	return ret, err
 }

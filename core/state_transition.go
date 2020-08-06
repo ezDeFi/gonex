@@ -237,8 +237,11 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	}
 
 	if st.payByToken {
-		paymentContext := NewPaymentContext(st.evm, msg)
-		ret, st.gas, vmerr = paymentContext.Pay(st.gas)
+		paymentContext, err := NewPaymentContext(st.evm, msg)
+		if err != nil {
+			return nil, 0, false, err
+		}
+		ret, vmerr = paymentContext.Pay()
 		if vmerr != nil {
 			log.Debug("Payment VM returned with error", "err", vmerr)
 			// The only possible consensus-error would be if there wasn't
