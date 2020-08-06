@@ -174,16 +174,10 @@ func (st *StateTransition) buyGas() error {
 
 	st.initialGas = st.msg.Gas()
 
-	if st.payByToken {
-		paymentContext := NewPaymentContext(st.evm, st.msg)
-		var err error
-		if st.gas, err = paymentContext.Pay(st.gas); err != nil {
-			return fmt.Errorf("%v: %v", "Token Payment", err.Error())
-		}
-		return nil
+	if !st.payByToken {
+		st.state.SubBalance(st.msg.From(), mgval)
 	}
 
-	st.state.SubBalance(st.msg.From(), mgval)
 	return nil
 }
 
@@ -242,17 +236,34 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		return nil, 0, false, err
 	}
 
-	if contractCreation {
-		ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)
-	} else {
-		if !evm.IgnoreNonce() {
-			// Increment the nonce for the next transaction
-			st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
+	if st.payByToken {
+		paymentContext := NewPaymentContext(st.evm, msg)
+		ret, st.gas, vmerr = paymentContext.Pay(st.gas)
+		if vmerr != nil {
+			log.Debug("Payment VM returned with error", "err", vmerr)
+			// The only possible consensus-error would be if there wasn't
+			// sufficient balance to make the transfer happen. The first
+			// balance transfer may never fail.
+			if vmerr == vm.ErrInsufficientBalance {
+				evm.LogFailure(params.FeePrefix + params.ErrorLogInsufficientBalance)
+				return nil, 0, false, fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
+			}
+			vmerr = fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
 		}
-		if txCode {
-			ret, st.gas, vmerr = evm.ExecCall(sender, st.data, vm.ExecCodeSignature, st.gas, st.value)
+	}
+	if vmerr == nil {
+		if contractCreation {
+			ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)
 		} else {
-			ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
+			if !evm.IgnoreNonce() {
+				// Increment the nonce for the next transaction
+				st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
+			}
+			if txCode {
+				ret, st.gas, vmerr = evm.ExecCall(sender, st.data, vm.ExecCodeSignature, st.gas, st.value)
+			} else {
+				ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
+			}
 		}
 	}
 	if vmerr != nil {

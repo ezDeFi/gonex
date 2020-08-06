@@ -17,7 +17,6 @@
 package core
 
 import (
-	"errors"
 	"math/big"
 	"strings"
 
@@ -57,37 +56,25 @@ func NewPaymentContext(evm *vm.EVM, msg Message) *PaymentContext {
 	}
 }
 
-func (context *PaymentContext) Pay(gas uint64) (uint64, error) {
+func (context *PaymentContext) Pay(gas uint64) ([]byte, uint64, error) {
 	msg := context.msg
 	evm := context.evm
 
+	// TODO: move this to constructor, err != vmerr
 	input, err := abiIPayerFuncPay.Inputs.Pack(
 		evm.Coinbase,
 		msg.To(),
 		new(big.Int).SetUint64(msg.Gas()),
 		msg.GasPrice())
 	if err != nil {
-		return gas, err
+		return nil, gas, err
 	}
 	input = append(IPayerFuncSigPay, input...)
 
-	ret, gas, err := evm.CallCode(
+	return evm.CallCode(
 		vm.AccountRef(msg.From()),
 		context.contract,
 		input,
 		gas,
 		common.Big0)
-	if err == nil {
-		return gas, nil
-	}
-
-	if len(evm.FailureReason) > 0 {
-		return gas, errors.New(evm.FailureReason)
-	}
-	// provide extra user friendly revert error
-	reason := params.GetSolidityRevertMessage(ret)
-	if len(reason) > 0 {
-		return gas, errors.New(reason)
-	}
-	return gas, err
 }

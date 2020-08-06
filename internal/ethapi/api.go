@@ -881,9 +881,18 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 	}
 	if len(evm.FailureReason) > 0 {
 		failed = true
-		res = append(params.GonexErrorSignature, evm.FailureReason...)
+		res = constructGonexErrorResult(evm.FailureReason)
 	}
 	return res, gas, failed, err
+}
+
+func constructGonexErrorResult(reason string) []byte {
+	l := len(params.GonexErrorSignature) + len(reason)
+	s := (l + 31) / 32 * 32
+	res := make([]byte, s, s)
+	p := copy(res, params.GonexErrorSignature)
+	copy(res[p:], reason)
+	return res
 }
 
 // Call executes the given transaction on the state for the given block number.

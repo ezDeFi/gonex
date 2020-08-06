@@ -695,41 +695,18 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	}
 
 	balance := pool.currentState.GetBalance(from)
-	gas := tx.Gas()
 
 	// Transactor should have enough funds to cover the costs
 	// cost == V + GP * GL
 	if balance.Cmp(tx.Value()) < 0 {
 		return fmt.Errorf("%v, balance=%v, value=%v", ErrInsufficientFunds.Error(), balance, tx.Value())
 	}
-	if balance.Cmp(tx.Cost()) < 0 {
-		// // TODO: special handling for txcode post-paid?
-		// to := context.msg.To()
-		// if to != nil && *to == params.ExecAddress {
-		// 	// TxCode can be postpaid
-		// 	// TODO: heuristically verify that the tx can be postpaid
-		// 	// tx.AsMessage()
-		// }
-		paymentContext, err := pool.createPaymentContext(tx)
-		if err != nil {
-			return errors.New("Token Payment Context: " + err.Error())
-		}
-		if gas, err = paymentContext.Pay(gas); err != nil {
-			return errors.New("Token Payment: " + err.Error())
-		}
-		// TODO: check if paymentContext.gas is acceptable
-		// TODO: check if miner should accept the token
-		// TODO: check if the price is right
-		// TODO: state.Prepare(tx.Hash(), emptyHash, 0)
-		// TODO: state.Logs() => check the transfer log
-	}
 	// Ensure the transaction has more gas than the basic tx fee.
 	intrGas, err := IntrinsicGas(tx.Data(), tx.To() == nil, true, pool.istanbul)
 	if err != nil {
 		return err
 	}
-	log.Error("=========================", "gas", gas, "intrGas", intrGas)
-	if gas < intrGas {
+	if tx.Gas() < intrGas {
 		return ErrIntrinsicGas
 	}
 
@@ -753,6 +730,32 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 	if !local && pool.parityLimit < tx.Parity() {
 		return ErrUnderparity
+	}
+
+	if balance.Cmp(tx.Cost()) < 0 {
+		// pay by token
+		paymentContext, err := pool.createPaymentContext(tx)
+		if err != nil {
+			return fmt.Errorf("%v%v", params.FeePrefix, err.Error())
+		}
+		ret, _, vmerr := paymentContext.Pay(tx.Gas() - intrGas)
+		if vmerr != nil {
+			// provide extra user friendly revert reason
+			evm := paymentContext.evm
+			if len(evm.FailureReason) > 0 {
+				return fmt.Errorf("%v%v", params.FeePrefix, evm.FailureReason)
+			}
+			reason := params.GetSolidityRevertMessage(ret)
+			if len(reason) > 0 {
+				return fmt.Errorf("%v%v", params.FeePrefix, reason)
+			}
+			return fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
+		}
+		// TODO: check if paymentContext.gas is acceptable
+		// TODO: check if miner should accept the token
+		// TODO: check if the price is right
+		// TODO: state.Prepare(tx.Hash(), emptyHash, 0)
+		// TODO: state.Logs() => check the transfer log
 	}
 
 	return nil
