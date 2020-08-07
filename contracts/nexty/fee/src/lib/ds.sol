@@ -15,6 +15,14 @@ library ds {
         }
     }
 
+    function store(bytes32 key, bytes32 value)
+        internal
+    {
+        assembly {
+            sstore(key, value)
+        }
+    }
+
     function loadAddress(bytes32 key)
         internal
         view
@@ -25,35 +33,41 @@ library ds {
         }
     }
 
-    function store(bytes32 key, bytes32 value)
-        internal
-    {
+    function storeAddress(bytes32 key, address value) internal {
         assembly {
             sstore(key, value)
         }
     }
 
+    /**
+     * @dev unsafe(path > bytes11)
+     */
     function key11a(bytes32 path, address adr)
         internal
         pure
         returns (bytes32 key)
     {
-        assembly {
-            mstore(key, path)           // 0..10
-            mstore(add(key,11), adr)    // 11..30
-            mstore8(add(key,31), 0x0)   // 31
-        }
+        return path | bytes32((uint(adr) << 8));
+        // assembly {
+        //     mstore(key, path)           // 0..10
+        //     mstore(add(key,11), adr)    // 11..30
+        //     mstore8(add(key,31), 0x0)   // 31
+        // }
     }
 
+    /**
+     * @dev unsafe(path > bytes11)
+     */
     function keya11(address adr, bytes32 path)
         internal
         pure
         returns (bytes32 key)
     {
-        assembly {
-            mstore(key, adr)            // 0..19
-            mstore(add(key,20), path)   // 20..30
-            mstore8(add(key,31), 0x0)   // 31
-        }
+        return bytes32(bytes20(adr)) | path >> 160;
+        // assembly {
+        //     mstore(key, adr)            // 0..19
+        //     mstore(add(key,20), path)   // 20..30
+        //     mstore8(add(key,31), 0x0)   // 31
+        // }
     }
 }

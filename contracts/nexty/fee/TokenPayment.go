@@ -1,7 +1,7 @@
 // Code generated - DO NOT EDIT.
 // This file is a generated binding and any manual changes will be lost.
 
-package payer
+package fee
 
 import (
 	"math/big"
@@ -26,6 +26,199 @@ var (
 	_ = types.BloomLookup
 	_ = event.NewSubscription
 )
+
+// IConfigABI is the input ABI used to generate the binding from.
+const IConfigABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"getTokenFor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+
+// IConfigFuncSigs maps the 4-byte function signature to its string representation.
+var IConfigFuncSigs = map[string]string{
+	"41976e09": "getPrice(address)",
+	"c0e04395": "getTokenFor(address)",
+}
+
+// IConfig is an auto generated Go binding around an Ethereum contract.
+type IConfig struct {
+	IConfigCaller     // Read-only binding to the contract
+	IConfigTransactor // Write-only binding to the contract
+	IConfigFilterer   // Log filterer for contract events
+}
+
+// IConfigCaller is an auto generated read-only Go binding around an Ethereum contract.
+type IConfigCaller struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IConfigTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type IConfigTransactor struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IConfigFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type IConfigFilterer struct {
+	contract *bind.BoundContract // Generic contract wrapper for the low level calls
+}
+
+// IConfigSession is an auto generated Go binding around an Ethereum contract,
+// with pre-set call and transact options.
+type IConfigSession struct {
+	Contract     *IConfig          // Generic contract binding to set the session for
+	CallOpts     bind.CallOpts     // Call options to use throughout this session
+	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
+}
+
+// IConfigCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// with pre-set call options.
+type IConfigCallerSession struct {
+	Contract *IConfigCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts  // Call options to use throughout this session
+}
+
+// IConfigTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// with pre-set transact options.
+type IConfigTransactorSession struct {
+	Contract     *IConfigTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts  // Transaction auth options to use throughout this session
+}
+
+// IConfigRaw is an auto generated low-level Go binding around an Ethereum contract.
+type IConfigRaw struct {
+	Contract *IConfig // Generic contract binding to access the raw methods on
+}
+
+// IConfigCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type IConfigCallerRaw struct {
+	Contract *IConfigCaller // Generic read-only contract binding to access the raw methods on
+}
+
+// IConfigTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type IConfigTransactorRaw struct {
+	Contract *IConfigTransactor // Generic write-only contract binding to access the raw methods on
+}
+
+// NewIConfig creates a new instance of IConfig, bound to a specific deployed contract.
+func NewIConfig(address common.Address, backend bind.ContractBackend) (*IConfig, error) {
+	contract, err := bindIConfig(address, backend, backend, backend)
+	if err != nil {
+		return nil, err
+	}
+	return &IConfig{IConfigCaller: IConfigCaller{contract: contract}, IConfigTransactor: IConfigTransactor{contract: contract}, IConfigFilterer: IConfigFilterer{contract: contract}}, nil
+}
+
+// NewIConfigCaller creates a new read-only instance of IConfig, bound to a specific deployed contract.
+func NewIConfigCaller(address common.Address, caller bind.ContractCaller) (*IConfigCaller, error) {
+	contract, err := bindIConfig(address, caller, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &IConfigCaller{contract: contract}, nil
+}
+
+// NewIConfigTransactor creates a new write-only instance of IConfig, bound to a specific deployed contract.
+func NewIConfigTransactor(address common.Address, transactor bind.ContractTransactor) (*IConfigTransactor, error) {
+	contract, err := bindIConfig(address, nil, transactor, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &IConfigTransactor{contract: contract}, nil
+}
+
+// NewIConfigFilterer creates a new log filterer instance of IConfig, bound to a specific deployed contract.
+func NewIConfigFilterer(address common.Address, filterer bind.ContractFilterer) (*IConfigFilterer, error) {
+	contract, err := bindIConfig(address, nil, nil, filterer)
+	if err != nil {
+		return nil, err
+	}
+	return &IConfigFilterer{contract: contract}, nil
+}
+
+// bindIConfig binds a generic wrapper to an already deployed contract.
+func bindIConfig(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(IConfigABI))
+	if err != nil {
+		return nil, err
+	}
+	return bind.NewBoundContract(address, parsed, caller, transactor, filterer), nil
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_IConfig *IConfigRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _IConfig.Contract.IConfigCaller.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_IConfig *IConfigRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IConfig.Contract.IConfigTransactor.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_IConfig *IConfigRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IConfig.Contract.IConfigTransactor.contract.Transact(opts, method, params...)
+}
+
+// Call invokes the (constant) contract method with params as input values and
+// sets the output to result. The result type might be a single field for simple
+// returns, a slice of interfaces for anonymous returns and a struct for named
+// returns.
+func (_IConfig *IConfigCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _IConfig.Contract.contract.Call(opts, result, method, params...)
+}
+
+// Transfer initiates a plain transaction to move funds to the contract, calling
+// its default method if one is available.
+func (_IConfig *IConfigTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _IConfig.Contract.contract.Transfer(opts)
+}
+
+// Transact invokes the (paid) contract method with params as input values.
+func (_IConfig *IConfigTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _IConfig.Contract.contract.Transact(opts, method, params...)
+}
+
+// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+//
+// Solidity: function getPrice(address token) returns(uint256 price)
+func (_IConfig *IConfigTransactor) GetPrice(opts *bind.TransactOpts, token common.Address) (*types.Transaction, error) {
+	return _IConfig.contract.Transact(opts, "getPrice", token)
+}
+
+// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+//
+// Solidity: function getPrice(address token) returns(uint256 price)
+func (_IConfig *IConfigSession) GetPrice(token common.Address) (*types.Transaction, error) {
+	return _IConfig.Contract.GetPrice(&_IConfig.TransactOpts, token)
+}
+
+// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+//
+// Solidity: function getPrice(address token) returns(uint256 price)
+func (_IConfig *IConfigTransactorSession) GetPrice(token common.Address) (*types.Transaction, error) {
+	return _IConfig.Contract.GetPrice(&_IConfig.TransactOpts, token)
+}
+
+// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+//
+// Solidity: function getTokenFor(address to) returns(address token)
+func (_IConfig *IConfigTransactor) GetTokenFor(opts *bind.TransactOpts, to common.Address) (*types.Transaction, error) {
+	return _IConfig.contract.Transact(opts, "getTokenFor", to)
+}
+
+// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+//
+// Solidity: function getTokenFor(address to) returns(address token)
+func (_IConfig *IConfigSession) GetTokenFor(to common.Address) (*types.Transaction, error) {
+	return _IConfig.Contract.GetTokenFor(&_IConfig.TransactOpts, to)
+}
+
+// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+//
+// Solidity: function getTokenFor(address to) returns(address token)
+func (_IConfig *IConfigTransactorSession) GetTokenFor(to common.Address) (*types.Transaction, error) {
+	return _IConfig.Contract.GetTokenFor(&_IConfig.TransactOpts, to)
+}
 
 // IERC20ABI is the input ABI used to generate the binding from.
 const IERC20ABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"who\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
@@ -615,7 +808,7 @@ func (_IERC20 *IERC20Filterer) ParseTransfer(log types.Log) (*IERC20Transfer, er
 }
 
 // IPayerABI is the input ABI used to generate the binding from.
-const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasToPay\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // IPayerFuncSigs maps the 4-byte function signature to its string representation.
 var IPayerFuncSigs = map[string]string{
@@ -766,152 +959,135 @@ func (_IPayer *IPayerTransactorRaw) Transact(opts *bind.TransactOpts, method str
 
 // Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGas, uint256 txGasPrice) returns()
-func (_IPayer *IPayerTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
-	return _IPayer.contract.Transact(opts, "pay", coinbase, txTo, txGas, txGasPrice)
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_IPayer *IPayerTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _IPayer.contract.Transact(opts, "pay", coinbase, txTo, txGasPrice, gasToPay)
 }
 
 // Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGas, uint256 txGasPrice) returns()
-func (_IPayer *IPayerSession) Pay(coinbase common.Address, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
-	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, txTo, txGas, txGasPrice)
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_IPayer *IPayerSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
 }
 
 // Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGas, uint256 txGasPrice) returns()
-func (_IPayer *IPayerTransactorSession) Pay(coinbase common.Address, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
-	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, txTo, txGas, txGasPrice)
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_IPayer *IPayerTransactorSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
 }
 
-// TokenPayerABI is the input ABI used to generate the binding from.
-const TokenPayerABI = "[{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricesContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+// PayerCodeABI is the input ABI used to generate the binding from.
+const PayerCodeABI = "[{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasToPay\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
-// TokenPayerFuncSigs maps the 4-byte function signature to its string representation.
-var TokenPayerFuncSigs = map[string]string{
+// PayerCodeFuncSigs maps the 4-byte function signature to its string representation.
+var PayerCodeFuncSigs = map[string]string{
 	"5e8f4d74": "FeeTokenFallbackPath()",
 	"c8c1956b": "FeeTokenPath()",
+	"f218dd97": "TokenPayment()",
 	"c9969bcf": "TokenPricePath()",
-	"5e8c2e09": "TokenPricesContract()",
 	"dd9a76ff": "pay(address,address,uint256,uint256)",
 }
 
-// TokenPayerBin is the compiled bytecode used for deploying new contracts.
-var TokenPayerBin = "0x608060405234801561001057600080fd5b5061038d806100206000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c80635e8c2e091461005c5780635e8f4d7414610080578063c8c1956b1461009a578063c9969bcf146100a2578063dd9a76ff146100aa575b600080fd5b6100646100e8565b604080516001600160a01b039092168252519081900360200190f35b6100886100ef565b60408051918252519081900360200190f35b610088610106565b610088610115565b6100e6600480360360808110156100c057600080fd5b506001600160a01b03813581169160208101359091169060408101359060600135610127565b005b6206789a81565b6f466565546f6b656e46616c6c6261636b60801b81565b672332b2aa37b5b2b760c11b81565b6a546f6b656e50726963652d60a81b81565b600080610133856101e9565b9092509050838302600082670de0b6b3a764000083028161015057fe5b049050836001600160a01b031663a9059cbb89836040518363ffffffff1660e01b815260040180836001600160a01b03166001600160a01b0316815260200182815260200192505050602060405180830381600087803b1580156101b357600080fd5b505af11580156101c7573d6000803e3d6000fd5b505050506040513d60208110156101dd57600080fd5b50505050505050505050565b600080610200672332b2aa37b5b2b760c11b61028f565b91506001600160a01b038216156102275761021a82610293565b905080156102275761028a565b61023083610293565b905080156102405782915061028a565b61025c6f466565546f6b656e46616c6c6261636b60801b61028f565b91506001600160a01b038216156102835761027682610293565b905080156102835761028a565b5060009050805b915091565b5490565b6000806102b66102b16a546f6b656e50726963652d60a81b85610343565b61028f565b905080156102c557905061033e565b604080516341976e0960e01b81526001600160a01b038516600482015290516206789a916341976e09916024808301926020929190829003018186803b15801561030e57600080fd5b505afa158015610322573d6000803e3d6000fd5b505050506040513d602081101561033857600080fd5b50519150505b919050565b6000828152600b82905280601f539291505056fea2646970667358221220f9c60db6f873f1d506c3d929be14cdd5843a8c74b516e5ca85b1016e9a925fea64736f6c63430006080033"
-
-// DeployTokenPayer deploys a new Ethereum contract, binding an instance of TokenPayer to it.
-func DeployTokenPayer(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *TokenPayer, error) {
-	parsed, err := abi.JSON(strings.NewReader(TokenPayerABI))
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-
-	address, tx, contract, err := bind.DeployContract(auth, parsed, common.FromHex(TokenPayerBin), backend)
-	if err != nil {
-		return common.Address{}, nil, nil, err
-	}
-	return address, tx, &TokenPayer{TokenPayerCaller: TokenPayerCaller{contract: contract}, TokenPayerTransactor: TokenPayerTransactor{contract: contract}, TokenPayerFilterer: TokenPayerFilterer{contract: contract}}, nil
+// PayerCode is an auto generated Go binding around an Ethereum contract.
+type PayerCode struct {
+	PayerCodeCaller     // Read-only binding to the contract
+	PayerCodeTransactor // Write-only binding to the contract
+	PayerCodeFilterer   // Log filterer for contract events
 }
 
-// TokenPayer is an auto generated Go binding around an Ethereum contract.
-type TokenPayer struct {
-	TokenPayerCaller     // Read-only binding to the contract
-	TokenPayerTransactor // Write-only binding to the contract
-	TokenPayerFilterer   // Log filterer for contract events
-}
-
-// TokenPayerCaller is an auto generated read-only Go binding around an Ethereum contract.
-type TokenPayerCaller struct {
+// PayerCodeCaller is an auto generated read-only Go binding around an Ethereum contract.
+type PayerCodeCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// TokenPayerTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type TokenPayerTransactor struct {
+// PayerCodeTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type PayerCodeTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// TokenPayerFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type TokenPayerFilterer struct {
+// PayerCodeFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type PayerCodeFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// TokenPayerSession is an auto generated Go binding around an Ethereum contract,
+// PayerCodeSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type TokenPayerSession struct {
-	Contract     *TokenPayer       // Generic contract binding to set the session for
+type PayerCodeSession struct {
+	Contract     *PayerCode        // Generic contract binding to set the session for
 	CallOpts     bind.CallOpts     // Call options to use throughout this session
 	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// TokenPayerCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// PayerCodeCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type TokenPayerCallerSession struct {
-	Contract *TokenPayerCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts     // Call options to use throughout this session
+type PayerCodeCallerSession struct {
+	Contract *PayerCodeCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts    // Call options to use throughout this session
 }
 
-// TokenPayerTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// PayerCodeTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type TokenPayerTransactorSession struct {
-	Contract     *TokenPayerTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts     // Transaction auth options to use throughout this session
+type PayerCodeTransactorSession struct {
+	Contract     *PayerCodeTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts    // Transaction auth options to use throughout this session
 }
 
-// TokenPayerRaw is an auto generated low-level Go binding around an Ethereum contract.
-type TokenPayerRaw struct {
-	Contract *TokenPayer // Generic contract binding to access the raw methods on
+// PayerCodeRaw is an auto generated low-level Go binding around an Ethereum contract.
+type PayerCodeRaw struct {
+	Contract *PayerCode // Generic contract binding to access the raw methods on
 }
 
-// TokenPayerCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type TokenPayerCallerRaw struct {
-	Contract *TokenPayerCaller // Generic read-only contract binding to access the raw methods on
+// PayerCodeCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type PayerCodeCallerRaw struct {
+	Contract *PayerCodeCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// TokenPayerTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type TokenPayerTransactorRaw struct {
-	Contract *TokenPayerTransactor // Generic write-only contract binding to access the raw methods on
+// PayerCodeTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type PayerCodeTransactorRaw struct {
+	Contract *PayerCodeTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewTokenPayer creates a new instance of TokenPayer, bound to a specific deployed contract.
-func NewTokenPayer(address common.Address, backend bind.ContractBackend) (*TokenPayer, error) {
-	contract, err := bindTokenPayer(address, backend, backend, backend)
+// NewPayerCode creates a new instance of PayerCode, bound to a specific deployed contract.
+func NewPayerCode(address common.Address, backend bind.ContractBackend) (*PayerCode, error) {
+	contract, err := bindPayerCode(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenPayer{TokenPayerCaller: TokenPayerCaller{contract: contract}, TokenPayerTransactor: TokenPayerTransactor{contract: contract}, TokenPayerFilterer: TokenPayerFilterer{contract: contract}}, nil
+	return &PayerCode{PayerCodeCaller: PayerCodeCaller{contract: contract}, PayerCodeTransactor: PayerCodeTransactor{contract: contract}, PayerCodeFilterer: PayerCodeFilterer{contract: contract}}, nil
 }
 
-// NewTokenPayerCaller creates a new read-only instance of TokenPayer, bound to a specific deployed contract.
-func NewTokenPayerCaller(address common.Address, caller bind.ContractCaller) (*TokenPayerCaller, error) {
-	contract, err := bindTokenPayer(address, caller, nil, nil)
+// NewPayerCodeCaller creates a new read-only instance of PayerCode, bound to a specific deployed contract.
+func NewPayerCodeCaller(address common.Address, caller bind.ContractCaller) (*PayerCodeCaller, error) {
+	contract, err := bindPayerCode(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenPayerCaller{contract: contract}, nil
+	return &PayerCodeCaller{contract: contract}, nil
 }
 
-// NewTokenPayerTransactor creates a new write-only instance of TokenPayer, bound to a specific deployed contract.
-func NewTokenPayerTransactor(address common.Address, transactor bind.ContractTransactor) (*TokenPayerTransactor, error) {
-	contract, err := bindTokenPayer(address, nil, transactor, nil)
+// NewPayerCodeTransactor creates a new write-only instance of PayerCode, bound to a specific deployed contract.
+func NewPayerCodeTransactor(address common.Address, transactor bind.ContractTransactor) (*PayerCodeTransactor, error) {
+	contract, err := bindPayerCode(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenPayerTransactor{contract: contract}, nil
+	return &PayerCodeTransactor{contract: contract}, nil
 }
 
-// NewTokenPayerFilterer creates a new log filterer instance of TokenPayer, bound to a specific deployed contract.
-func NewTokenPayerFilterer(address common.Address, filterer bind.ContractFilterer) (*TokenPayerFilterer, error) {
-	contract, err := bindTokenPayer(address, nil, nil, filterer)
+// NewPayerCodeFilterer creates a new log filterer instance of PayerCode, bound to a specific deployed contract.
+func NewPayerCodeFilterer(address common.Address, filterer bind.ContractFilterer) (*PayerCodeFilterer, error) {
+	contract, err := bindPayerCode(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenPayerFilterer{contract: contract}, nil
+	return &PayerCodeFilterer{contract: contract}, nil
 }
 
-// bindTokenPayer binds a generic wrapper to an already deployed contract.
-func bindTokenPayer(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(TokenPayerABI))
+// bindPayerCode binds a generic wrapper to an already deployed contract.
+func bindPayerCode(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(PayerCodeABI))
 	if err != nil {
 		return nil, err
 	}
@@ -922,272 +1098,279 @@ func bindTokenPayer(address common.Address, caller bind.ContractCaller, transact
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_TokenPayer *TokenPayerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _TokenPayer.Contract.TokenPayerCaller.contract.Call(opts, result, method, params...)
+func (_PayerCode *PayerCodeRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _PayerCode.Contract.PayerCodeCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_TokenPayer *TokenPayerRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayer.Contract.TokenPayerTransactor.contract.Transfer(opts)
+func (_PayerCode *PayerCodeRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _PayerCode.Contract.PayerCodeTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_TokenPayer *TokenPayerRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _TokenPayer.Contract.TokenPayerTransactor.contract.Transact(opts, method, params...)
+func (_PayerCode *PayerCodeRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _PayerCode.Contract.PayerCodeTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_TokenPayer *TokenPayerCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _TokenPayer.Contract.contract.Call(opts, result, method, params...)
+func (_PayerCode *PayerCodeCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _PayerCode.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_TokenPayer *TokenPayerTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayer.Contract.contract.Transfer(opts)
+func (_PayerCode *PayerCodeTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _PayerCode.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_TokenPayer *TokenPayerTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _TokenPayer.Contract.contract.Transact(opts, method, params...)
+func (_PayerCode *PayerCodeTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _PayerCode.Contract.contract.Transact(opts, method, params...)
 }
 
 // FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
 //
 // Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_TokenPayer *TokenPayerTransactor) FeeTokenFallbackPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayer.contract.Transact(opts, "FeeTokenFallbackPath")
+func (_PayerCode *PayerCodeTransactor) FeeTokenFallbackPath(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _PayerCode.contract.Transact(opts, "FeeTokenFallbackPath")
 }
 
 // FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
 //
 // Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_TokenPayer *TokenPayerSession) FeeTokenFallbackPath() (*types.Transaction, error) {
-	return _TokenPayer.Contract.FeeTokenFallbackPath(&_TokenPayer.TransactOpts)
+func (_PayerCode *PayerCodeSession) FeeTokenFallbackPath() (*types.Transaction, error) {
+	return _PayerCode.Contract.FeeTokenFallbackPath(&_PayerCode.TransactOpts)
 }
 
 // FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
 //
 // Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_TokenPayer *TokenPayerTransactorSession) FeeTokenFallbackPath() (*types.Transaction, error) {
-	return _TokenPayer.Contract.FeeTokenFallbackPath(&_TokenPayer.TransactOpts)
+func (_PayerCode *PayerCodeTransactorSession) FeeTokenFallbackPath() (*types.Transaction, error) {
+	return _PayerCode.Contract.FeeTokenFallbackPath(&_PayerCode.TransactOpts)
 }
 
 // FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
 //
 // Solidity: function FeeTokenPath() returns(bytes32)
-func (_TokenPayer *TokenPayerTransactor) FeeTokenPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayer.contract.Transact(opts, "FeeTokenPath")
+func (_PayerCode *PayerCodeTransactor) FeeTokenPath(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _PayerCode.contract.Transact(opts, "FeeTokenPath")
 }
 
 // FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
 //
 // Solidity: function FeeTokenPath() returns(bytes32)
-func (_TokenPayer *TokenPayerSession) FeeTokenPath() (*types.Transaction, error) {
-	return _TokenPayer.Contract.FeeTokenPath(&_TokenPayer.TransactOpts)
+func (_PayerCode *PayerCodeSession) FeeTokenPath() (*types.Transaction, error) {
+	return _PayerCode.Contract.FeeTokenPath(&_PayerCode.TransactOpts)
 }
 
 // FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
 //
 // Solidity: function FeeTokenPath() returns(bytes32)
-func (_TokenPayer *TokenPayerTransactorSession) FeeTokenPath() (*types.Transaction, error) {
-	return _TokenPayer.Contract.FeeTokenPath(&_TokenPayer.TransactOpts)
+func (_PayerCode *PayerCodeTransactorSession) FeeTokenPath() (*types.Transaction, error) {
+	return _PayerCode.Contract.FeeTokenPath(&_PayerCode.TransactOpts)
+}
+
+// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+//
+// Solidity: function TokenPayment() returns(address)
+func (_PayerCode *PayerCodeTransactor) TokenPayment(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _PayerCode.contract.Transact(opts, "TokenPayment")
+}
+
+// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+//
+// Solidity: function TokenPayment() returns(address)
+func (_PayerCode *PayerCodeSession) TokenPayment() (*types.Transaction, error) {
+	return _PayerCode.Contract.TokenPayment(&_PayerCode.TransactOpts)
+}
+
+// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+//
+// Solidity: function TokenPayment() returns(address)
+func (_PayerCode *PayerCodeTransactorSession) TokenPayment() (*types.Transaction, error) {
+	return _PayerCode.Contract.TokenPayment(&_PayerCode.TransactOpts)
 }
 
 // TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
 //
 // Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPayer *TokenPayerTransactor) TokenPricePath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayer.contract.Transact(opts, "TokenPricePath")
+func (_PayerCode *PayerCodeTransactor) TokenPricePath(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _PayerCode.contract.Transact(opts, "TokenPricePath")
 }
 
 // TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
 //
 // Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPayer *TokenPayerSession) TokenPricePath() (*types.Transaction, error) {
-	return _TokenPayer.Contract.TokenPricePath(&_TokenPayer.TransactOpts)
+func (_PayerCode *PayerCodeSession) TokenPricePath() (*types.Transaction, error) {
+	return _PayerCode.Contract.TokenPricePath(&_PayerCode.TransactOpts)
 }
 
 // TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
 //
 // Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPayer *TokenPayerTransactorSession) TokenPricePath() (*types.Transaction, error) {
-	return _TokenPayer.Contract.TokenPricePath(&_TokenPayer.TransactOpts)
-}
-
-// TokenPricesContract is a paid mutator transaction binding the contract method 0x5e8c2e09.
-//
-// Solidity: function TokenPricesContract() returns(address)
-func (_TokenPayer *TokenPayerTransactor) TokenPricesContract(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayer.contract.Transact(opts, "TokenPricesContract")
-}
-
-// TokenPricesContract is a paid mutator transaction binding the contract method 0x5e8c2e09.
-//
-// Solidity: function TokenPricesContract() returns(address)
-func (_TokenPayer *TokenPayerSession) TokenPricesContract() (*types.Transaction, error) {
-	return _TokenPayer.Contract.TokenPricesContract(&_TokenPayer.TransactOpts)
-}
-
-// TokenPricesContract is a paid mutator transaction binding the contract method 0x5e8c2e09.
-//
-// Solidity: function TokenPricesContract() returns(address)
-func (_TokenPayer *TokenPayerTransactorSession) TokenPricesContract() (*types.Transaction, error) {
-	return _TokenPayer.Contract.TokenPricesContract(&_TokenPayer.TransactOpts)
+func (_PayerCode *PayerCodeTransactorSession) TokenPricePath() (*types.Transaction, error) {
+	return _PayerCode.Contract.TokenPricePath(&_PayerCode.TransactOpts)
 }
 
 // Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGas, uint256 txGasPrice) returns()
-func (_TokenPayer *TokenPayerTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
-	return _TokenPayer.contract.Transact(opts, "pay", coinbase, txTo, txGas, txGasPrice)
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_PayerCode *PayerCodeTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _PayerCode.contract.Transact(opts, "pay", coinbase, txTo, txGasPrice, gasToPay)
 }
 
 // Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGas, uint256 txGasPrice) returns()
-func (_TokenPayer *TokenPayerSession) Pay(coinbase common.Address, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
-	return _TokenPayer.Contract.Pay(&_TokenPayer.TransactOpts, coinbase, txTo, txGas, txGasPrice)
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_PayerCode *PayerCodeSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _PayerCode.Contract.Pay(&_PayerCode.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
 }
 
 // Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGas, uint256 txGasPrice) returns()
-func (_TokenPayer *TokenPayerTransactorSession) Pay(coinbase common.Address, txTo common.Address, txGas *big.Int, txGasPrice *big.Int) (*types.Transaction, error) {
-	return _TokenPayer.Contract.Pay(&_TokenPayer.TransactOpts, coinbase, txTo, txGas, txGasPrice)
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_PayerCode *PayerCodeTransactorSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _PayerCode.Contract.Pay(&_PayerCode.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
 }
 
-// TokenPriceABI is the input ABI used to generate the binding from.
-const TokenPriceABI = "[{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"team\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokens\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"prices\",\"type\":\"uint256[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"TRUE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TeamMemberPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"setPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+// TokenPaymentABI is the input ABI used to generate the binding from.
+const TokenPaymentABI = "[{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"team\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokens\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"prices\",\"type\":\"uint256[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TRUE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TeamMemberPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenForPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"getTokenFor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasToPay\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"setPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"setTokenFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
-// TokenPriceFuncSigs maps the 4-byte function signature to its string representation.
-var TokenPriceFuncSigs = map[string]string{
+// TokenPaymentFuncSigs maps the 4-byte function signature to its string representation.
+var TokenPaymentFuncSigs = map[string]string{
+	"5e8f4d74": "FeeTokenFallbackPath()",
+	"c8c1956b": "FeeTokenPath()",
 	"5994d984": "TRUE()",
 	"654b8c2a": "TeamMemberPath()",
+	"efc0a0a9": "TokenForPath()",
+	"f218dd97": "TokenPayment()",
 	"c9969bcf": "TokenPricePath()",
 	"41976e09": "getPrice(address)",
+	"c0e04395": "getTokenFor(address)",
+	"dd9a76ff": "pay(address,address,uint256,uint256)",
 	"00e4768b": "setPrice(address,uint256)",
+	"90b63f21": "setTokenFor(address,address)",
 }
 
-// TokenPriceBin is the compiled bytecode used for deploying new contracts.
-var TokenPriceBin = "0x608060405234801561001057600080fd5b5060405161051e38038061051e8339818101604052606081101561003357600080fd5b810190808051604051939291908464010000000082111561005357600080fd5b90830190602082018581111561006857600080fd5b825186602082028301116401000000008211171561008557600080fd5b82525081516020918201928201910280838360005b838110156100b257818101518382015260200161009a565b50505050905001604052602001805160405193929190846401000000008211156100db57600080fd5b9083019060208201858111156100f057600080fd5b825186602082028301116401000000008211171561010d57600080fd5b82525081516020918201928201910280838360005b8381101561013a578181015183820152602001610122565b505050509050016040526020018051604051939291908464010000000082111561016357600080fd5b90830190602082018581111561017857600080fd5b825186602082028301116401000000008211171561019557600080fd5b82525081516020918201928201910280838360005b838110156101c25781810151838201526020016101aa565b5050505090500160405250505060008090505b8351811015610208576102008482815181106101ed57fe5b602002602001015161025c60201b60201c565b6001016101d5565b5060005b82518110156102535761024b83828151811061022457fe5b602002602001015183838151811061023857fe5b602002602001015161029960201b60201c565b60010161020c565b505050506102ed565b6102966102816a5465616d4d656d6265722d60a81b836102d560201b61018a1760201c565b60001960001b6102e960201b61019e1760201c565b50565b6102d16102be6a546f6b656e50726963652d60a81b846102d560201b61018a1760201c565b8260001b6102e960201b61019e1760201c565b5050565b6000828152600b82905280601f5392915050565b9055565b610222806102fc6000396000f3fe608060405234801561001057600080fd5b50600436106100565760003560e01c8062e4768b1461005b57806341976e09146100895780635994d984146100c1578063654b8c2a146100c9578063c9969bcf146100d1575b600080fd5b6100876004803603604081101561007157600080fd5b506001600160a01b0381351690602001356100d9565b005b6100af6004803603602081101561009f57600080fd5b50356001600160a01b0316610138565b60408051918252519081900360200190f35b6100af610160565b6100af610166565b6100af610178565b6100e2336101a2565b61012a576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61013482826101c7565b5050565b600061015a6101556a546f6b656e50726963652d60a81b8461018a565b6101e8565b92915050565b60001981565b6a5465616d4d656d6265722d60a81b81565b6a546f6b656e50726963652d60a81b81565b6000828152600b82905280601f5392915050565b9055565b60006101bf6101556a5465616d4d656d6265722d60a81b8461018a565b151592915050565b6101346101e26a546f6b656e50726963652d60a81b8461018a565b8261019e565b549056fea26469706673582212201aa2f65032bcd837b1817f570655ba6364132d2f46ee0d2467b6ae42ed8bde9564736f6c63430006080033"
+// TokenPaymentBin is the compiled bytecode used for deploying new contracts.
+var TokenPaymentBin = "0x60806040523480156200001157600080fd5b5060405162000a6138038062000a61833981810160405260608110156200003757600080fd5b81019080805160405193929190846401000000008211156200005857600080fd5b9083019060208201858111156200006e57600080fd5b82518660208202830111640100000000821117156200008c57600080fd5b82525081516020918201928201910280838360005b83811015620000bb578181015183820152602001620000a1565b5050505090500160405260200180516040519392919084640100000000821115620000e557600080fd5b908301906020820185811115620000fb57600080fd5b82518660208202830111640100000000821117156200011957600080fd5b82525081516020918201928201910280838360005b83811015620001485781810151838201526020016200012e565b50505050905001604052602001805160405193929190846401000000008211156200017257600080fd5b9083019060208201858111156200018857600080fd5b8251866020820283011164010000000082111715620001a657600080fd5b82525081516020918201928201910280838360005b83811015620001d5578181015183820152602001620001bb565b5050505090500160405250505060008090505b83518110156200022057620002178482815181106200020357fe5b60200260200101516200027b60201b60201c565b600101620001e8565b5060005b82518110156200027157620002688382815181106200023f57fe5b60200260200101518383815181106200025457fe5b6020026020010151620002be60201b60201c565b60010162000224565b5050505062000315565b620002bb620002a46a5465616d4d656d6265722d60a81b836200030060201b620004a11760201c565b60001960001b6200031160201b620004b21760201c565b50565b620002fc620002e76a546f6b656e50726963652d60a81b846200030060201b620004a11760201c565b8260001b6200031160201b620004b21760201c565b5050565b60081b610100600160a81b03161790565b9055565b61073c80620003256000396000f3fe608060405234801561001057600080fd5b50600436106100b35760003560e01c8063c0e0439511610071578063c0e0439514610164578063c8c1956b146101a6578063c9969bcf146101ae578063dd9a76ff146101b6578063efc0a0a9146101f2578063f218dd97146101fa576100b3565b8062e4768b146100b857806341976e09146100e65780635994d9841461011e5780635e8f4d7414610126578063654b8c2a1461012e57806390b63f2114610136575b600080fd5b6100e4600480360360408110156100ce57600080fd5b506001600160a01b038135169060200135610202565b005b61010c600480360360208110156100fc57600080fd5b50356001600160a01b0316610261565b60408051918252519081900360200190f35b61010c61028b565b61010c610291565b61010c6102a8565b6100e46004803603604081101561014c57600080fd5b506001600160a01b03813581169160200135166102ba565b61018a6004803603602081101561017a57600080fd5b50356001600160a01b031661032c565b604080516001600160a01b039092168252519081900360200190f35b61010c610351565b61010c610360565b6100e4600480360360808110156101cc57600080fd5b506001600160a01b03813581169160208101359091169060408101359060600135610372565b61010c610488565b61018a61049a565b61020b336104b6565b610253576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61025d82826104db565b5050565b600061028361027e6a546f6b656e50726963652d60a81b846104a1565b6104f6565b90505b919050565b60001981565b6f466565546f6b656e46616c6c6261636b60801b81565b6a5465616d4d656d6265722d60a81b81565b6102c3336104b6565b61030b576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61025d6103266a546f6b656e466f722d2d2d60a81b846104a1565b826104b2565b6000610337826104fa565b90506001600160a01b0381161561034d57610286565b5090565b672332b2aa37b5b2b760c11b81565b6a546f6b656e50726963652d60a81b81565b60008061037e85610517565b91509150600081116103d7576040805162461bcd60e51b815260206004820152601b60248201527f7061796d656e7420746f6b656e207072696365206e6f74207365740000000000604482015290519081900360640190fd5b828402600082670de0b6b3a76400008302816103ef57fe5b049050836001600160a01b031663a9059cbb89836040518363ffffffff1660e01b815260040180836001600160a01b03166001600160a01b0316815260200182815260200192505050602060405180830381600087803b15801561045257600080fd5b505af1158015610466573d6000803e3d6000fd5b505050506040513d602081101561047c57600080fd5b50505050505050505050565b6a546f6b656e466f722d2d2d60a81b81565b6205678981565b60081b610100600160a81b03161790565b9055565b60006104d361027e6a5465616d4d656d6265722d60a81b846104a1565b151592915050565b61025d6103266a546f6b656e50726963652d60a81b846104a1565b5490565b600061028361027e6a546f6b656e466f722d2d2d60a81b846104a1565b6000806105238361058a565b91506001600160a01b038216610577576040805162461bcd60e51b81526020600482015260146024820152731b9bc81d1bdad95b88199bdc881c185e5b595b9d60621b604482015290519081900360640190fd5b816105818361065d565b91509150915091565b60006105a0672332b2aa37b5b2b760c11b6104f6565b90506001600160a01b038116156105b657610286565b6040805163c0e0439560e01b81526001600160a01b03841660048201529051620567899163c0e04395916024808301926020929190829003018186803b1580156105ff57600080fd5b505afa158015610613573d6000803e3d6000fd5b505050506040513d602081101561062957600080fd5b505190506001600160a01b0381161561064157610286565b6102836f466565546f6b656e46616c6c6261636b60801b6104f6565b60008061067b61027e6a546f6b656e50726963652d60a81b856104a1565b9050801561068a579050610286565b604080516341976e0960e01b81526001600160a01b0385166004820152905162056789916341976e09916024808301926020929190829003018186803b1580156106d357600080fd5b505afa1580156106e7573d6000803e3d6000fd5b505050506040513d60208110156106fd57600080fd5b5051939250505056fea2646970667358221220cd765c25a8c4ef2b90a13ab01c29dbd6e1862909449c271081de0189820dfd7d64736f6c63430006080033"
 
-// DeployTokenPrice deploys a new Ethereum contract, binding an instance of TokenPrice to it.
-func DeployTokenPrice(auth *bind.TransactOpts, backend bind.ContractBackend, team []common.Address, tokens []common.Address, prices []*big.Int) (common.Address, *types.Transaction, *TokenPrice, error) {
-	parsed, err := abi.JSON(strings.NewReader(TokenPriceABI))
+// DeployTokenPayment deploys a new Ethereum contract, binding an instance of TokenPayment to it.
+func DeployTokenPayment(auth *bind.TransactOpts, backend bind.ContractBackend, team []common.Address, tokens []common.Address, prices []*big.Int) (common.Address, *types.Transaction, *TokenPayment, error) {
+	parsed, err := abi.JSON(strings.NewReader(TokenPaymentABI))
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
 
-	address, tx, contract, err := bind.DeployContract(auth, parsed, common.FromHex(TokenPriceBin), backend, team, tokens, prices)
+	address, tx, contract, err := bind.DeployContract(auth, parsed, common.FromHex(TokenPaymentBin), backend, team, tokens, prices)
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
-	return address, tx, &TokenPrice{TokenPriceCaller: TokenPriceCaller{contract: contract}, TokenPriceTransactor: TokenPriceTransactor{contract: contract}, TokenPriceFilterer: TokenPriceFilterer{contract: contract}}, nil
+	return address, tx, &TokenPayment{TokenPaymentCaller: TokenPaymentCaller{contract: contract}, TokenPaymentTransactor: TokenPaymentTransactor{contract: contract}, TokenPaymentFilterer: TokenPaymentFilterer{contract: contract}}, nil
 }
 
-// TokenPrice is an auto generated Go binding around an Ethereum contract.
-type TokenPrice struct {
-	TokenPriceCaller     // Read-only binding to the contract
-	TokenPriceTransactor // Write-only binding to the contract
-	TokenPriceFilterer   // Log filterer for contract events
+// TokenPayment is an auto generated Go binding around an Ethereum contract.
+type TokenPayment struct {
+	TokenPaymentCaller     // Read-only binding to the contract
+	TokenPaymentTransactor // Write-only binding to the contract
+	TokenPaymentFilterer   // Log filterer for contract events
 }
 
-// TokenPriceCaller is an auto generated read-only Go binding around an Ethereum contract.
-type TokenPriceCaller struct {
+// TokenPaymentCaller is an auto generated read-only Go binding around an Ethereum contract.
+type TokenPaymentCaller struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// TokenPriceTransactor is an auto generated write-only Go binding around an Ethereum contract.
-type TokenPriceTransactor struct {
+// TokenPaymentTransactor is an auto generated write-only Go binding around an Ethereum contract.
+type TokenPaymentTransactor struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// TokenPriceFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
-type TokenPriceFilterer struct {
+// TokenPaymentFilterer is an auto generated log filtering Go binding around an Ethereum contract events.
+type TokenPaymentFilterer struct {
 	contract *bind.BoundContract // Generic contract wrapper for the low level calls
 }
 
-// TokenPriceSession is an auto generated Go binding around an Ethereum contract,
+// TokenPaymentSession is an auto generated Go binding around an Ethereum contract,
 // with pre-set call and transact options.
-type TokenPriceSession struct {
-	Contract     *TokenPrice       // Generic contract binding to set the session for
+type TokenPaymentSession struct {
+	Contract     *TokenPayment     // Generic contract binding to set the session for
 	CallOpts     bind.CallOpts     // Call options to use throughout this session
 	TransactOpts bind.TransactOpts // Transaction auth options to use throughout this session
 }
 
-// TokenPriceCallerSession is an auto generated read-only Go binding around an Ethereum contract,
+// TokenPaymentCallerSession is an auto generated read-only Go binding around an Ethereum contract,
 // with pre-set call options.
-type TokenPriceCallerSession struct {
-	Contract *TokenPriceCaller // Generic contract caller binding to set the session for
-	CallOpts bind.CallOpts     // Call options to use throughout this session
+type TokenPaymentCallerSession struct {
+	Contract *TokenPaymentCaller // Generic contract caller binding to set the session for
+	CallOpts bind.CallOpts       // Call options to use throughout this session
 }
 
-// TokenPriceTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
+// TokenPaymentTransactorSession is an auto generated write-only Go binding around an Ethereum contract,
 // with pre-set transact options.
-type TokenPriceTransactorSession struct {
-	Contract     *TokenPriceTransactor // Generic contract transactor binding to set the session for
-	TransactOpts bind.TransactOpts     // Transaction auth options to use throughout this session
+type TokenPaymentTransactorSession struct {
+	Contract     *TokenPaymentTransactor // Generic contract transactor binding to set the session for
+	TransactOpts bind.TransactOpts       // Transaction auth options to use throughout this session
 }
 
-// TokenPriceRaw is an auto generated low-level Go binding around an Ethereum contract.
-type TokenPriceRaw struct {
-	Contract *TokenPrice // Generic contract binding to access the raw methods on
+// TokenPaymentRaw is an auto generated low-level Go binding around an Ethereum contract.
+type TokenPaymentRaw struct {
+	Contract *TokenPayment // Generic contract binding to access the raw methods on
 }
 
-// TokenPriceCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
-type TokenPriceCallerRaw struct {
-	Contract *TokenPriceCaller // Generic read-only contract binding to access the raw methods on
+// TokenPaymentCallerRaw is an auto generated low-level read-only Go binding around an Ethereum contract.
+type TokenPaymentCallerRaw struct {
+	Contract *TokenPaymentCaller // Generic read-only contract binding to access the raw methods on
 }
 
-// TokenPriceTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
-type TokenPriceTransactorRaw struct {
-	Contract *TokenPriceTransactor // Generic write-only contract binding to access the raw methods on
+// TokenPaymentTransactorRaw is an auto generated low-level write-only Go binding around an Ethereum contract.
+type TokenPaymentTransactorRaw struct {
+	Contract *TokenPaymentTransactor // Generic write-only contract binding to access the raw methods on
 }
 
-// NewTokenPrice creates a new instance of TokenPrice, bound to a specific deployed contract.
-func NewTokenPrice(address common.Address, backend bind.ContractBackend) (*TokenPrice, error) {
-	contract, err := bindTokenPrice(address, backend, backend, backend)
+// NewTokenPayment creates a new instance of TokenPayment, bound to a specific deployed contract.
+func NewTokenPayment(address common.Address, backend bind.ContractBackend) (*TokenPayment, error) {
+	contract, err := bindTokenPayment(address, backend, backend, backend)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenPrice{TokenPriceCaller: TokenPriceCaller{contract: contract}, TokenPriceTransactor: TokenPriceTransactor{contract: contract}, TokenPriceFilterer: TokenPriceFilterer{contract: contract}}, nil
+	return &TokenPayment{TokenPaymentCaller: TokenPaymentCaller{contract: contract}, TokenPaymentTransactor: TokenPaymentTransactor{contract: contract}, TokenPaymentFilterer: TokenPaymentFilterer{contract: contract}}, nil
 }
 
-// NewTokenPriceCaller creates a new read-only instance of TokenPrice, bound to a specific deployed contract.
-func NewTokenPriceCaller(address common.Address, caller bind.ContractCaller) (*TokenPriceCaller, error) {
-	contract, err := bindTokenPrice(address, caller, nil, nil)
+// NewTokenPaymentCaller creates a new read-only instance of TokenPayment, bound to a specific deployed contract.
+func NewTokenPaymentCaller(address common.Address, caller bind.ContractCaller) (*TokenPaymentCaller, error) {
+	contract, err := bindTokenPayment(address, caller, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenPriceCaller{contract: contract}, nil
+	return &TokenPaymentCaller{contract: contract}, nil
 }
 
-// NewTokenPriceTransactor creates a new write-only instance of TokenPrice, bound to a specific deployed contract.
-func NewTokenPriceTransactor(address common.Address, transactor bind.ContractTransactor) (*TokenPriceTransactor, error) {
-	contract, err := bindTokenPrice(address, nil, transactor, nil)
+// NewTokenPaymentTransactor creates a new write-only instance of TokenPayment, bound to a specific deployed contract.
+func NewTokenPaymentTransactor(address common.Address, transactor bind.ContractTransactor) (*TokenPaymentTransactor, error) {
+	contract, err := bindTokenPayment(address, nil, transactor, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenPriceTransactor{contract: contract}, nil
+	return &TokenPaymentTransactor{contract: contract}, nil
 }
 
-// NewTokenPriceFilterer creates a new log filterer instance of TokenPrice, bound to a specific deployed contract.
-func NewTokenPriceFilterer(address common.Address, filterer bind.ContractFilterer) (*TokenPriceFilterer, error) {
-	contract, err := bindTokenPrice(address, nil, nil, filterer)
+// NewTokenPaymentFilterer creates a new log filterer instance of TokenPayment, bound to a specific deployed contract.
+func NewTokenPaymentFilterer(address common.Address, filterer bind.ContractFilterer) (*TokenPaymentFilterer, error) {
+	contract, err := bindTokenPayment(address, nil, nil, filterer)
 	if err != nil {
 		return nil, err
 	}
-	return &TokenPriceFilterer{contract: contract}, nil
+	return &TokenPaymentFilterer{contract: contract}, nil
 }
 
-// bindTokenPrice binds a generic wrapper to an already deployed contract.
-func bindTokenPrice(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
-	parsed, err := abi.JSON(strings.NewReader(TokenPriceABI))
+// bindTokenPayment binds a generic wrapper to an already deployed contract.
+func bindTokenPayment(address common.Address, caller bind.ContractCaller, transactor bind.ContractTransactor, filterer bind.ContractFilterer) (*bind.BoundContract, error) {
+	parsed, err := abi.JSON(strings.NewReader(TokenPaymentABI))
 	if err != nil {
 		return nil, err
 	}
@@ -1198,150 +1381,297 @@ func bindTokenPrice(address common.Address, caller bind.ContractCaller, transact
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_TokenPrice *TokenPriceRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _TokenPrice.Contract.TokenPriceCaller.contract.Call(opts, result, method, params...)
+func (_TokenPayment *TokenPaymentRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _TokenPayment.Contract.TokenPaymentCaller.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_TokenPrice *TokenPriceRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPrice.Contract.TokenPriceTransactor.contract.Transfer(opts)
+func (_TokenPayment *TokenPaymentRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.Contract.TokenPaymentTransactor.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_TokenPrice *TokenPriceRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _TokenPrice.Contract.TokenPriceTransactor.contract.Transact(opts, method, params...)
+func (_TokenPayment *TokenPaymentRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _TokenPayment.Contract.TokenPaymentTransactor.contract.Transact(opts, method, params...)
 }
 
 // Call invokes the (constant) contract method with params as input values and
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_TokenPrice *TokenPriceCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
-	return _TokenPrice.Contract.contract.Call(opts, result, method, params...)
+func (_TokenPayment *TokenPaymentCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+	return _TokenPayment.Contract.contract.Call(opts, result, method, params...)
 }
 
 // Transfer initiates a plain transaction to move funds to the contract, calling
 // its default method if one is available.
-func (_TokenPrice *TokenPriceTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPrice.Contract.contract.Transfer(opts)
+func (_TokenPayment *TokenPaymentTransactorRaw) Transfer(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.Contract.contract.Transfer(opts)
 }
 
 // Transact invokes the (paid) contract method with params as input values.
-func (_TokenPrice *TokenPriceTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
-	return _TokenPrice.Contract.contract.Transact(opts, method, params...)
+func (_TokenPayment *TokenPaymentTransactorRaw) Transact(opts *bind.TransactOpts, method string, params ...interface{}) (*types.Transaction, error) {
+	return _TokenPayment.Contract.contract.Transact(opts, method, params...)
+}
+
+// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+//
+// Solidity: function FeeTokenFallbackPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentTransactor) FeeTokenFallbackPath(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "FeeTokenFallbackPath")
+}
+
+// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+//
+// Solidity: function FeeTokenFallbackPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) FeeTokenFallbackPath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.FeeTokenFallbackPath(&_TokenPayment.TransactOpts)
+}
+
+// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+//
+// Solidity: function FeeTokenFallbackPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentTransactorSession) FeeTokenFallbackPath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.FeeTokenFallbackPath(&_TokenPayment.TransactOpts)
+}
+
+// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+//
+// Solidity: function FeeTokenPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentTransactor) FeeTokenPath(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "FeeTokenPath")
+}
+
+// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+//
+// Solidity: function FeeTokenPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) FeeTokenPath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.FeeTokenPath(&_TokenPayment.TransactOpts)
+}
+
+// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+//
+// Solidity: function FeeTokenPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentTransactorSession) FeeTokenPath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.FeeTokenPath(&_TokenPayment.TransactOpts)
 }
 
 // TRUE is a paid mutator transaction binding the contract method 0x5994d984.
 //
 // Solidity: function TRUE() returns(bytes32)
-func (_TokenPrice *TokenPriceTransactor) TRUE(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPrice.contract.Transact(opts, "TRUE")
+func (_TokenPayment *TokenPaymentTransactor) TRUE(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "TRUE")
 }
 
 // TRUE is a paid mutator transaction binding the contract method 0x5994d984.
 //
 // Solidity: function TRUE() returns(bytes32)
-func (_TokenPrice *TokenPriceSession) TRUE() (*types.Transaction, error) {
-	return _TokenPrice.Contract.TRUE(&_TokenPrice.TransactOpts)
+func (_TokenPayment *TokenPaymentSession) TRUE() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TRUE(&_TokenPayment.TransactOpts)
 }
 
 // TRUE is a paid mutator transaction binding the contract method 0x5994d984.
 //
 // Solidity: function TRUE() returns(bytes32)
-func (_TokenPrice *TokenPriceTransactorSession) TRUE() (*types.Transaction, error) {
-	return _TokenPrice.Contract.TRUE(&_TokenPrice.TransactOpts)
+func (_TokenPayment *TokenPaymentTransactorSession) TRUE() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TRUE(&_TokenPayment.TransactOpts)
 }
 
 // TeamMemberPath is a paid mutator transaction binding the contract method 0x654b8c2a.
 //
 // Solidity: function TeamMemberPath() returns(bytes32)
-func (_TokenPrice *TokenPriceTransactor) TeamMemberPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPrice.contract.Transact(opts, "TeamMemberPath")
+func (_TokenPayment *TokenPaymentTransactor) TeamMemberPath(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "TeamMemberPath")
 }
 
 // TeamMemberPath is a paid mutator transaction binding the contract method 0x654b8c2a.
 //
 // Solidity: function TeamMemberPath() returns(bytes32)
-func (_TokenPrice *TokenPriceSession) TeamMemberPath() (*types.Transaction, error) {
-	return _TokenPrice.Contract.TeamMemberPath(&_TokenPrice.TransactOpts)
+func (_TokenPayment *TokenPaymentSession) TeamMemberPath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TeamMemberPath(&_TokenPayment.TransactOpts)
 }
 
 // TeamMemberPath is a paid mutator transaction binding the contract method 0x654b8c2a.
 //
 // Solidity: function TeamMemberPath() returns(bytes32)
-func (_TokenPrice *TokenPriceTransactorSession) TeamMemberPath() (*types.Transaction, error) {
-	return _TokenPrice.Contract.TeamMemberPath(&_TokenPrice.TransactOpts)
+func (_TokenPayment *TokenPaymentTransactorSession) TeamMemberPath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TeamMemberPath(&_TokenPayment.TransactOpts)
+}
+
+// TokenForPath is a paid mutator transaction binding the contract method 0xefc0a0a9.
+//
+// Solidity: function TokenForPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentTransactor) TokenForPath(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "TokenForPath")
+}
+
+// TokenForPath is a paid mutator transaction binding the contract method 0xefc0a0a9.
+//
+// Solidity: function TokenForPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) TokenForPath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TokenForPath(&_TokenPayment.TransactOpts)
+}
+
+// TokenForPath is a paid mutator transaction binding the contract method 0xefc0a0a9.
+//
+// Solidity: function TokenForPath() returns(bytes32)
+func (_TokenPayment *TokenPaymentTransactorSession) TokenForPath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TokenForPath(&_TokenPayment.TransactOpts)
+}
+
+// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+//
+// Solidity: function TokenPayment() returns(address)
+func (_TokenPayment *TokenPaymentTransactor) TokenPayment(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "TokenPayment")
+}
+
+// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+//
+// Solidity: function TokenPayment() returns(address)
+func (_TokenPayment *TokenPaymentSession) TokenPayment() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TokenPayment(&_TokenPayment.TransactOpts)
+}
+
+// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+//
+// Solidity: function TokenPayment() returns(address)
+func (_TokenPayment *TokenPaymentTransactorSession) TokenPayment() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TokenPayment(&_TokenPayment.TransactOpts)
 }
 
 // TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
 //
 // Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPrice *TokenPriceTransactor) TokenPricePath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPrice.contract.Transact(opts, "TokenPricePath")
+func (_TokenPayment *TokenPaymentTransactor) TokenPricePath(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "TokenPricePath")
 }
 
 // TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
 //
 // Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPrice *TokenPriceSession) TokenPricePath() (*types.Transaction, error) {
-	return _TokenPrice.Contract.TokenPricePath(&_TokenPrice.TransactOpts)
+func (_TokenPayment *TokenPaymentSession) TokenPricePath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TokenPricePath(&_TokenPayment.TransactOpts)
 }
 
 // TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
 //
 // Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPrice *TokenPriceTransactorSession) TokenPricePath() (*types.Transaction, error) {
-	return _TokenPrice.Contract.TokenPricePath(&_TokenPrice.TransactOpts)
+func (_TokenPayment *TokenPaymentTransactorSession) TokenPricePath() (*types.Transaction, error) {
+	return _TokenPayment.Contract.TokenPricePath(&_TokenPayment.TransactOpts)
 }
 
 // GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
 //
 // Solidity: function getPrice(address token) returns(uint256 price)
-func (_TokenPrice *TokenPriceTransactor) GetPrice(opts *bind.TransactOpts, token common.Address) (*types.Transaction, error) {
-	return _TokenPrice.contract.Transact(opts, "getPrice", token)
+func (_TokenPayment *TokenPaymentTransactor) GetPrice(opts *bind.TransactOpts, token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "getPrice", token)
 }
 
 // GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
 //
 // Solidity: function getPrice(address token) returns(uint256 price)
-func (_TokenPrice *TokenPriceSession) GetPrice(token common.Address) (*types.Transaction, error) {
-	return _TokenPrice.Contract.GetPrice(&_TokenPrice.TransactOpts, token)
+func (_TokenPayment *TokenPaymentSession) GetPrice(token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.GetPrice(&_TokenPayment.TransactOpts, token)
 }
 
 // GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
 //
 // Solidity: function getPrice(address token) returns(uint256 price)
-func (_TokenPrice *TokenPriceTransactorSession) GetPrice(token common.Address) (*types.Transaction, error) {
-	return _TokenPrice.Contract.GetPrice(&_TokenPrice.TransactOpts, token)
+func (_TokenPayment *TokenPaymentTransactorSession) GetPrice(token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.GetPrice(&_TokenPayment.TransactOpts, token)
+}
+
+// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+//
+// Solidity: function getTokenFor(address to) returns(address token)
+func (_TokenPayment *TokenPaymentTransactor) GetTokenFor(opts *bind.TransactOpts, to common.Address) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "getTokenFor", to)
+}
+
+// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+//
+// Solidity: function getTokenFor(address to) returns(address token)
+func (_TokenPayment *TokenPaymentSession) GetTokenFor(to common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.TransactOpts, to)
+}
+
+// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+//
+// Solidity: function getTokenFor(address to) returns(address token)
+func (_TokenPayment *TokenPaymentTransactorSession) GetTokenFor(to common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.TransactOpts, to)
+}
+
+// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+//
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_TokenPayment *TokenPaymentTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "pay", coinbase, txTo, txGasPrice, gasToPay)
+}
+
+// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+//
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_TokenPayment *TokenPaymentSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.Contract.Pay(&_TokenPayment.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
+}
+
+// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+//
+// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
+func (_TokenPayment *TokenPaymentTransactorSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.Contract.Pay(&_TokenPayment.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
 }
 
 // SetPrice is a paid mutator transaction binding the contract method 0x00e4768b.
 //
 // Solidity: function setPrice(address token, uint256 price) returns()
-func (_TokenPrice *TokenPriceTransactor) SetPrice(opts *bind.TransactOpts, token common.Address, price *big.Int) (*types.Transaction, error) {
-	return _TokenPrice.contract.Transact(opts, "setPrice", token, price)
+func (_TokenPayment *TokenPaymentTransactor) SetPrice(opts *bind.TransactOpts, token common.Address, price *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "setPrice", token, price)
 }
 
 // SetPrice is a paid mutator transaction binding the contract method 0x00e4768b.
 //
 // Solidity: function setPrice(address token, uint256 price) returns()
-func (_TokenPrice *TokenPriceSession) SetPrice(token common.Address, price *big.Int) (*types.Transaction, error) {
-	return _TokenPrice.Contract.SetPrice(&_TokenPrice.TransactOpts, token, price)
+func (_TokenPayment *TokenPaymentSession) SetPrice(token common.Address, price *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.Contract.SetPrice(&_TokenPayment.TransactOpts, token, price)
 }
 
 // SetPrice is a paid mutator transaction binding the contract method 0x00e4768b.
 //
 // Solidity: function setPrice(address token, uint256 price) returns()
-func (_TokenPrice *TokenPriceTransactorSession) SetPrice(token common.Address, price *big.Int) (*types.Transaction, error) {
-	return _TokenPrice.Contract.SetPrice(&_TokenPrice.TransactOpts, token, price)
+func (_TokenPayment *TokenPaymentTransactorSession) SetPrice(token common.Address, price *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.Contract.SetPrice(&_TokenPayment.TransactOpts, token, price)
+}
+
+// SetTokenFor is a paid mutator transaction binding the contract method 0x90b63f21.
+//
+// Solidity: function setTokenFor(address to, address token) returns()
+func (_TokenPayment *TokenPaymentTransactor) SetTokenFor(opts *bind.TransactOpts, to common.Address, token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "setTokenFor", to, token)
+}
+
+// SetTokenFor is a paid mutator transaction binding the contract method 0x90b63f21.
+//
+// Solidity: function setTokenFor(address to, address token) returns()
+func (_TokenPayment *TokenPaymentSession) SetTokenFor(to common.Address, token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.SetTokenFor(&_TokenPayment.TransactOpts, to, token)
+}
+
+// SetTokenFor is a paid mutator transaction binding the contract method 0x90b63f21.
+//
+// Solidity: function setTokenFor(address to, address token) returns()
+func (_TokenPayment *TokenPaymentTransactorSession) SetTokenFor(to common.Address, token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.SetTokenFor(&_TokenPayment.TransactOpts, to, token)
 }
 
 // DsABI is the input ABI used to generate the binding from.
 const DsABI = "[]"
 
 // DsBin is the compiled bytecode used for deploying new contracts.
-var DsBin = "0x60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220337e96c083dd16b45f3b38c2b571b9ca820f4cc0ffa563a3b43084d03ae14edc64736f6c63430006080033"
+var DsBin = "0x60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220b49dbed9f3f1f5ee4ca8a479262617c08c6f95b9e7963dc8135a4e44e48a59a864736f6c63430006080033"
 
 // DeployDs deploys a new Ethereum contract, binding an instance of Ds to it.
 func DeployDs(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction, *Ds, error) {

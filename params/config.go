@@ -48,9 +48,8 @@ var (
 	VolatileTokenAddress = common.HexToAddress("0x34567") // WNTY token contract address
 	StableTokenAddress   = common.HexToAddress("0x45678") // NEWSD token contract address
 	// Token fee contract addresses
-	TokenPayementGas  = uint64(40000)
-	TokenPayerAddress = common.HexToAddress("0x56789") // Default PayByToken contract
-	TokenPriceAddress = common.HexToAddress("0x6789A") // Default TokenPrice contract
+	TokenPayementGas     = uint64(40000)
+	TokenPayementAddress = common.HexToAddress("0x56789") // Default PayByToken contract
 	// Testnet Params
 	TestnetAdmin = common.HexToAddress("0x1367fc3B5C3cE52D61347c0FE2216E576cb2060E")
 )
