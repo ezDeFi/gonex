@@ -808,11 +808,11 @@ func (_IERC20 *IERC20Filterer) ParseTransfer(log types.Log) (*IERC20Transfer, er
 }
 
 // IPayerABI is the input ABI used to generate the binding from.
-const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasToPay\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // IPayerFuncSigs maps the 4-byte function signature to its string representation.
 var IPayerFuncSigs = map[string]string{
-	"dd9a76ff": "pay(address,address,uint256,uint256)",
+	"b3d76188": "pay(address,address,uint256)",
 }
 
 // IPayer is an auto generated Go binding around an Ethereum contract.
@@ -957,29 +957,29 @@ func (_IPayer *IPayerTransactorRaw) Transact(opts *bind.TransactOpts, method str
 	return _IPayer.Contract.contract.Transact(opts, method, params...)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_IPayer *IPayerTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _IPayer.contract.Transact(opts, "pay", coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_IPayer *IPayerTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _IPayer.contract.Transact(opts, "pay", coinbase, to, fee)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_IPayer *IPayerSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_IPayer *IPayerSession) Pay(coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, to, fee)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_IPayer *IPayerTransactorSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_IPayer *IPayerTransactorSession) Pay(coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _IPayer.Contract.Pay(&_IPayer.TransactOpts, coinbase, to, fee)
 }
 
 // PayerCodeABI is the input ABI used to generate the binding from.
-const PayerCodeABI = "[{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasToPay\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const PayerCodeABI = "[{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // PayerCodeFuncSigs maps the 4-byte function signature to its string representation.
 var PayerCodeFuncSigs = map[string]string{
@@ -987,7 +987,7 @@ var PayerCodeFuncSigs = map[string]string{
 	"c8c1956b": "FeeTokenPath()",
 	"f218dd97": "TokenPayment()",
 	"c9969bcf": "TokenPricePath()",
-	"dd9a76ff": "pay(address,address,uint256,uint256)",
+	"b3d76188": "pay(address,address,uint256)",
 }
 
 // PayerCode is an auto generated Go binding around an Ethereum contract.
@@ -1216,29 +1216,29 @@ func (_PayerCode *PayerCodeTransactorSession) TokenPricePath() (*types.Transacti
 	return _PayerCode.Contract.TokenPricePath(&_PayerCode.TransactOpts)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_PayerCode *PayerCodeTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _PayerCode.contract.Transact(opts, "pay", coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_PayerCode *PayerCodeTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _PayerCode.contract.Transact(opts, "pay", coinbase, to, fee)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_PayerCode *PayerCodeSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _PayerCode.Contract.Pay(&_PayerCode.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_PayerCode *PayerCodeSession) Pay(coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _PayerCode.Contract.Pay(&_PayerCode.TransactOpts, coinbase, to, fee)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_PayerCode *PayerCodeTransactorSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _PayerCode.Contract.Pay(&_PayerCode.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_PayerCode *PayerCodeTransactorSession) Pay(coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _PayerCode.Contract.Pay(&_PayerCode.TransactOpts, coinbase, to, fee)
 }
 
 // TokenPaymentABI is the input ABI used to generate the binding from.
-const TokenPaymentABI = "[{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"team\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokens\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"prices\",\"type\":\"uint256[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TRUE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TeamMemberPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenForPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"getTokenFor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"txGasPrice\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"gasToPay\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"setPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"setTokenFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const TokenPaymentABI = "[{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"team\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokens\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"prices\",\"type\":\"uint256[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TRUE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TeamMemberPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenForPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"getTokenFor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"setPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"setTokenFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // TokenPaymentFuncSigs maps the 4-byte function signature to its string representation.
 var TokenPaymentFuncSigs = map[string]string{
@@ -1251,13 +1251,13 @@ var TokenPaymentFuncSigs = map[string]string{
 	"c9969bcf": "TokenPricePath()",
 	"41976e09": "getPrice(address)",
 	"c0e04395": "getTokenFor(address)",
-	"dd9a76ff": "pay(address,address,uint256,uint256)",
+	"b3d76188": "pay(address,address,uint256)",
 	"00e4768b": "setPrice(address,uint256)",
 	"90b63f21": "setTokenFor(address,address)",
 }
 
 // TokenPaymentBin is the compiled bytecode used for deploying new contracts.
-var TokenPaymentBin = "0x60806040523480156200001157600080fd5b5060405162000a6138038062000a61833981810160405260608110156200003757600080fd5b81019080805160405193929190846401000000008211156200005857600080fd5b9083019060208201858111156200006e57600080fd5b82518660208202830111640100000000821117156200008c57600080fd5b82525081516020918201928201910280838360005b83811015620000bb578181015183820152602001620000a1565b5050505090500160405260200180516040519392919084640100000000821115620000e557600080fd5b908301906020820185811115620000fb57600080fd5b82518660208202830111640100000000821117156200011957600080fd5b82525081516020918201928201910280838360005b83811015620001485781810151838201526020016200012e565b50505050905001604052602001805160405193929190846401000000008211156200017257600080fd5b9083019060208201858111156200018857600080fd5b8251866020820283011164010000000082111715620001a657600080fd5b82525081516020918201928201910280838360005b83811015620001d5578181015183820152602001620001bb565b5050505090500160405250505060008090505b83518110156200022057620002178482815181106200020357fe5b60200260200101516200027b60201b60201c565b600101620001e8565b5060005b82518110156200027157620002688382815181106200023f57fe5b60200260200101518383815181106200025457fe5b6020026020010151620002be60201b60201c565b60010162000224565b5050505062000315565b620002bb620002a46a5465616d4d656d6265722d60a81b836200030060201b620004a11760201c565b60001960001b6200031160201b620004b21760201c565b50565b620002fc620002e76a546f6b656e50726963652d60a81b846200030060201b620004a11760201c565b8260001b6200031160201b620004b21760201c565b5050565b60081b610100600160a81b03161790565b9055565b61073c80620003256000396000f3fe608060405234801561001057600080fd5b50600436106100b35760003560e01c8063c0e0439511610071578063c0e0439514610164578063c8c1956b146101a6578063c9969bcf146101ae578063dd9a76ff146101b6578063efc0a0a9146101f2578063f218dd97146101fa576100b3565b8062e4768b146100b857806341976e09146100e65780635994d9841461011e5780635e8f4d7414610126578063654b8c2a1461012e57806390b63f2114610136575b600080fd5b6100e4600480360360408110156100ce57600080fd5b506001600160a01b038135169060200135610202565b005b61010c600480360360208110156100fc57600080fd5b50356001600160a01b0316610261565b60408051918252519081900360200190f35b61010c61028b565b61010c610291565b61010c6102a8565b6100e46004803603604081101561014c57600080fd5b506001600160a01b03813581169160200135166102ba565b61018a6004803603602081101561017a57600080fd5b50356001600160a01b031661032c565b604080516001600160a01b039092168252519081900360200190f35b61010c610351565b61010c610360565b6100e4600480360360808110156101cc57600080fd5b506001600160a01b03813581169160208101359091169060408101359060600135610372565b61010c610488565b61018a61049a565b61020b336104b6565b610253576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61025d82826104db565b5050565b600061028361027e6a546f6b656e50726963652d60a81b846104a1565b6104f6565b90505b919050565b60001981565b6f466565546f6b656e46616c6c6261636b60801b81565b6a5465616d4d656d6265722d60a81b81565b6102c3336104b6565b61030b576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61025d6103266a546f6b656e466f722d2d2d60a81b846104a1565b826104b2565b6000610337826104fa565b90506001600160a01b0381161561034d57610286565b5090565b672332b2aa37b5b2b760c11b81565b6a546f6b656e50726963652d60a81b81565b60008061037e85610517565b91509150600081116103d7576040805162461bcd60e51b815260206004820152601b60248201527f7061796d656e7420746f6b656e207072696365206e6f74207365740000000000604482015290519081900360640190fd5b828402600082670de0b6b3a76400008302816103ef57fe5b049050836001600160a01b031663a9059cbb89836040518363ffffffff1660e01b815260040180836001600160a01b03166001600160a01b0316815260200182815260200192505050602060405180830381600087803b15801561045257600080fd5b505af1158015610466573d6000803e3d6000fd5b505050506040513d602081101561047c57600080fd5b50505050505050505050565b6a546f6b656e466f722d2d2d60a81b81565b6205678981565b60081b610100600160a81b03161790565b9055565b60006104d361027e6a5465616d4d656d6265722d60a81b846104a1565b151592915050565b61025d6103266a546f6b656e50726963652d60a81b846104a1565b5490565b600061028361027e6a546f6b656e466f722d2d2d60a81b846104a1565b6000806105238361058a565b91506001600160a01b038216610577576040805162461bcd60e51b81526020600482015260146024820152731b9bc81d1bdad95b88199bdc881c185e5b595b9d60621b604482015290519081900360640190fd5b816105818361065d565b91509150915091565b60006105a0672332b2aa37b5b2b760c11b6104f6565b90506001600160a01b038116156105b657610286565b6040805163c0e0439560e01b81526001600160a01b03841660048201529051620567899163c0e04395916024808301926020929190829003018186803b1580156105ff57600080fd5b505afa158015610613573d6000803e3d6000fd5b505050506040513d602081101561062957600080fd5b505190506001600160a01b0381161561064157610286565b6102836f466565546f6b656e46616c6c6261636b60801b6104f6565b60008061067b61027e6a546f6b656e50726963652d60a81b856104a1565b9050801561068a579050610286565b604080516341976e0960e01b81526001600160a01b0385166004820152905162056789916341976e09916024808301926020929190829003018186803b1580156106d357600080fd5b505afa1580156106e7573d6000803e3d6000fd5b505050506040513d60208110156106fd57600080fd5b5051939250505056fea2646970667358221220cd765c25a8c4ef2b90a13ab01c29dbd6e1862909449c271081de0189820dfd7d64736f6c63430006080033"
+var TokenPaymentBin = "0x60806040523480156200001157600080fd5b5060405162000a5638038062000a56833981810160405260608110156200003757600080fd5b81019080805160405193929190846401000000008211156200005857600080fd5b9083019060208201858111156200006e57600080fd5b82518660208202830111640100000000821117156200008c57600080fd5b82525081516020918201928201910280838360005b83811015620000bb578181015183820152602001620000a1565b5050505090500160405260200180516040519392919084640100000000821115620000e557600080fd5b908301906020820185811115620000fb57600080fd5b82518660208202830111640100000000821117156200011957600080fd5b82525081516020918201928201910280838360005b83811015620001485781810151838201526020016200012e565b50505050905001604052602001805160405193929190846401000000008211156200017257600080fd5b9083019060208201858111156200018857600080fd5b8251866020820283011164010000000082111715620001a657600080fd5b82525081516020918201928201910280838360005b83811015620001d5578181015183820152602001620001bb565b5050505090500160405250505060008090505b83518110156200022057620002178482815181106200020357fe5b60200260200101516200027b60201b60201c565b600101620001e8565b5060005b82518110156200027157620002688382815181106200023f57fe5b60200260200101518383815181106200025457fe5b6020026020010151620002be60201b60201c565b60010162000224565b5050505062000315565b620002bb620002a46a5465616d4d656d6265722d60a81b836200030060201b620004961760201c565b60001960001b6200031160201b620004a71760201c565b50565b620002fc620002e76a546f6b656e50726963652d60a81b846200030060201b620004961760201c565b8260001b6200031160201b620004a71760201c565b5050565b60081b610100600160a81b03161790565b9055565b61073180620003256000396000f3fe608060405234801561001057600080fd5b50600436106100b35760003560e01c8063b3d7618811610071578063b3d7618814610164578063c0e043951461019a578063c8c1956b146101dc578063c9969bcf146101e4578063efc0a0a9146101ec578063f218dd97146101f4576100b3565b8062e4768b146100b857806341976e09146100e65780635994d9841461011e5780635e8f4d7414610126578063654b8c2a1461012e57806390b63f2114610136575b600080fd5b6100e4600480360360408110156100ce57600080fd5b506001600160a01b0381351690602001356101fc565b005b61010c600480360360208110156100fc57600080fd5b50356001600160a01b031661025b565b60408051918252519081900360200190f35b61010c610285565b61010c61028b565b61010c6102a2565b6100e46004803603604081101561014c57600080fd5b506001600160a01b03813581169160200135166102b4565b6100e46004803603606081101561017a57600080fd5b506001600160a01b03813581169160208101359091169060400135610326565b6101c0600480360360208110156101b057600080fd5b50356001600160a01b0316610437565b604080516001600160a01b039092168252519081900360200190f35b61010c61045c565b61010c61046b565b61010c61047d565b6101c061048f565b610205336104ab565b61024d576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61025782826104d0565b5050565b600061027d6102786a546f6b656e50726963652d60a81b84610496565b6104eb565b90505b919050565b60001981565b6f466565546f6b656e46616c6c6261636b60801b81565b6a5465616d4d656d6265722d60a81b81565b6102bd336104ab565b610305576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b6102576103206a546f6b656e466f722d2d2d60a81b84610496565b826104a7565b600080610332846104ef565b915091506000811161038b576040805162461bcd60e51b815260206004820152601b60248201527f7061796d656e7420746f6b656e207072696365206e6f74207365740000000000604482015290519081900360640190fd5b60008184670de0b6b3a764000002816103a057fe5b049050826001600160a01b031663a9059cbb87836040518363ffffffff1660e01b815260040180836001600160a01b03166001600160a01b0316815260200182815260200192505050602060405180830381600087803b15801561040357600080fd5b505af1158015610417573d6000803e3d6000fd5b505050506040513d602081101561042d57600080fd5b5050505050505050565b600061044282610562565b90506001600160a01b0381161561045857610280565b5090565b672332b2aa37b5b2b760c11b81565b6a546f6b656e50726963652d60a81b81565b6a546f6b656e466f722d2d2d60a81b81565b6205678981565b60081b610100600160a81b03161790565b9055565b60006104c86102786a5465616d4d656d6265722d60a81b84610496565b151592915050565b6102576103206a546f6b656e50726963652d60a81b84610496565b5490565b6000806104fb8361057f565b91506001600160a01b03821661054f576040805162461bcd60e51b81526020600482015260146024820152731b9bc81d1bdad95b88199bdc881c185e5b595b9d60621b604482015290519081900360640190fd5b8161055983610652565b91509150915091565b600061027d6102786a546f6b656e466f722d2d2d60a81b84610496565b6000610595672332b2aa37b5b2b760c11b6104eb565b90506001600160a01b038116156105ab57610280565b6040805163c0e0439560e01b81526001600160a01b03841660048201529051620567899163c0e04395916024808301926020929190829003018186803b1580156105f457600080fd5b505afa158015610608573d6000803e3d6000fd5b505050506040513d602081101561061e57600080fd5b505190506001600160a01b0381161561063657610280565b61027d6f466565546f6b656e46616c6c6261636b60801b6104eb565b6000806106706102786a546f6b656e50726963652d60a81b85610496565b9050801561067f579050610280565b604080516341976e0960e01b81526001600160a01b0385166004820152905162056789916341976e09916024808301926020929190829003018186803b1580156106c857600080fd5b505afa1580156106dc573d6000803e3d6000fd5b505050506040513d60208110156106f257600080fd5b5051939250505056fea2646970667358221220d0629df6d3b4f624f99ebf85143df253fe2ef8128f98596707c6d2f5da9aca8064736f6c63430006080033"
 
 // DeployTokenPayment deploys a new Ethereum contract, binding an instance of TokenPayment to it.
 func DeployTokenPayment(auth *bind.TransactOpts, backend bind.ContractBackend, team []common.Address, tokens []common.Address, prices []*big.Int) (common.Address, *types.Transaction, *TokenPayment, error) {
@@ -1604,25 +1604,25 @@ func (_TokenPayment *TokenPaymentTransactorSession) GetTokenFor(to common.Addres
 	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.TransactOpts, to)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_TokenPayment *TokenPaymentTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "pay", coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_TokenPayment *TokenPaymentTransactor) Pay(opts *bind.TransactOpts, coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "pay", coinbase, to, fee)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_TokenPayment *TokenPaymentSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _TokenPayment.Contract.Pay(&_TokenPayment.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_TokenPayment *TokenPaymentSession) Pay(coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.Contract.Pay(&_TokenPayment.TransactOpts, coinbase, to, fee)
 }
 
-// Pay is a paid mutator transaction binding the contract method 0xdd9a76ff.
+// Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
-// Solidity: function pay(address coinbase, address txTo, uint256 txGasPrice, uint256 gasToPay) returns()
-func (_TokenPayment *TokenPaymentTransactorSession) Pay(coinbase common.Address, txTo common.Address, txGasPrice *big.Int, gasToPay *big.Int) (*types.Transaction, error) {
-	return _TokenPayment.Contract.Pay(&_TokenPayment.TransactOpts, coinbase, txTo, txGasPrice, gasToPay)
+// Solidity: function pay(address coinbase, address to, uint256 fee) returns()
+func (_TokenPayment *TokenPaymentTransactorSession) Pay(coinbase common.Address, to common.Address, fee *big.Int) (*types.Transaction, error) {
+	return _TokenPayment.Contract.Pay(&_TokenPayment.TransactOpts, coinbase, to, fee)
 }
 
 // SetPrice is a paid mutator transaction binding the contract method 0x00e4768b.

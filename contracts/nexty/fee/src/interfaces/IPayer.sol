@@ -9,8 +9,7 @@ import "./IERC20.sol";
 interface IPayer {
     function pay(
         address coinbase,
-        address txTo,
-        uint txGasPrice,
-        uint gasToPay
+        address to,
+        uint fee
     ) external;
 }

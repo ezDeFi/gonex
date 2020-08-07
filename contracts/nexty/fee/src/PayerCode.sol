@@ -17,21 +17,19 @@ abstract contract PayerCode is IPayer {
     bytes32 public constant FeeTokenFallbackPath    = 'FeeTokenFallback';   // if all else fall, use this token to pay
 
     /**
-     * @dev perfrom no overflow check at all, miner should check to ensure their payment
+     * @dev perfrom no overflow check at all, miner should do that to protect their income
+     *
      * (callcode)
      */
     function pay(
         address coinbase,
-        address txTo,
-        uint txGasPrice, // TODO: pass the feeToPay instead
-        uint gasToPay // tx.gas + payment gas
+        address to,
+        uint fee
     ) external override {
-        (address token, uint price) = _payment(txTo);
+        (address token, uint price) = _payment(to);
         require(price > 0, "payment token price not set");
-        uint fee = gasToPay * txGasPrice;
-        // require(fee > 0 && fee / gasToPay == txGasPrice, "fee overflow");
         // require(fee * (10**18) / (10**18) == fee, "token overflow");
-        uint tokenToPay = fee * (10**18) / price;
+        uint tokenToPay = fee * (10**18) / price; // unsafe
         // require(tokenToPay > 0, "zero token payment");
         IERC20(token).transfer(coinbase, tokenToPay);
     }
