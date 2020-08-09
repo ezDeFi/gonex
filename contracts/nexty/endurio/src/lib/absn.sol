@@ -43,8 +43,8 @@ library absn {
         // NTY amount staked for the preemptive proposal
         uint stake;
 
-        // slashingDivisor = stake * slashingRate / ZOOM / |amount
-        // toSlash = |deviation| / slashingDivisor
+        // slashingDivisor = stake * slashingRate / ZOOM / |amount|
+        // toSlash = |deviation| * slashingDivisor
         uint slashingRate;
 
         // lockdown duration (in blocks from the activation)
