@@ -20,7 +20,6 @@ var (
 	_ = big.NewInt
 	_ = strings.NewReader
 	_ = ethereum.NotFound
-	_ = abi.U256
 	_ = bind.Bind
 	_ = common.Big1
 	_ = types.BloomLookup
@@ -178,46 +177,56 @@ func (_IConfig *IConfigTransactorRaw) Transact(opts *bind.TransactOpts, method s
 	return _IConfig.Contract.contract.Transact(opts, method, params...)
 }
 
-// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+// GetPrice is a free data retrieval call binding the contract method 0x41976e09.
 //
-// Solidity: function getPrice(address token) returns(uint256 price)
-func (_IConfig *IConfigTransactor) GetPrice(opts *bind.TransactOpts, token common.Address) (*types.Transaction, error) {
-	return _IConfig.contract.Transact(opts, "getPrice", token)
+// Solidity: function getPrice(address token) view returns(uint256 price)
+func (_IConfig *IConfigCaller) GetPrice(opts *bind.CallOpts, token common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _IConfig.contract.Call(opts, out, "getPrice", token)
+	return *ret0, err
 }
 
-// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+// GetPrice is a free data retrieval call binding the contract method 0x41976e09.
 //
-// Solidity: function getPrice(address token) returns(uint256 price)
-func (_IConfig *IConfigSession) GetPrice(token common.Address) (*types.Transaction, error) {
-	return _IConfig.Contract.GetPrice(&_IConfig.TransactOpts, token)
+// Solidity: function getPrice(address token) view returns(uint256 price)
+func (_IConfig *IConfigSession) GetPrice(token common.Address) (*big.Int, error) {
+	return _IConfig.Contract.GetPrice(&_IConfig.CallOpts, token)
 }
 
-// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+// GetPrice is a free data retrieval call binding the contract method 0x41976e09.
 //
-// Solidity: function getPrice(address token) returns(uint256 price)
-func (_IConfig *IConfigTransactorSession) GetPrice(token common.Address) (*types.Transaction, error) {
-	return _IConfig.Contract.GetPrice(&_IConfig.TransactOpts, token)
+// Solidity: function getPrice(address token) view returns(uint256 price)
+func (_IConfig *IConfigCallerSession) GetPrice(token common.Address) (*big.Int, error) {
+	return _IConfig.Contract.GetPrice(&_IConfig.CallOpts, token)
 }
 
-// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
 //
-// Solidity: function getTokenFor(address to) returns(address token)
-func (_IConfig *IConfigTransactor) GetTokenFor(opts *bind.TransactOpts, to common.Address) (*types.Transaction, error) {
-	return _IConfig.contract.Transact(opts, "getTokenFor", to)
+// Solidity: function getTokenFor(address to) view returns(address token)
+func (_IConfig *IConfigCaller) GetTokenFor(opts *bind.CallOpts, to common.Address) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _IConfig.contract.Call(opts, out, "getTokenFor", to)
+	return *ret0, err
 }
 
-// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
 //
-// Solidity: function getTokenFor(address to) returns(address token)
-func (_IConfig *IConfigSession) GetTokenFor(to common.Address) (*types.Transaction, error) {
-	return _IConfig.Contract.GetTokenFor(&_IConfig.TransactOpts, to)
+// Solidity: function getTokenFor(address to) view returns(address token)
+func (_IConfig *IConfigSession) GetTokenFor(to common.Address) (common.Address, error) {
+	return _IConfig.Contract.GetTokenFor(&_IConfig.CallOpts, to)
 }
 
-// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
 //
-// Solidity: function getTokenFor(address to) returns(address token)
-func (_IConfig *IConfigTransactorSession) GetTokenFor(to common.Address) (*types.Transaction, error) {
-	return _IConfig.Contract.GetTokenFor(&_IConfig.TransactOpts, to)
+// Solidity: function getTokenFor(address to) view returns(address token)
+func (_IConfig *IConfigCallerSession) GetTokenFor(to common.Address) (common.Address, error) {
+	return _IConfig.Contract.GetTokenFor(&_IConfig.CallOpts, to)
 }
 
 // IERC20ABI is the input ABI used to generate the binding from.
@@ -375,25 +384,82 @@ func (_IERC20 *IERC20TransactorRaw) Transact(opts *bind.TransactOpts, method str
 	return _IERC20.Contract.contract.Transact(opts, method, params...)
 }
 
-// Allowance is a paid mutator transaction binding the contract method 0xdd62ed3e.
+// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
 //
-// Solidity: function allowance(address owner, address spender) returns(uint256)
-func (_IERC20 *IERC20Transactor) Allowance(opts *bind.TransactOpts, owner common.Address, spender common.Address) (*types.Transaction, error) {
-	return _IERC20.contract.Transact(opts, "allowance", owner, spender)
+// Solidity: function allowance(address owner, address spender) view returns(uint256)
+func (_IERC20 *IERC20Caller) Allowance(opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _IERC20.contract.Call(opts, out, "allowance", owner, spender)
+	return *ret0, err
 }
 
-// Allowance is a paid mutator transaction binding the contract method 0xdd62ed3e.
+// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
 //
-// Solidity: function allowance(address owner, address spender) returns(uint256)
-func (_IERC20 *IERC20Session) Allowance(owner common.Address, spender common.Address) (*types.Transaction, error) {
-	return _IERC20.Contract.Allowance(&_IERC20.TransactOpts, owner, spender)
+// Solidity: function allowance(address owner, address spender) view returns(uint256)
+func (_IERC20 *IERC20Session) Allowance(owner common.Address, spender common.Address) (*big.Int, error) {
+	return _IERC20.Contract.Allowance(&_IERC20.CallOpts, owner, spender)
 }
 
-// Allowance is a paid mutator transaction binding the contract method 0xdd62ed3e.
+// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
 //
-// Solidity: function allowance(address owner, address spender) returns(uint256)
-func (_IERC20 *IERC20TransactorSession) Allowance(owner common.Address, spender common.Address) (*types.Transaction, error) {
-	return _IERC20.Contract.Allowance(&_IERC20.TransactOpts, owner, spender)
+// Solidity: function allowance(address owner, address spender) view returns(uint256)
+func (_IERC20 *IERC20CallerSession) Allowance(owner common.Address, spender common.Address) (*big.Int, error) {
+	return _IERC20.Contract.Allowance(&_IERC20.CallOpts, owner, spender)
+}
+
+// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
+//
+// Solidity: function balanceOf(address who) view returns(uint256)
+func (_IERC20 *IERC20Caller) BalanceOf(opts *bind.CallOpts, who common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _IERC20.contract.Call(opts, out, "balanceOf", who)
+	return *ret0, err
+}
+
+// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
+//
+// Solidity: function balanceOf(address who) view returns(uint256)
+func (_IERC20 *IERC20Session) BalanceOf(who common.Address) (*big.Int, error) {
+	return _IERC20.Contract.BalanceOf(&_IERC20.CallOpts, who)
+}
+
+// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
+//
+// Solidity: function balanceOf(address who) view returns(uint256)
+func (_IERC20 *IERC20CallerSession) BalanceOf(who common.Address) (*big.Int, error) {
+	return _IERC20.Contract.BalanceOf(&_IERC20.CallOpts, who)
+}
+
+// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
+//
+// Solidity: function totalSupply() view returns(uint256)
+func (_IERC20 *IERC20Caller) TotalSupply(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _IERC20.contract.Call(opts, out, "totalSupply")
+	return *ret0, err
+}
+
+// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
+//
+// Solidity: function totalSupply() view returns(uint256)
+func (_IERC20 *IERC20Session) TotalSupply() (*big.Int, error) {
+	return _IERC20.Contract.TotalSupply(&_IERC20.CallOpts)
+}
+
+// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
+//
+// Solidity: function totalSupply() view returns(uint256)
+func (_IERC20 *IERC20CallerSession) TotalSupply() (*big.Int, error) {
+	return _IERC20.Contract.TotalSupply(&_IERC20.CallOpts)
 }
 
 // Approve is a paid mutator transaction binding the contract method 0x095ea7b3.
@@ -415,48 +481,6 @@ func (_IERC20 *IERC20Session) Approve(spender common.Address, value *big.Int) (*
 // Solidity: function approve(address spender, uint256 value) returns(bool)
 func (_IERC20 *IERC20TransactorSession) Approve(spender common.Address, value *big.Int) (*types.Transaction, error) {
 	return _IERC20.Contract.Approve(&_IERC20.TransactOpts, spender, value)
-}
-
-// BalanceOf is a paid mutator transaction binding the contract method 0x70a08231.
-//
-// Solidity: function balanceOf(address who) returns(uint256)
-func (_IERC20 *IERC20Transactor) BalanceOf(opts *bind.TransactOpts, who common.Address) (*types.Transaction, error) {
-	return _IERC20.contract.Transact(opts, "balanceOf", who)
-}
-
-// BalanceOf is a paid mutator transaction binding the contract method 0x70a08231.
-//
-// Solidity: function balanceOf(address who) returns(uint256)
-func (_IERC20 *IERC20Session) BalanceOf(who common.Address) (*types.Transaction, error) {
-	return _IERC20.Contract.BalanceOf(&_IERC20.TransactOpts, who)
-}
-
-// BalanceOf is a paid mutator transaction binding the contract method 0x70a08231.
-//
-// Solidity: function balanceOf(address who) returns(uint256)
-func (_IERC20 *IERC20TransactorSession) BalanceOf(who common.Address) (*types.Transaction, error) {
-	return _IERC20.Contract.BalanceOf(&_IERC20.TransactOpts, who)
-}
-
-// TotalSupply is a paid mutator transaction binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() returns(uint256)
-func (_IERC20 *IERC20Transactor) TotalSupply(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _IERC20.contract.Transact(opts, "totalSupply")
-}
-
-// TotalSupply is a paid mutator transaction binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() returns(uint256)
-func (_IERC20 *IERC20Session) TotalSupply() (*types.Transaction, error) {
-	return _IERC20.Contract.TotalSupply(&_IERC20.TransactOpts)
-}
-
-// TotalSupply is a paid mutator transaction binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() returns(uint256)
-func (_IERC20 *IERC20TransactorSession) TotalSupply() (*types.Transaction, error) {
-	return _IERC20.Contract.TotalSupply(&_IERC20.TransactOpts)
 }
 
 // Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
@@ -1132,88 +1156,108 @@ func (_PayerCode *PayerCodeTransactorRaw) Transact(opts *bind.TransactOpts, meth
 	return _PayerCode.Contract.contract.Transact(opts, method, params...)
 }
 
-// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
 //
-// Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_PayerCode *PayerCodeTransactor) FeeTokenFallbackPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _PayerCode.contract.Transact(opts, "FeeTokenFallbackPath")
+// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
+func (_PayerCode *PayerCodeCaller) FeeTokenFallbackPath(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _PayerCode.contract.Call(opts, out, "FeeTokenFallbackPath")
+	return *ret0, err
 }
 
-// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
 //
-// Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_PayerCode *PayerCodeSession) FeeTokenFallbackPath() (*types.Transaction, error) {
-	return _PayerCode.Contract.FeeTokenFallbackPath(&_PayerCode.TransactOpts)
+// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
+func (_PayerCode *PayerCodeSession) FeeTokenFallbackPath() ([32]byte, error) {
+	return _PayerCode.Contract.FeeTokenFallbackPath(&_PayerCode.CallOpts)
 }
 
-// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
 //
-// Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_PayerCode *PayerCodeTransactorSession) FeeTokenFallbackPath() (*types.Transaction, error) {
-	return _PayerCode.Contract.FeeTokenFallbackPath(&_PayerCode.TransactOpts)
+// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
+func (_PayerCode *PayerCodeCallerSession) FeeTokenFallbackPath() ([32]byte, error) {
+	return _PayerCode.Contract.FeeTokenFallbackPath(&_PayerCode.CallOpts)
 }
 
-// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
 //
-// Solidity: function FeeTokenPath() returns(bytes32)
-func (_PayerCode *PayerCodeTransactor) FeeTokenPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _PayerCode.contract.Transact(opts, "FeeTokenPath")
+// Solidity: function FeeTokenPath() view returns(bytes32)
+func (_PayerCode *PayerCodeCaller) FeeTokenPath(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _PayerCode.contract.Call(opts, out, "FeeTokenPath")
+	return *ret0, err
 }
 
-// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
 //
-// Solidity: function FeeTokenPath() returns(bytes32)
-func (_PayerCode *PayerCodeSession) FeeTokenPath() (*types.Transaction, error) {
-	return _PayerCode.Contract.FeeTokenPath(&_PayerCode.TransactOpts)
+// Solidity: function FeeTokenPath() view returns(bytes32)
+func (_PayerCode *PayerCodeSession) FeeTokenPath() ([32]byte, error) {
+	return _PayerCode.Contract.FeeTokenPath(&_PayerCode.CallOpts)
 }
 
-// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
 //
-// Solidity: function FeeTokenPath() returns(bytes32)
-func (_PayerCode *PayerCodeTransactorSession) FeeTokenPath() (*types.Transaction, error) {
-	return _PayerCode.Contract.FeeTokenPath(&_PayerCode.TransactOpts)
+// Solidity: function FeeTokenPath() view returns(bytes32)
+func (_PayerCode *PayerCodeCallerSession) FeeTokenPath() ([32]byte, error) {
+	return _PayerCode.Contract.FeeTokenPath(&_PayerCode.CallOpts)
 }
 
-// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+// TokenPayment is a free data retrieval call binding the contract method 0xf218dd97.
 //
-// Solidity: function TokenPayment() returns(address)
-func (_PayerCode *PayerCodeTransactor) TokenPayment(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _PayerCode.contract.Transact(opts, "TokenPayment")
+// Solidity: function TokenPayment() view returns(address)
+func (_PayerCode *PayerCodeCaller) TokenPayment(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _PayerCode.contract.Call(opts, out, "TokenPayment")
+	return *ret0, err
 }
 
-// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+// TokenPayment is a free data retrieval call binding the contract method 0xf218dd97.
 //
-// Solidity: function TokenPayment() returns(address)
-func (_PayerCode *PayerCodeSession) TokenPayment() (*types.Transaction, error) {
-	return _PayerCode.Contract.TokenPayment(&_PayerCode.TransactOpts)
+// Solidity: function TokenPayment() view returns(address)
+func (_PayerCode *PayerCodeSession) TokenPayment() (common.Address, error) {
+	return _PayerCode.Contract.TokenPayment(&_PayerCode.CallOpts)
 }
 
-// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+// TokenPayment is a free data retrieval call binding the contract method 0xf218dd97.
 //
-// Solidity: function TokenPayment() returns(address)
-func (_PayerCode *PayerCodeTransactorSession) TokenPayment() (*types.Transaction, error) {
-	return _PayerCode.Contract.TokenPayment(&_PayerCode.TransactOpts)
+// Solidity: function TokenPayment() view returns(address)
+func (_PayerCode *PayerCodeCallerSession) TokenPayment() (common.Address, error) {
+	return _PayerCode.Contract.TokenPayment(&_PayerCode.CallOpts)
 }
 
-// TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
+// TokenPricePath is a free data retrieval call binding the contract method 0xc9969bcf.
 //
-// Solidity: function TokenPricePath() returns(bytes32)
-func (_PayerCode *PayerCodeTransactor) TokenPricePath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _PayerCode.contract.Transact(opts, "TokenPricePath")
+// Solidity: function TokenPricePath() view returns(bytes32)
+func (_PayerCode *PayerCodeCaller) TokenPricePath(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _PayerCode.contract.Call(opts, out, "TokenPricePath")
+	return *ret0, err
 }
 
-// TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
+// TokenPricePath is a free data retrieval call binding the contract method 0xc9969bcf.
 //
-// Solidity: function TokenPricePath() returns(bytes32)
-func (_PayerCode *PayerCodeSession) TokenPricePath() (*types.Transaction, error) {
-	return _PayerCode.Contract.TokenPricePath(&_PayerCode.TransactOpts)
+// Solidity: function TokenPricePath() view returns(bytes32)
+func (_PayerCode *PayerCodeSession) TokenPricePath() ([32]byte, error) {
+	return _PayerCode.Contract.TokenPricePath(&_PayerCode.CallOpts)
 }
 
-// TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
+// TokenPricePath is a free data retrieval call binding the contract method 0xc9969bcf.
 //
-// Solidity: function TokenPricePath() returns(bytes32)
-func (_PayerCode *PayerCodeTransactorSession) TokenPricePath() (*types.Transaction, error) {
-	return _PayerCode.Contract.TokenPricePath(&_PayerCode.TransactOpts)
+// Solidity: function TokenPricePath() view returns(bytes32)
+func (_PayerCode *PayerCodeCallerSession) TokenPricePath() ([32]byte, error) {
+	return _PayerCode.Contract.TokenPricePath(&_PayerCode.CallOpts)
 }
 
 // Pay is a paid mutator transaction binding the contract method 0xb3d76188.
@@ -1415,193 +1459,238 @@ func (_TokenPayment *TokenPaymentTransactorRaw) Transact(opts *bind.TransactOpts
 	return _TokenPayment.Contract.contract.Transact(opts, method, params...)
 }
 
-// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
 //
-// Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactor) FeeTokenFallbackPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "FeeTokenFallbackPath")
+// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) FeeTokenFallbackPath(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "FeeTokenFallbackPath")
+	return *ret0, err
 }
 
-// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
 //
-// Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) FeeTokenFallbackPath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.FeeTokenFallbackPath(&_TokenPayment.TransactOpts)
+// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) FeeTokenFallbackPath() ([32]byte, error) {
+	return _TokenPayment.Contract.FeeTokenFallbackPath(&_TokenPayment.CallOpts)
 }
 
-// FeeTokenFallbackPath is a paid mutator transaction binding the contract method 0x5e8f4d74.
+// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
 //
-// Solidity: function FeeTokenFallbackPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactorSession) FeeTokenFallbackPath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.FeeTokenFallbackPath(&_TokenPayment.TransactOpts)
+// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) FeeTokenFallbackPath() ([32]byte, error) {
+	return _TokenPayment.Contract.FeeTokenFallbackPath(&_TokenPayment.CallOpts)
 }
 
-// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
 //
-// Solidity: function FeeTokenPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactor) FeeTokenPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "FeeTokenPath")
+// Solidity: function FeeTokenPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) FeeTokenPath(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "FeeTokenPath")
+	return *ret0, err
 }
 
-// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
 //
-// Solidity: function FeeTokenPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) FeeTokenPath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.FeeTokenPath(&_TokenPayment.TransactOpts)
+// Solidity: function FeeTokenPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) FeeTokenPath() ([32]byte, error) {
+	return _TokenPayment.Contract.FeeTokenPath(&_TokenPayment.CallOpts)
 }
 
-// FeeTokenPath is a paid mutator transaction binding the contract method 0xc8c1956b.
+// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
 //
-// Solidity: function FeeTokenPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactorSession) FeeTokenPath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.FeeTokenPath(&_TokenPayment.TransactOpts)
+// Solidity: function FeeTokenPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) FeeTokenPath() ([32]byte, error) {
+	return _TokenPayment.Contract.FeeTokenPath(&_TokenPayment.CallOpts)
 }
 
-// TRUE is a paid mutator transaction binding the contract method 0x5994d984.
+// TRUE is a free data retrieval call binding the contract method 0x5994d984.
 //
-// Solidity: function TRUE() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactor) TRUE(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "TRUE")
+// Solidity: function TRUE() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) TRUE(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "TRUE")
+	return *ret0, err
 }
 
-// TRUE is a paid mutator transaction binding the contract method 0x5994d984.
+// TRUE is a free data retrieval call binding the contract method 0x5994d984.
 //
-// Solidity: function TRUE() returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) TRUE() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TRUE(&_TokenPayment.TransactOpts)
+// Solidity: function TRUE() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) TRUE() ([32]byte, error) {
+	return _TokenPayment.Contract.TRUE(&_TokenPayment.CallOpts)
 }
 
-// TRUE is a paid mutator transaction binding the contract method 0x5994d984.
+// TRUE is a free data retrieval call binding the contract method 0x5994d984.
 //
-// Solidity: function TRUE() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactorSession) TRUE() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TRUE(&_TokenPayment.TransactOpts)
+// Solidity: function TRUE() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) TRUE() ([32]byte, error) {
+	return _TokenPayment.Contract.TRUE(&_TokenPayment.CallOpts)
 }
 
-// TeamMemberPath is a paid mutator transaction binding the contract method 0x654b8c2a.
+// TeamMemberPath is a free data retrieval call binding the contract method 0x654b8c2a.
 //
-// Solidity: function TeamMemberPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactor) TeamMemberPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "TeamMemberPath")
+// Solidity: function TeamMemberPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) TeamMemberPath(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "TeamMemberPath")
+	return *ret0, err
 }
 
-// TeamMemberPath is a paid mutator transaction binding the contract method 0x654b8c2a.
+// TeamMemberPath is a free data retrieval call binding the contract method 0x654b8c2a.
 //
-// Solidity: function TeamMemberPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) TeamMemberPath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TeamMemberPath(&_TokenPayment.TransactOpts)
+// Solidity: function TeamMemberPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) TeamMemberPath() ([32]byte, error) {
+	return _TokenPayment.Contract.TeamMemberPath(&_TokenPayment.CallOpts)
 }
 
-// TeamMemberPath is a paid mutator transaction binding the contract method 0x654b8c2a.
+// TeamMemberPath is a free data retrieval call binding the contract method 0x654b8c2a.
 //
-// Solidity: function TeamMemberPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactorSession) TeamMemberPath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TeamMemberPath(&_TokenPayment.TransactOpts)
+// Solidity: function TeamMemberPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) TeamMemberPath() ([32]byte, error) {
+	return _TokenPayment.Contract.TeamMemberPath(&_TokenPayment.CallOpts)
 }
 
-// TokenForPath is a paid mutator transaction binding the contract method 0xefc0a0a9.
+// TokenForPath is a free data retrieval call binding the contract method 0xefc0a0a9.
 //
-// Solidity: function TokenForPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactor) TokenForPath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "TokenForPath")
+// Solidity: function TokenForPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) TokenForPath(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "TokenForPath")
+	return *ret0, err
 }
 
-// TokenForPath is a paid mutator transaction binding the contract method 0xefc0a0a9.
+// TokenForPath is a free data retrieval call binding the contract method 0xefc0a0a9.
 //
-// Solidity: function TokenForPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) TokenForPath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TokenForPath(&_TokenPayment.TransactOpts)
+// Solidity: function TokenForPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) TokenForPath() ([32]byte, error) {
+	return _TokenPayment.Contract.TokenForPath(&_TokenPayment.CallOpts)
 }
 
-// TokenForPath is a paid mutator transaction binding the contract method 0xefc0a0a9.
+// TokenForPath is a free data retrieval call binding the contract method 0xefc0a0a9.
 //
-// Solidity: function TokenForPath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactorSession) TokenForPath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TokenForPath(&_TokenPayment.TransactOpts)
+// Solidity: function TokenForPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) TokenForPath() ([32]byte, error) {
+	return _TokenPayment.Contract.TokenForPath(&_TokenPayment.CallOpts)
 }
 
-// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+// TokenPayment is a free data retrieval call binding the contract method 0xf218dd97.
 //
-// Solidity: function TokenPayment() returns(address)
-func (_TokenPayment *TokenPaymentTransactor) TokenPayment(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "TokenPayment")
+// Solidity: function TokenPayment() view returns(address)
+func (_TokenPayment *TokenPaymentCaller) TokenPayment(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "TokenPayment")
+	return *ret0, err
 }
 
-// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+// TokenPayment is a free data retrieval call binding the contract method 0xf218dd97.
 //
-// Solidity: function TokenPayment() returns(address)
-func (_TokenPayment *TokenPaymentSession) TokenPayment() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TokenPayment(&_TokenPayment.TransactOpts)
+// Solidity: function TokenPayment() view returns(address)
+func (_TokenPayment *TokenPaymentSession) TokenPayment() (common.Address, error) {
+	return _TokenPayment.Contract.TokenPayment(&_TokenPayment.CallOpts)
 }
 
-// TokenPayment is a paid mutator transaction binding the contract method 0xf218dd97.
+// TokenPayment is a free data retrieval call binding the contract method 0xf218dd97.
 //
-// Solidity: function TokenPayment() returns(address)
-func (_TokenPayment *TokenPaymentTransactorSession) TokenPayment() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TokenPayment(&_TokenPayment.TransactOpts)
+// Solidity: function TokenPayment() view returns(address)
+func (_TokenPayment *TokenPaymentCallerSession) TokenPayment() (common.Address, error) {
+	return _TokenPayment.Contract.TokenPayment(&_TokenPayment.CallOpts)
 }
 
-// TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
+// TokenPricePath is a free data retrieval call binding the contract method 0xc9969bcf.
 //
-// Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactor) TokenPricePath(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "TokenPricePath")
+// Solidity: function TokenPricePath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) TokenPricePath(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "TokenPricePath")
+	return *ret0, err
 }
 
-// TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
+// TokenPricePath is a free data retrieval call binding the contract method 0xc9969bcf.
 //
-// Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) TokenPricePath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TokenPricePath(&_TokenPayment.TransactOpts)
+// Solidity: function TokenPricePath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) TokenPricePath() ([32]byte, error) {
+	return _TokenPayment.Contract.TokenPricePath(&_TokenPayment.CallOpts)
 }
 
-// TokenPricePath is a paid mutator transaction binding the contract method 0xc9969bcf.
+// TokenPricePath is a free data retrieval call binding the contract method 0xc9969bcf.
 //
-// Solidity: function TokenPricePath() returns(bytes32)
-func (_TokenPayment *TokenPaymentTransactorSession) TokenPricePath() (*types.Transaction, error) {
-	return _TokenPayment.Contract.TokenPricePath(&_TokenPayment.TransactOpts)
+// Solidity: function TokenPricePath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) TokenPricePath() ([32]byte, error) {
+	return _TokenPayment.Contract.TokenPricePath(&_TokenPayment.CallOpts)
 }
 
-// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+// GetPrice is a free data retrieval call binding the contract method 0x41976e09.
 //
-// Solidity: function getPrice(address token) returns(uint256 price)
-func (_TokenPayment *TokenPaymentTransactor) GetPrice(opts *bind.TransactOpts, token common.Address) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "getPrice", token)
+// Solidity: function getPrice(address token) view returns(uint256 price)
+func (_TokenPayment *TokenPaymentCaller) GetPrice(opts *bind.CallOpts, token common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "getPrice", token)
+	return *ret0, err
 }
 
-// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+// GetPrice is a free data retrieval call binding the contract method 0x41976e09.
 //
-// Solidity: function getPrice(address token) returns(uint256 price)
-func (_TokenPayment *TokenPaymentSession) GetPrice(token common.Address) (*types.Transaction, error) {
-	return _TokenPayment.Contract.GetPrice(&_TokenPayment.TransactOpts, token)
+// Solidity: function getPrice(address token) view returns(uint256 price)
+func (_TokenPayment *TokenPaymentSession) GetPrice(token common.Address) (*big.Int, error) {
+	return _TokenPayment.Contract.GetPrice(&_TokenPayment.CallOpts, token)
 }
 
-// GetPrice is a paid mutator transaction binding the contract method 0x41976e09.
+// GetPrice is a free data retrieval call binding the contract method 0x41976e09.
 //
-// Solidity: function getPrice(address token) returns(uint256 price)
-func (_TokenPayment *TokenPaymentTransactorSession) GetPrice(token common.Address) (*types.Transaction, error) {
-	return _TokenPayment.Contract.GetPrice(&_TokenPayment.TransactOpts, token)
+// Solidity: function getPrice(address token) view returns(uint256 price)
+func (_TokenPayment *TokenPaymentCallerSession) GetPrice(token common.Address) (*big.Int, error) {
+	return _TokenPayment.Contract.GetPrice(&_TokenPayment.CallOpts, token)
 }
 
-// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
 //
-// Solidity: function getTokenFor(address to) returns(address token)
-func (_TokenPayment *TokenPaymentTransactor) GetTokenFor(opts *bind.TransactOpts, to common.Address) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "getTokenFor", to)
+// Solidity: function getTokenFor(address to) view returns(address token)
+func (_TokenPayment *TokenPaymentCaller) GetTokenFor(opts *bind.CallOpts, to common.Address) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "getTokenFor", to)
+	return *ret0, err
 }
 
-// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
 //
-// Solidity: function getTokenFor(address to) returns(address token)
-func (_TokenPayment *TokenPaymentSession) GetTokenFor(to common.Address) (*types.Transaction, error) {
-	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.TransactOpts, to)
+// Solidity: function getTokenFor(address to) view returns(address token)
+func (_TokenPayment *TokenPaymentSession) GetTokenFor(to common.Address) (common.Address, error) {
+	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.CallOpts, to)
 }
 
-// GetTokenFor is a paid mutator transaction binding the contract method 0xc0e04395.
+// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
 //
-// Solidity: function getTokenFor(address to) returns(address token)
-func (_TokenPayment *TokenPaymentTransactorSession) GetTokenFor(to common.Address) (*types.Transaction, error) {
-	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.TransactOpts, to)
+// Solidity: function getTokenFor(address to) view returns(address token)
+func (_TokenPayment *TokenPaymentCallerSession) GetTokenFor(to common.Address) (common.Address, error) {
+	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.CallOpts, to)
 }
 
 // Pay is a paid mutator transaction binding the contract method 0xb3d76188.
