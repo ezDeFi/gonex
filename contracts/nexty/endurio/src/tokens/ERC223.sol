@@ -9,7 +9,7 @@ interface ContractReceiver {
 }
  
 /*
-    Ownable ERC223 Token plus dexMint() and dexBurnt for Seigniorage contract
+    Ownable ERC223 Token plus dexMint() and dexBurn() and transferToDex() for Seigniorage contract
 */
 
 contract ERC223 is ERC20, Ownable {
@@ -33,6 +33,13 @@ contract ERC223 is ERC20, Ownable {
         onlyOwner()
     {
         _burn(dex(), _amount);
+    }
+
+    function transferToDex(address from, uint value)
+        public
+        onlyOwner()
+    {
+        _transfer(from, dex(), value);
     }
 
     // Function that is called when a user or another contract wants to transfer funds .

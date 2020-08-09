@@ -4,6 +4,7 @@ interface IToken {
     function dex() external returns (address);
     function dexMint(uint _amount) external;
     function dexBurn(uint _amount) external;
+    function transferToDex(address _from, uint _amount) external;
 
     // IERC20
     function transfer(address to, uint256 value) external returns (bool);

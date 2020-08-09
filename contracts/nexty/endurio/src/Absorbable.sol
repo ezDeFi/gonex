@@ -194,13 +194,12 @@ contract Absorbable is Orderbook {
         (uint haveAMT, uint wantAMT) = useHaveAmount ? (totalAMT, totalBMT) : (totalBMT, totalAMT);
 
         address initiator = lockdown.maker;
-        if (haveAMT > book.haveToken.allowance(initiator, address(this)) ||
-            haveAMT > book.haveToken.balanceOf(initiator)) {
+        if (haveAMT > book.haveToken.balanceOf(initiator)) {
             // not enough allowance for side absorption
             return;
         }
 
-        book.haveToken.transferFrom(initiator, book.haveToken.dex(), haveAMT);
+        book.haveToken.transferToDex(initiator, haveAMT);
         book.haveToken.dexBurn(haveAMT);
         book.wantToken.dexMint(wantAMT);
         book.wantToken.transfer(initiator, wantAMT);
