@@ -1,4 +1,5 @@
-pragma solidity ^0.5.2;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >= 0.6.2;
 
 import "./lib/map.sol";
 import "./lib/dex.sol";
@@ -21,7 +22,7 @@ contract Orderbook {
         address volatileToken,
         address stablizeToken
     )
-        public
+        public virtual
     {
         books[Ask].init(IToken(volatileToken), IToken(stablizeToken));
         books[Bid].init(IToken(stablizeToken), IToken(volatileToken));

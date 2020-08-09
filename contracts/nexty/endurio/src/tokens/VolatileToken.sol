@@ -1,6 +1,7 @@
-pragma solidity ^0.5.2;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >= 0.6.2;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./ERC223.sol";
 
 /*
@@ -9,10 +10,6 @@ import "./ERC223.sol";
 */
 
 contract VolatileToken is ERC223 {
-    string public constant symbol = "WNTY";
-    string public constant name = "Wrapped NTY";
-    uint public constant decimals = 18;
-
     // track the amount of token has been inflated, negative for deflation
     // only use for report, so ignore any overflow
     int inflated;
@@ -23,29 +20,24 @@ contract VolatileToken is ERC223 {
         uint prefundAmount      // optional
     )
         public
+        ERC20("Wrapped NTY", "WNTY")
     {
         if (prefundAmount > 0 ) {
-            _mint(prefundAddress, prefundAmount * 10**decimals);
+            _mint(prefundAddress, prefundAmount * 10**18); // TODO: pass wei instead of coin
         }
         initialize(orderbook);
     }
 
     // override ERC223.dexMint
-    function dexMint(uint _amount)
-        public
-        onlyOwner
-    {
-        _mint(owner(), _amount);
-        inflated += int(_amount);
+    function dexMint(uint value) public override {
+        super.dexMint(value);
+        inflated += int(value);
     }
 
     // override ERC223.dexBurn
-    function dexBurn(uint _amount)
-        public
-        onlyOwner
-    {
-        _burn(owner(), _amount);
-        inflated -= int(_amount);
+    function dexBurn(uint value) public override {
+        super.dexBurn(value);
+        inflated -= int(value);
     }
 
     function totalInflated()
@@ -126,7 +118,7 @@ contract VolatileToken is ERC223 {
         public
     {
         bytes memory data = abi.encode(index, wantAmount, assistingID);
-        transfer(dex(), haveAmount, data);
+        transfer(dex, haveAmount, data);
     }
 
     // deposit and propose()
@@ -154,6 +146,6 @@ contract VolatileToken is ERC223 {
         public
     {
         bytes memory data = abi.encode(amount, slashingRate, lockdownExpiration, bytes32(0));
-        transfer(dex(), stake, data);
+        transfer(dex, stake, data);
     }
 }

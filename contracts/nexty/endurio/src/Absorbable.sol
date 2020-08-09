@@ -1,4 +1,5 @@
-pragma solidity ^0.5.2;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >= 0.6.2;
 
 import "./lib/util.sol";
 import "./lib/dex.sol";
@@ -42,7 +43,7 @@ contract Absorbable is Orderbook {
         address volatileToken,
         address stablizeToken
     )
-        public
+        public override
     {
         require(address(VolatileToken) == address(0), "VolatileToken already set");
         require(address(StablizeToken) == address(0), "StablizeToken already set");
@@ -77,7 +78,7 @@ contract Absorbable is Orderbook {
     // called by the consensus on each block
     // median price = target / StablizeToken.totalSupply()
     // zero target is fed for no median price available
-    function onBlockInitialized(uint target) public consensus {
+    function onBlockInitialized(uint target) public virtual consensus {
         if (last.isExpired()) {
             // absorption takes no longer than one duration
             stopAbsorption();

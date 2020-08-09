@@ -1,4 +1,5 @@
-pragma solidity ^0.5.2;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >= 0.6.2;
 
 import "./util.sol";
 import "./map.sol";
@@ -17,19 +18,19 @@ library absn {
         bool isPreemptive;
     }
 
-    function exists(Absorption storage this) internal view returns(bool) {
-        return 0 < this.deadline;
+    function exists(Absorption storage self) internal view returns(bool) {
+        return 0 < self.deadline;
     }
 
-    function isExpired(Absorption storage this) internal view returns(bool) {
-        return this.exists() && this.deadline < block.number;
+    function isExpired(Absorption storage self) internal view returns(bool) {
+        return self.exists() && self.deadline < block.number;
     }
 
-    function isAbsorbing(Absorption storage this, uint supply) internal view returns(bool) {
-        return this.exists() &&
-            !this.isHalted &&                               // not halted
-            supply != this.target &&                        // target not reached &&
-            util.inOrder(this.supply, supply, this.target); // not over-absorbed
+    function isAbsorbing(Absorption storage self, uint supply) internal view returns(bool) {
+        return self.exists() &&
+            !self.isHalted &&                               // not halted
+            supply != self.target &&                        // target not reached &&
+            util.inOrder(self.supply, supply, self.target); // not over-absorbed
     }
 
     using absn for Proposal;
@@ -57,16 +58,16 @@ library absn {
         map.AddressBool votes;
     }
 
-    function vote(Proposal storage this, bool up) internal {
-        this.votes.set(msg.sender, up);
+    function vote(Proposal storage self, bool up) internal {
+        self.votes.set(msg.sender, up);
     }
 
-    function exists(Proposal storage this) internal view returns (bool) {
-        return (this.maker != ZERO_ADDRESS);
+    function exists(Proposal storage self) internal view returns (bool) {
+        return (self.maker != ZERO_ADDRESS);
     }
 
-    function clear(Proposal storage this) internal {
-        this.votes.clear();
+    function clear(Proposal storage self) internal {
+        self.votes.clear();
     }
 
     struct Preemptive {
@@ -80,15 +81,15 @@ library absn {
     }
     using absn for Preemptive;
 
-    function exists(Preemptive storage this) internal view returns (bool) {
-        return this.maker != ZERO_ADDRESS;
+    function exists(Preemptive storage self) internal view returns (bool) {
+        return self.maker != ZERO_ADDRESS;
     }
 
-    function isLocked(Preemptive storage this) internal view returns (bool) {
-        return this.exists() && block.number < this.unlockNumber;
+    function isLocked(Preemptive storage self) internal view returns (bool) {
+        return self.exists() && block.number < self.unlockNumber;
     }
 
-    function unlockable(Preemptive storage this) internal view returns (bool) {
-        return this.exists() && this.unlockNumber <= block.number;
+    function unlockable(Preemptive storage self) internal view returns (bool) {
+        return self.exists() && self.unlockNumber <= block.number;
     }
 }

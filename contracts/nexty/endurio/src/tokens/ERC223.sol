@@ -1,8 +1,9 @@
-pragma solidity ^0.5.2;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >= 0.6.2;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-eth/contracts/ownership/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface ContractReceiver {
     function tokenFallback(address _from, uint _value, bytes calldata _data) external;
@@ -12,34 +13,28 @@ interface ContractReceiver {
     Ownable ERC223 Token plus dexMint() and dexBurn() and transferToDex() for Seigniorage contract
 */
 
-contract ERC223 is ERC20, Ownable {
+abstract contract ERC223 is ERC20 {
+    address public dex;
 
     event Transfer(address indexed _from, address indexed _to, uint _value, bytes _data);
 
-    function dex() public view returns(address)
-    {
-        return owner();
+    function initialize(address _dex) internal {
+        dex = _dex;
     }
 
-    function dexMint(uint _amount)
-        public
-        onlyOwner()
-    {
-        _mint(dex(), _amount);
+    function dexMint(uint value) public virtual {
+        require(msg.sender == dex, "dex only");
+        _mint(msg.sender, value);
     }
 
-    function dexBurn(uint _amount)
-        public
-        onlyOwner()
-    {
-        _burn(dex(), _amount);
+    function dexBurn(uint value) public virtual {
+        require(msg.sender == dex, "dex only");
+        _burn(msg.sender, value);
     }
 
-    function transferToDex(address from, uint value)
-        public
-        onlyOwner()
-    {
-        _transfer(from, dex(), value);
+    function transferToDex(address from, uint value) public {
+        require(msg.sender == dex, "dex only");
+        _transfer(from, msg.sender, value);
     }
 
     // Function that is called when a user or another contract wants to transfer funds .

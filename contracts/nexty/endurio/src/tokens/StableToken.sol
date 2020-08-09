@@ -1,26 +1,24 @@
-pragma solidity ^0.5.2;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >= 0.6.2;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./ERC223.sol";
 
 /*
     ...
 */
 
-contract StableToken is ERC223{
-    string public constant symbol = "NEWSD";
-    string public constant name = "New Stable Dollar";
-    uint public constant decimals = 18;
-
+contract StableToken is ERC223 {
     constructor (
         address orderbook,      // mandatory
         address prefundAddress, // optional
         uint prefundAmount      // optional
     )
         public
+        ERC20("New Stable Dollar", "NEWSD")
     {
         if (prefundAmount > 0 ) {
-            _mint(prefundAddress, prefundAmount * 10**decimals);
+            _mint(prefundAddress, prefundAmount * 10**18);
         }
         initialize(orderbook);
     }
@@ -36,6 +34,6 @@ contract StableToken is ERC223{
         payable
     {
         bytes memory data = abi.encode(index, wantAmount, assistingID);
-        transfer(owner(), haveAmount, data);
+        transfer(dex, haveAmount, data);
     }
 }
