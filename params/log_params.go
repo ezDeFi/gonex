@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	FeePrefix = "(fee) " // prefix for consensus errors happen while token fee payment
+	FeePrefix = "fee: " // prefix for consensus errors happen while token fee payment
 
 	ErrorLogRevertUnknown            = "revert with no reason"
 	ErrorLogInvalidOpCode            = "invalid opcode 0x%x"
