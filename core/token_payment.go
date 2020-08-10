@@ -17,6 +17,7 @@
 package core
 
 import (
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -27,16 +28,21 @@ import (
 	"github.com/ethereum/go-ethereum/core/vm"
 )
 
-// IPayerABI is the input ABI used to generate the binding from.
-const IPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+// iPayerABI is the input ABI used to generate the binding from.
+const iPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
-var IPayerFuncSigPay = []byte{0xb3, 0xd7, 0x61, 0x88} // pay(address,address,uint256)
+var iPayerFuncSigPay = []byte{0xb3, 0xd7, 0x61, 0x88} // pay(address,address,uint256)
 
-var abiPayer, _ = abi.JSON(strings.NewReader(IPayerABI))
-var abiIPayerFuncPay, _ = abiPayer.MethodById(IPayerFuncSigPay)
+var abiPayer, _ = abi.JSON(strings.NewReader(iPayerABI))
+var abiIPayerFuncPay, _ = abiPayer.MethodById(iPayerFuncSigPay)
 
 var tokenPayerKey = common.BytesToHash([]byte("TokenPayer"))
+var tokenPriceKeyPrefix = []byte("TokenPrice-")
 
+// keccak('Transfer(address,address,uint256)')
+var funcHashTransfer = common.HexToHash("ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")
+
+// PaymentContext stores the context for token payment
 type PaymentContext struct {
 	evm        *vm.EVM
 	contract   common.Address
@@ -45,6 +51,7 @@ type PaymentContext struct {
 	paymentGas uint64 // paymentGas
 }
 
+// NewPaymentContext creates new PaymentContext
 func NewPaymentContext(evm *vm.EVM, msg Message) (*PaymentContext, error) {
 	payer := evm.StateDB.GetState(msg.From(), tokenPayerKey)
 	contract := common.BytesToAddress(payer[:20])
@@ -68,7 +75,7 @@ func NewPaymentContext(evm *vm.EVM, msg Message) (*PaymentContext, error) {
 	if err != nil {
 		return nil, err
 	}
-	input = append(IPayerFuncSigPay, input...)
+	input = append(iPayerFuncSigPay, input...)
 
 	return &PaymentContext{
 		evm:        evm,
@@ -79,6 +86,7 @@ func NewPaymentContext(evm *vm.EVM, msg Message) (*PaymentContext, error) {
 	}, nil
 }
 
+// Pay performs the token payment of the payment context
 func (context *PaymentContext) Pay() ([]byte, error) {
 	ret, _, err := context.evm.CallCode(
 		vm.AccountRef(context.msg.From()),
@@ -88,4 +96,75 @@ func (context *PaymentContext) Pay() ([]byte, error) {
 		common.Big0)
 
 	return ret, err
+}
+
+// Prepare prepares the state for evm to capture the event logs
+// (for tx pool)
+func (context *PaymentContext) Prepare(txHash, blockHash common.Hash, txIndex int) {
+	context.evm.StateDB.Prepare(txHash, blockHash, txIndex)
+}
+
+// EffectiveGasPrice returns the price (in NTY) of the pay by token tx
+// (for tx pool)
+func (context *PaymentContext) EffectiveGasPrice(txHash common.Hash) (*big.Int, error) {
+	fee, err := context.extractPayment(txHash)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: store this in context
+	gasToPay := new(big.Int).SetUint64(context.paymentGas)
+	gasToPay = gasToPay.Add(gasToPay, new(big.Int).SetUint64(context.msg.Gas()))
+
+	// effective gas price = fee / gasToPay
+	effectiveGP := gasToPay.Div(fee, gasToPay)
+	return effectiveGP, nil
+}
+
+// extractPayment returns the actual paid fee (in wei) of the pay by token tx
+func (context *PaymentContext) extractPayment(txHash common.Hash) (*big.Int, error) {
+	events := context.evm.StateDB.GetLogs(txHash)
+	for _, event := range events {
+		if len(event.Topics) != 3 {
+			continue
+		}
+		if event.Topics[0] != funcHashTransfer {
+			continue
+		}
+		// from := common.BytesToAddress(event.Topics[1][12:])
+		to := common.BytesToAddress(event.Topics[2][12:])
+		if to != context.evm.Coinbase {
+			continue
+		}
+
+		amount := new(big.Int).SetBytes(event.Data)
+		if amount.Sign() == 0 {
+			continue
+		}
+
+		tokenPrice := context.getPrice(event.Address)
+		if tokenPrice.Sign() == 0 {
+			continue
+		}
+
+		// fee = amount * tokenPrice
+		fee := amount.Mul(amount, tokenPrice)
+		fee = fee.Div(fee, common.Big1e18)
+
+		return fee, nil
+	}
+	return nil, fmt.Errorf("%v%v", params.FeePrefix, "no accepted payment log")
+}
+
+// return the tokenPrice from the state (with decimals = 18)
+func (context *PaymentContext) getPrice(token common.Address) *big.Int {
+	state := context.evm.StateDB
+	var key [32]byte
+	copy(key[:], tokenPriceKeyPrefix)
+	copy(key[11:], token.Bytes())
+	// key[31] = 0x0
+
+	// TODO: check the personal price settings from local config and coinbase storage variable
+	priceHash := state.GetState(params.TokenPayementAddress, common.BytesToHash(key[:]))
+	tokenPrice := new(big.Int).SetBytes(priceHash.Bytes())
+	return tokenPrice
 }

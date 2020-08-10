@@ -738,6 +738,7 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		if err != nil {
 			return fmt.Errorf("%v%v", params.FeePrefix, err.Error())
 		}
+		paymentContext.Prepare(tx.Hash(), pool.chain.CurrentBlock().Hash(), 0)
 		ret, vmerr := paymentContext.Pay()
 		if vmerr != nil {
 			// provide extra user friendly revert reason
@@ -751,11 +752,10 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 			}
 			return fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
 		}
-		// TODO: check if paymentContext.gas is acceptable
-		// TODO: check if miner should accept the token
-		// TODO: check if the price is right
-		// TODO: state.Prepare(tx.Hash(), emptyHash, 0)
-		// TODO: state.Logs() => check the transfer log
+		gasPrice, err = paymentContext.EffectiveGasPrice(tx.Hash())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
