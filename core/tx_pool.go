@@ -619,7 +619,7 @@ func (pool *TxPool) createPaymentContext(tx *types.Transaction) (*PaymentContext
 		return nil, err
 	}
 	// Create a new context to be used in the EVM environment
-	context := NewEVMContext(msg, pool.chain.CurrentBlock().Header(), pool.chain, nil) // TODO: use random author here instead of nil to maximize the estimated gas
+	context := NewEVMContext(msg, pool.chain.CurrentBlock().Header(), pool.chain, nil)
 	// Create a new environment which holds all relevant information
 	// about the transaction and calling mechanisms.
 	evm := vm.NewEVM(context, pool.currentState, pool.chainconfig, vm.Config{})
