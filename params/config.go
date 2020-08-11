@@ -105,6 +105,10 @@ var (
 			SlashingRate:          1e18,
 			// TokenFee
 			TokenPaymentAdmins: nil,
+			TokenPrice: map[common.Address]*big.Int{
+				VolatileTokenAddress: common.Big1e18,
+				StableTokenAddress:   big.NewInt(76923076923076923), // 1 NTY = 13 USD
+			},
 		},
 	}
 
@@ -161,6 +165,7 @@ var (
 			SlashingRate:          MainnetChainConfig.Dccs.SlashingRate,
 			// Token Payment Admins
 			TokenPaymentAdmins: []common.Address{TestnetAdmin},
+			TokenPrice:         MainnetChainConfig.Dccs.TokenPrice,
 			// Testnet Params
 			TestnetSTBPrefundAddress: TestnetAdmin,
 			TestnetSTBPrefundAmount:  common.Big1000,
@@ -411,7 +416,8 @@ type DccsConfig struct {
 	SlashingRate          uint64 `json:"slashingRate"`          // slashing rate
 	LockdownExpiration    uint64 `json:"lockdownExpiration"`    // number of blocks that the lockdown will be expired (2 weeks)
 	// TokenPayment
-	TokenPaymentAdmins []common.Address // list of token price admin
+	TokenPaymentAdmins []common.Address            // list of token price admin
+	TokenPrice         map[common.Address]*big.Int // initial token prices
 	// Testnet params (unused in mainnet)
 	TestnetSTBPrefundAddress common.Address
 	TestnetSTBPrefundAmount  *big.Int

@@ -828,19 +828,15 @@ func deployTokenPaymentContracts(chain consensus.ChainReader, header *types.Head
 	{
 		// Generate contract code and data using a simulated backend
 		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
-			// TODO: remove initialized token prices
-			stablePrice := big.NewInt(20)
-			stablePrice = stablePrice.Mul(stablePrice, common.Big1e18)
+			tokens := make([]common.Address, 0, 2)
+			prices := make([]*big.Int, 0, 2)
+			for token, price := range chain.Config().Dccs.TokenPrice {
+				tokens = append(tokens, token)
+				prices = append(prices, price)
+			}
 			address, _, _, err := fee.DeployTokenPayment(auth, sim,
 				chain.Config().Dccs.TokenPaymentAdmins,
-				[]common.Address{ // intitial token addresses
-					params.VolatileTokenAddress,
-					params.StableTokenAddress,
-				},
-				[]*big.Int{ // intitial token prices
-					common.Big1e18,
-					stablePrice,
-				},
+				tokens, prices, // intitial token => prices
 			)
 			return address, err
 		})

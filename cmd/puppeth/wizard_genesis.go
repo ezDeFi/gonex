@@ -128,6 +128,7 @@ func (w *wizard) makeGenesis() {
 			SlashingRate:          params.MainnetChainConfig.Dccs.SlashingRate,
 			// TokenPayment
 			TokenPaymentAdmins: params.TestnetChainConfig.Dccs.TokenPaymentAdmins,
+			TokenPrice:         params.TestnetChainConfig.Dccs.TokenPrice,
 			// Testnet params
 			TestnetSTBPrefundAddress: params.TestnetChainConfig.Dccs.TestnetSTBPrefundAddress,
 			TestnetSTBPrefundAmount:  params.TestnetChainConfig.Dccs.TestnetSTBPrefundAmount,
@@ -206,6 +207,21 @@ func (w *wizard) makeGenesis() {
 			// override the TokenPaymentAdmins
 			genesis.Config.Dccs.TokenPaymentAdmins = []common.Address{*address}
 		}
+
+		// // NEWSD/NTY price
+		// defaultPrice := 1.0
+		// if price, ok := genesis.Config.Dccs.TokenPrice[params.StableTokenAddress]; ok {
+		// 	f := new(big.Float).SetInt(price)
+		// 	f = f.Quo(f, new(big.Float).SetInt(common.Big1e18))
+		// 	defaultPrice, _ = f.Float64()
+		// }
+		// fmt.Println()
+		// fmt.Printf("Initialize price of NEWSD/NTY? (default = %v)\n", defaultPrice)
+		// if price := w.readDefaultFloat(defaultPrice); price > 0 {
+		// 	f := big.NewFloat(price)
+		// 	f = f.Mul(f, new(big.Float).SetInt(common.Big1e18))
+		// 	genesis.Config.Dccs.TokenPrice[params.StableTokenAddress], _ = f.Int(nil)
+		// }
 
 	default:
 		log.Crit("Invalid consensus engine choice", "choice", choice)
