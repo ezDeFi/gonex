@@ -654,7 +654,57 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return errors.New("sensored sender: " + sender)
 	}
 
-	gasPrice := tx.GasPrice()
+	nonce := pool.currentState.GetNonce(from)
+	// Ensure the transaction adheres to nonce ordering
+	if nonce > tx.Nonce() {
+		return ErrNonceTooLow
+	}
+
+	balance := pool.currentState.GetBalance(from)
+
+	// Transactor should have enough funds to cover the costs
+	// cost == V + GP * GL
+	if balance.Cmp(tx.Value()) < 0 {
+		return fmt.Errorf("%v, balance=%v, value=%v", ErrInsufficientFunds.Error(), balance, tx.Value())
+	}
+	// Ensure the transaction has more gas than the basic tx fee.
+	intrGas, err := IntrinsicGas(tx.Data(), tx.To() == nil, true, pool.istanbul)
+	if err != nil {
+		return err
+	}
+	if tx.Gas() < intrGas {
+		return ErrIntrinsicGas
+	}
+
+	gasPrice := tx.GasPrice() // can be overriden by the following token payment
+
+	if balance.Cmp(tx.Cost()) < 0 {
+		// pay by token
+		paymentContext, err := pool.createPaymentContext(tx)
+		if err != nil {
+			return fmt.Errorf("%v%v", params.FeePrefix, err.Error())
+		}
+		paymentContext.Prepare(tx.Hash(), pool.chain.CurrentBlock().Hash(), 0)
+		ret, vmerr := paymentContext.Pay()
+		if vmerr != nil {
+			// provide extra user friendly revert reason
+			evm := paymentContext.evm
+			if len(evm.FailureReason) > 0 {
+				return fmt.Errorf("%v%v", params.FeePrefix, evm.FailureReason)
+			}
+			reason := params.GetSolidityRevertMessage(ret)
+			if len(reason) > 0 {
+				return fmt.Errorf("%v%v", params.FeePrefix, reason)
+			}
+			return fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
+		}
+		// override the message's gas price
+		gasPrice, err = paymentContext.EffectiveGasPrice(tx.Hash())
+		if err != nil {
+			return err
+		}
+	}
+
 	// Drop non-local transactions under our own minimal accepted gas price
 	local = local || pool.locals.contains(from) // account may be local even if the transaction arrived from the network
 	if !local && pool.gasPrice.Cmp(gasPrice) > 0 {
@@ -666,12 +716,6 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		if gasPrice.Uint64() < pool.nonFreePrice {
 			return ErrHeavyUnderpriced
 		}
-	}
-
-	nonce := pool.currentState.GetNonce(from)
-	// Ensure the transaction adheres to nonce ordering
-	if nonce > tx.Nonce() {
-		return ErrNonceTooLow
 	}
 
 	mruNumber := pool.currentState.GetMRUNumber(from)
@@ -694,22 +738,6 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		}
 	}
 
-	balance := pool.currentState.GetBalance(from)
-
-	// Transactor should have enough funds to cover the costs
-	// cost == V + GP * GL
-	if balance.Cmp(tx.Value()) < 0 {
-		return fmt.Errorf("%v, balance=%v, value=%v", ErrInsufficientFunds.Error(), balance, tx.Value())
-	}
-	// Ensure the transaction has more gas than the basic tx fee.
-	intrGas, err := IntrinsicGas(tx.Data(), tx.To() == nil, true, pool.istanbul)
-	if err != nil {
-		return err
-	}
-	if tx.Gas() < intrGas {
-		return ErrIntrinsicGas
-	}
-
 	if !tx.HasParity() {
 		parity := mruNumber + extrinsicParity(tx)
 
@@ -730,32 +758,6 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 	if !local && pool.parityLimit < tx.Parity() {
 		return ErrUnderparity
-	}
-
-	if balance.Cmp(tx.Cost()) < 0 {
-		// pay by token
-		paymentContext, err := pool.createPaymentContext(tx)
-		if err != nil {
-			return fmt.Errorf("%v%v", params.FeePrefix, err.Error())
-		}
-		paymentContext.Prepare(tx.Hash(), pool.chain.CurrentBlock().Hash(), 0)
-		ret, vmerr := paymentContext.Pay()
-		if vmerr != nil {
-			// provide extra user friendly revert reason
-			evm := paymentContext.evm
-			if len(evm.FailureReason) > 0 {
-				return fmt.Errorf("%v%v", params.FeePrefix, evm.FailureReason)
-			}
-			reason := params.GetSolidityRevertMessage(ret)
-			if len(reason) > 0 {
-				return fmt.Errorf("%v%v", params.FeePrefix, reason)
-			}
-			return fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
-		}
-		gasPrice, err = paymentContext.EffectiveGasPrice(tx.Hash())
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
