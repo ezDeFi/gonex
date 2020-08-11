@@ -172,6 +172,10 @@ func (st *StateTransition) buyGas() error {
 }
 
 func (st *StateTransition) preCheck() error {
+	if st.msg.From() == params.ZeroAddress {
+		// ignore nonce for consensus tx
+		return st.buyGas()
+	}
 	// Make sure this transaction's nonce is correct.
 	if st.msg.CheckNonce() {
 		nonce := st.state.GetNonce(st.msg.From())

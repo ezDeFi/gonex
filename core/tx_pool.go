@@ -22,8 +22,11 @@ import (
 	"math"
 	"math/big"
 	"sort"
+	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/time/rate"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/prque"
@@ -57,6 +60,14 @@ var (
 	// ErrUnderpriced is returned if a transaction's gas price is below the minimum
 	// configured for the transaction pool.
 	ErrUnderpriced = errors.New("transaction underpriced")
+
+	// ErrSpammyUnderpriced is returned if a transaction's gas price is below the minimum
+	// configured for the non-zero fee transaction.
+	ErrSpammyUnderpriced = errors.New("spammy transaction underpriced")
+
+	// ErrHeavyUnderpriced is returned if a transaction's gas price is below the minimum
+	// configured for the non-zero fee transaction.
+	ErrHeavyUnderpriced = errors.New("heavy transaction underpriced")
 
 	// ErrUnderparity is returned if a transaction's parity is below the minimum
 	// configured for the transaction pool.
@@ -154,6 +165,13 @@ type TxPoolConfig struct {
 	ParityLimit uint64 // Minimum parity to enforce for acceptance into the pool
 	ParityPrice uint64 // Price (in wei) for 1 parity unit
 
+	TxRateLimit float64
+	TxRateBurst uint64
+
+	FreeAgeMin      uint64 // Minimum account age (CurrentNumber-MRU) for zero-fee tx
+	FreeDataSizeMax uint64 // Maximum tx data accepted for zero-fee
+	NonFreePrice    uint64 // PriceLimit for spammy tx
+
 	AccountSlots uint64 // Number of executable transaction slots guaranteed per account
 	GlobalSlots  uint64 // Maximum number of executable transaction slots for all accounts
 	AccountQueue uint64 // Maximum number of non-executable transaction slots permitted per account
@@ -173,6 +191,13 @@ var DefaultTxPoolConfig = TxPoolConfig{
 
 	ParityLimit: types.ParityMax,
 	ParityPrice: 13e15, // ~ 273 NTY ~ 0.01 USD for 21000 Tx Gas
+
+	TxRateLimit: 1.0 / 3, // 1 tx/3s
+	TxRateBurst: 18,
+
+	FreeAgeMin:      0,
+	FreeDataSizeMax: 4 + 32*16,
+	NonFreePrice:    5e15,
 
 	AccountSlots: 16,
 	GlobalSlots:  4096,
@@ -245,6 +270,10 @@ type TxPool struct {
 	parityLimit uint64
 	parityPrice *big.Int
 
+	freeAgeMin      uint64
+	freeDataSizeMax uint64
+	nonFreePrice    uint64
+
 	istanbul bool // Fork indicator whether we are in the istanbul stage.
 
 	currentState  *state.StateDB // Current state in the blockchain head
@@ -255,7 +284,7 @@ type TxPool struct {
 	journal *txJournal  // Journal of local transaction to back up to disk
 
 	pending map[common.Address]*txList   // All currently processable transactions
-	queue   map[common.Address]*txList   // Queued but non-processable transactions
+	queue   map[common.Address]*txList   // Queued but no n-processable transactions
 	beats   map[common.Address]time.Time // Last heartbeat from each known account
 	all     *txLookup                    // All transactions to allow lookups
 	priced  *txPricedList                // All transactions sorted by price
@@ -268,6 +297,8 @@ type TxPool struct {
 	reorgDoneCh     chan chan struct{}
 	reorgShutdownCh chan struct{}  // requests shutdown of scheduleReorgLoop
 	wg              sync.WaitGroup // tracks loop, scheduleReorgLoop
+
+	throttler *Throttler
 }
 
 type txpoolResetRequest struct {
@@ -299,6 +330,11 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 		gasPrice:        new(big.Int).SetUint64(config.PriceLimit),
 		parityLimit:     config.ParityLimit,
 		parityPrice:     new(big.Int).SetUint64(config.ParityPrice),
+		throttler:       NewThrottler(rate.Limit(config.TxRateLimit), int(config.TxRateBurst)),
+
+		freeAgeMin:      config.FreeAgeMin,
+		freeDataSizeMax: config.FreeDataSizeMax,
+		nonFreePrice:    config.NonFreePrice,
 	}
 	pool.locals = newAccountSet(pool.signer)
 	for _, addr := range config.Locals {
@@ -610,10 +646,40 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return ErrUnderpriced
 	}
 
+	if uint64(len(tx.Data())) > pool.freeDataSizeMax {
+		// too heavy for zero-fee
+		if gasPrice.Uint64() < pool.nonFreePrice {
+			return ErrHeavyUnderpriced
+		}
+	}
+
 	nonce := pool.currentState.GetNonce(from)
 	// Ensure the transaction adheres to nonce ordering
 	if nonce > tx.Nonce() {
 		return ErrNonceTooLow
+	}
+
+	var mruNumber uint64
+	if pool.chainconfig.IsThangLong(pool.chain.CurrentBlock().Number()) {
+		mruNumber = pool.currentState.GetMRUNumber(from)
+		if mruNumber == 0 {
+			if !pool.currentState.Exist(from) {
+				// new account is treated as freshly used
+				mruNumber = pool.chain.CurrentBlock().NumberU64()
+			} else {
+				// old account from pre-hardfork
+				mruNumber = pool.chainconfig.Dccs.ThangLongBlock.Uint64()
+			}
+		}
+
+		accAge := pool.chain.CurrentBlock().NumberU64() - mruNumber
+
+		if accAge < pool.freeAgeMin {
+			// too young for zero-fee
+			if gasPrice.Uint64() < pool.nonFreePrice {
+				return ErrSpammyUnderpriced
+			}
+		}
 	}
 
 	balance := pool.currentState.GetBalance(from)
@@ -633,17 +699,6 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
 	if pool.chainconfig.IsThangLong(pool.chain.CurrentBlock().Number()) {
 		if !tx.HasParity() {
-			mruNumber := pool.currentState.GetMRUNumber(from)
-			if mruNumber == 0 {
-				if nonce == 0 {
-					// new account is treated as freshly used
-					mruNumber = pool.chain.CurrentBlock().NumberU64()
-				} else {
-					// old account from pre-hardfork
-					mruNumber = pool.chainconfig.Dccs.ThangLongBlock.Uint64()
-				}
-			}
-
 			parity := mruNumber + extrinsicParity(tx)
 
 			if gasPrice.Sign() > 0 {
@@ -666,6 +721,49 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	}
 
 	return nil
+}
+
+// SetNonFreePrice updates price limit for non-free tx.
+func (pool *TxPool) SetNonFreePrice(price uint64) {
+	pool.nonFreePrice = price
+	log.Info("Non-free price limit updated", "price", price)
+}
+
+// SetFreeDataSizeMax updates maxiumum data size for zero-fee tx.
+func (pool *TxPool) SetFreeDataSizeMax(size uint64) {
+	pool.freeDataSizeMax = size
+	log.Info("Maxiumum data size for zero-fee tx updated", "max size", size)
+}
+
+// SetFreeAgeMin updates minimum account age for zero-fee tx.
+func (pool *TxPool) SetFreeAgeMin(age uint64) {
+	pool.freeAgeMin = age
+	log.Info("Minimum account age for zero-fee tx updated", "min age", age)
+}
+
+// SetTxRateLimit updates tx throttler rate limit for each remote host.
+func (pool *TxPool) SetTxRateLimit(limitRate float64) {
+	if limitRate < 0 {
+		pool.throttler.SetLimit(rate.Inf)
+		log.Info("Transaction rate limit disabled")
+	} else {
+		pool.throttler.SetLimit(rate.Limit(limitRate))
+		log.Info("Transaction rate limit updated", "rate", limitRate)
+	}
+}
+
+// SetTxRateBurst updates tx throttler rate burst for each remote host.
+func (pool *TxPool) SetTxRateBurst(burst int) {
+	pool.throttler.SetBurst(burst)
+	log.Info("Transaction rate burst updated", "burst", burst)
+}
+
+// AllowN reports whether n tx(s) may be accepted for the provided remote host
+func (pool *TxPool) AllowN(remote string, n int) bool {
+	if idx := strings.IndexRune(remote, ':'); idx >= 0 {
+		remote = remote[:idx]
+	}
+	return pool.throttler.AllowN(remote, n)
 }
 
 // add validates a transaction and inserts it into the non-executable queue for later

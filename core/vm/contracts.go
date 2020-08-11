@@ -105,6 +105,15 @@ func (evm *EVM) RunPrecompiledContract(p PrecompiledContract, input []byte, cont
 	return nil, ErrOutOfGas
 }
 
+// RunPrecompiledContract runs and evaluates the output of a precompiled contract without an evm
+func RunPrecompiledContract(p PrecompiledContract, input []byte, contract *Contract) (ret []byte, err error) {
+	gas := p.RequiredGas(input)
+	if contract.UseGas(gas) {
+		return p.Run(input)
+	}
+	return nil, ErrOutOfGas
+}
+
 // ECRECOVER implemented as a native contract.
 type ecrecover struct{}
 

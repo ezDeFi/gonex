@@ -108,7 +108,7 @@ func (d *Dccs) PriceEngine() *PriceEngine {
 // caller may optionally pass in a batch of parents (ascending order) to avoid
 // looking those up from the database. This is useful for concurrently verifying
 // a batch of new headers.
-func (c *Context) verifyHeader2() error {
+func (c *Context) verifyHeader2(seal bool) error {
 	header := c.head
 	if header.Number == nil {
 		return errUnknownBlock
@@ -146,7 +146,7 @@ func (c *Context) verifyHeader2() error {
 	}
 
 	// All basic checks passed, verify cascading fields
-	err := c.verifyCascadingFields2()
+	err := c.verifyCascadingFields2(seal)
 
 	// Ignore missing random seed error while fast sync until the next random output available
 	if len(c.parents) > 0 && err == errRandomSeedHeaderMissing {
@@ -167,7 +167,7 @@ func (c *Context) getBlockNonce(parent *types.Header) types.BlockNonce {
 // rather depend on a batch of previous headers. The caller may optionally pass
 // in a batch of parents (ascending order) to avoid looking those up from the
 // database. This is useful for concurrently verifying a batch of new headers.
-func (c *Context) verifyCascadingFields2() error {
+func (c *Context) verifyCascadingFields2(seal bool) error {
 	header := c.head
 	// The genesis block is the always valid dead-end
 	number := header.Number.Uint64()
@@ -195,6 +195,11 @@ func (c *Context) verifyCascadingFields2() error {
 	}
 	if header.MixDigest != expectedMixDigest {
 		return fmt.Errorf("invalid cross-link digest: number=%v, want=%v, have=%v", header.Number, expectedMixDigest, header.MixDigest)
+	}
+
+	if !seal && !hasAnchorData(header) {
+		// only do full verfication for anchor and cross-link block while fast-syncing
+		return nil
 	}
 
 	// Verify the extended extra data in header.Extra

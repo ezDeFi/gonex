@@ -74,6 +74,7 @@ const (
 	ErrForkIDRejected
 	ErrNoStatusMsg
 	ErrExtraStatusMsg
+	ErrThrottled
 )
 
 func (e errCode) String() string {
@@ -91,6 +92,7 @@ var errorToString = map[int]string{
 	ErrForkIDRejected:          "Fork ID rejected",
 	ErrNoStatusMsg:             "No status message",
 	ErrExtraStatusMsg:          "Extra status message",
+	ErrThrottled:               "Transaction limit rate reached",
 }
 
 type txPool interface {
@@ -104,6 +106,9 @@ type txPool interface {
 	// SubscribeNewTxsEvent should return an event subscription of
 	// NewTxsEvent and send events to the given channel.
 	SubscribeNewTxsEvent(chan<- core.NewTxsEvent) event.Subscription
+
+	// AllowN reports whether n tx(s) may be accepted for the provided remote host
+	AllowN(remote string, n int) bool
 }
 
 // statusData63 is the network packet for the status message for eth/63.

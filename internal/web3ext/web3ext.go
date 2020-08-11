@@ -638,6 +638,31 @@ web3._extend({
 			name: 'getHashrate',
 			call: 'miner_getHashrate'
 		}),
+		new web3._extend.Method({
+			name: 'setTxRateLimit',
+			call: 'miner_setTxRateLimit',
+			params: 1,
+		}),
+		new web3._extend.Method({
+			name: 'setTxRateBurst',
+			call: 'miner_setTxRateBurst',
+			params: 1,
+		}),
+		new web3._extend.Method({
+			name: 'setNonFreePrice',
+			call: 'miner_setNonFreePrice',
+			params: 1,
+		}),
+		new web3._extend.Method({
+			name: 'setFreeDataSizeMax',
+			call: 'miner_setFreeDataSizeMax',
+			params: 1,
+		}),
+		new web3._extend.Method({
+			name: 'setFreeAgeMin',
+			call: 'miner_setFreeAgeMin',
+			params: 1,
+		}),
 	],
 	properties: []
 });

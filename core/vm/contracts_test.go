@@ -643,6 +643,23 @@ func TestPrecompiledEthashVerify(t *testing.T) {
 			MixDigest:   common.HexToHash("2266f0c6e0451fa681f0fdf9887fb261ef12e1ff2932d4d0f140a6710163904e"),
 			Nonce:       types.BlockNonce{0xef, 0x3f, 0x3e, 0xd0, 0x02, 0x72, 0x02, 0x4e},
 		},
+		{
+			ParentHash:  common.HexToHash("0464cb5815529a793644ab4e20d34128f4b780a2ffce3f37b0c1a300141862fb"),
+			UncleHash:   common.HexToHash("1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347"),
+			Coinbase:    common.HexToAddress("5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"),
+			Root:        common.HexToHash("1fa2309ba359737503b0985a3e3a88fac01eb11cb342fe505694d969815571e6"),
+			TxHash:      common.HexToHash("953a3f75b17930c0f25b99775fb94f63be0f178902bd390ceca2b66c05a33991"),
+			ReceiptHash: common.HexToHash("eb17998b6a591a206c6b6a2d92fc2d08b8234a7a793ec8a3552f551de1123a88"),
+			Bloom:       types.BytesToBloom(common.FromHex("26692204c068621c4500ac02890990d6058001880f200828f184a1c48a2b39c804001d6a8d00287682382605074e4502938ab2840d400d0304c85626c46704a080111418e301e3086b8ec848418050242c122d02d0d61234200090a518540338bb0e23048684e447c1b5c62004807a140420318a18002e7863468a3307a410008304420c432c21561dc300a04204453e0c139e5663e0a36ad12309d002121843d64603a800c42435ac0545b06094965080082480a42a401004b6008d980404fdc00f2022c8ec80023c0a90840570021e2890d250a08a409515d0148a51836160a2146123a9800c41cb0aac96091d64d42486204800ccb302c80d501e698b7862")),
+			Difficulty:  big.NewInt(2301451940179331),
+			Number:      big.NewInt(10179154),
+			GasLimit:    10000000,
+			GasUsed:     9997574,
+			Time:        1591003391,
+			Extra:       common.Hex2Bytes("6574682d70726f2d687a692d74303032"),
+			MixDigest:   common.HexToHash("d35aeb2391f56ea53aff1ae6e2aab371f222ec362282838105c394a9d8446bb5"),
+			Nonce:       types.BlockNonce{0x38, 0xb6, 0xe9, 0x20, 0x01, 0x47, 0x1c, 0x19},
+		},
 	}
 
 	for _, header := range headers {

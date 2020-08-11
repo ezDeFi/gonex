@@ -85,7 +85,7 @@ func (d *Dccs) init1() *Dccs {
 // caller may optionally pass in a batch of parents (ascending order) to avoid
 // looking those up from the database. This is useful for concurrently verifying
 // a batch of new headers.
-func (d *Dccs) verifyHeader1(chain consensus.ChainReader, header *types.Header, parents []*types.Header) error {
+func (d *Dccs) verifyHeader1(chain consensus.ChainReader, header *types.Header, parents []*types.Header, seal bool) error {
 	if header.Number == nil {
 		return errUnknownBlock
 	}
@@ -131,14 +131,14 @@ func (d *Dccs) verifyHeader1(chain consensus.ChainReader, header *types.Header, 
 		return err
 	}
 	// All basic checks passed, verify cascading fields
-	return d.verifyCascadingFields1(chain, header, parents)
+	return d.verifyCascadingFields1(chain, header, parents, seal)
 }
 
 // verifyCascadingFields1 verifies all the header fields that are not standalone,
 // rather depend on a batch of previous headers. The caller may optionally pass
 // in a batch of parents (ascending order) to avoid looking those up from the
 // database. This is useful for concurrently verifying a batch of new headers.
-func (d *Dccs) verifyCascadingFields1(chain consensus.ChainReader, header *types.Header, parents []*types.Header) error {
+func (d *Dccs) verifyCascadingFields1(chain consensus.ChainReader, header *types.Header, parents []*types.Header, seal bool) error {
 	// The genesis block is the always valid dead-end
 	number := header.Number.Uint64()
 	if number == 0 {
@@ -156,6 +156,10 @@ func (d *Dccs) verifyCascadingFields1(chain consensus.ChainReader, header *types
 	}
 	if parent.Time+d.config.Period > header.Time {
 		return ErrInvalidTimestamp
+	}
+	if !seal {
+		// Skip sealer verification for most of the fast blocks
+		return nil
 	}
 	// Retrieve the snapshot needed to verify this header and cache it
 	snap, err := d.snapshot1(chain, header, parents)
