@@ -661,7 +661,7 @@ type Rules struct {
 	ChainID                                                 *big.Int
 	IsHomestead, IsEIP150, IsEIP155, IsEIP158               bool
 	IsByzantium, IsConstantinople, IsPetersburg, IsIstanbul bool
-	IsThangLong, IsCoLoa                                    bool
+	IsGonex                                                 bool
 }
 
 // Rules ensures c's ChainID is not nil.
@@ -680,5 +680,6 @@ func (c *ChainConfig) Rules(num *big.Int) Rules {
 		IsConstantinople: c.IsConstantinople(num),
 		IsPetersburg:     c.IsPetersburg(num),
 		IsIstanbul:       c.IsIstanbul(num),
+		IsGonex:          c.Dccs != nil,
 	}
 }

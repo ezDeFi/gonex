@@ -78,9 +78,9 @@ var PrecompiledContractsIstanbul = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{9}): &blake2F{},
 }
 
-// PrecompiledContractsCoLoa contains the default set of pre-compiled Ethereum
+// PrecompiledContractsGonex contains the default set of pre-compiled Ethereum
 // contracts used in the new chain release.
-var PrecompiledContractsCoLoa = map[common.Address]PrecompiledContract{
+var PrecompiledContractsGonex = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{1}): &ecrecover{},
 	common.BytesToAddress([]byte{2}): &sha256hash{},
 	common.BytesToAddress([]byte{3}): &ripemd160hash{},

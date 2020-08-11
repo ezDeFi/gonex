@@ -55,8 +55,8 @@ func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, err
 		if evm.chainRules.IsIstanbul {
 			precompiles = PrecompiledContractsIstanbul
 		}
-		if evm.chainRules.IsCoLoa {
-			precompiles = PrecompiledContractsCoLoa
+		if evm.chainRules.IsGonex {
+			precompiles = PrecompiledContractsGonex
 		}
 		if p := precompiles[*contract.CodeAddr]; p != nil {
 			return evm.RunPrecompiledContract(p, input, contract)
@@ -234,8 +234,8 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 		if evm.chainRules.IsIstanbul {
 			precompiles = PrecompiledContractsIstanbul
 		}
-		if evm.chainRules.IsCoLoa {
-			precompiles = PrecompiledContractsCoLoa
+		if evm.chainRules.IsGonex {
+			precompiles = PrecompiledContractsGonex
 		}
 		if precompiles[addr] == nil && evm.chainRules.IsEIP158 && value.Sign() == 0 {
 			// Calling a non existing account, don't do anything, but ping the tracer
