@@ -192,14 +192,14 @@ var DefaultTxPoolConfig = TxPoolConfig{
 	PriceBump:  10,
 
 	ParityLimit: types.ParityMax,
-	ParityPrice: 13e15, // ~ 273 NTY ~ 0.01 USD for 21000 Tx Gas
+	ParityPrice: 13e9, // ~ 273 (old) NTY ~ 0.01 USD for 21000 Tx Gas
 
 	TxRateLimit: 1.0 / 3, // 1 tx/3s
 	TxRateBurst: 18,
 
 	FreeAgeMin:      0,
 	FreeDataSizeMax: 4 + 32*16,
-	NonFreePrice:    5e15,
+	NonFreePrice:    5e9,
 
 	AccountSlots: 16,
 	GlobalSlots:  4096,
