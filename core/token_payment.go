@@ -104,7 +104,7 @@ func (context *PaymentContext) Prepare(txHash, blockHash common.Hash, txIndex in
 	context.evm.StateDB.Prepare(txHash, blockHash, txIndex)
 }
 
-// EffectiveGasPrice returns the price (in NTY) of the pay by token tx
+// EffectiveGasPrice returns the effective gas price (in NTY) of the pay by token tx
 // (for tx pool)
 func (context *PaymentContext) EffectiveGasPrice(txHash common.Hash) (*big.Int, error) {
 	fee, err := context.extractPayment(txHash)
@@ -115,9 +115,11 @@ func (context *PaymentContext) EffectiveGasPrice(txHash common.Hash) (*big.Int, 
 	gasToPay := new(big.Int).SetUint64(context.paymentGas)
 	gasToPay = gasToPay.Add(gasToPay, new(big.Int).SetUint64(context.msg.Gas()))
 
-	// effective gas price = fee / gasToPay
-	effectiveGP := gasToPay.Div(fee, gasToPay)
-	return effectiveGP, nil
+	// effective gas price = ceil (fee / gasToPay)
+	price := fee.Add(fee, gasToPay)
+	price = price.Sub(price, common.Big1) // + gasToPay-1 to round up the result
+	price = price.Div(price, gasToPay)
+	return price, nil
 }
 
 // extractPayment returns the actual paid fee (in wei) of the pay by token tx
