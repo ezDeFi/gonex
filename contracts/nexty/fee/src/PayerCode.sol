@@ -12,12 +12,13 @@ import "./interfaces/IConfig.sol";
  */
 abstract contract PayerCode is IPayer {
     IConfig public constant TokenPayment            = IConfig(0x56789);
+    bytes32 public constant FeeTokenKey             = 'FeeToken';           // if this key is set, the value is always use for token fee
+    bytes32 public constant FeeTokenFallbackKey     = 'FeeTokenFallback';   // if all else fall, use this token to pay
+    bytes32 public constant AppTokenPath            = 'AppToken---';        // bytes11: token for a specific address
     bytes32 public constant TokenPricePath          = 'TokenPrice-';        // bytes11: user price for each token
-    bytes32 public constant FeeTokenPath            = 'FeeToken';           // if this key is set, the value is always use for token fee
-    bytes32 public constant FeeTokenFallbackPath    = 'FeeTokenFallback';   // if all else fall, use this token to pay
 
     /**
-     * @dev perfrom no overflow check at all, miner should do that to protect their income
+     * @dev perfrom no overflow check at all, miner need to check to protect their own income
      *
      * (callcode)
      */
@@ -34,42 +35,62 @@ abstract contract PayerCode is IPayer {
         IERC20(token).transfer(coinbase, tokenToPay);
     }
 
-    // (callcode)
     function _payment(
         address to
     ) internal view returns (
         address token,
         uint price  // Token/NTY price (in wei) (decimals = 18)
     ) {
-        token = _getTokenToPay(to);
-        require(token != address(0x0), "no token for payment");
-        return (token, _getPrice(token));
-    }
-
-    // (callcode)
-    function _getTokenToPay(address to) internal view returns (address token) {
         // first check the fee token setting
-        token = ds.loadAddress(FeeTokenPath);
+        token = ds.loadAddress(FeeTokenKey);
         if (token != address(0x0)) {
-            return token;
+            return (token, _getAnyPrice(token));
         }
-        // then try the interacting token
-        token = TokenPayment.getTokenFor(to);
+        // check the personal app token mapping
+        token = _getAppToken(to);
         if (token != address(0x0)) {
-            return token;
+            return (token, _getAnyPrice(token));
+        }
+        // get the global app token and price
+        (token, price) = TokenPayment.getAppTokenAndPrice(to);
+        // get the personal price to override the global price
+        uint p = _getPrice(token);
+        if (p > 0) {
+            return (token, p); // global app token and personal price
+        }
+        if (price > 0) {
+            return (token, price); // global app token and global price
         }
         // if all else fail, try the fallback fee token setting
-        return ds.loadAddress(FeeTokenFallbackPath);
+        token = ds.loadAddress(FeeTokenFallbackKey);
+        require(token != address(0x0), "no token for payment");
+        return (token, _getAnyPrice(token));
     }
 
-    // (callcode))
-    function _getPrice(address token) internal view returns (uint price) {
+    // get personal price and then global price
+    function _getAnyPrice(address token) internal view returns (uint price) {
         // allows user to override the prices using account personal storage
-        uint personalPrice = uint(ds.load(ds.key11a(TokenPricePath, token)));
-        if (personalPrice > 0) {
-            return personalPrice;
+        uint price = _getPrice(token);
+        if (price > 0) {
+            return price;
         }
         // then load the price from the global contract
         return TokenPayment.getPrice(token);
+    }
+
+    function _getAppToken(address app) internal view returns (address) {
+        return ds.loadAddress(ds.key11a(AppTokenPath, app));
+    }
+
+    function _getPrice(address token) internal view returns (uint price) {
+        return uint(ds.load(ds.key11a(TokenPricePath, token)));
+    }
+
+    function _setAppToken(address app, address token) internal {
+        ds.storeAddress(ds.key11a(AppTokenPath, app), token);
+    }
+
+    function _setPrice(address token, uint price) internal {
+        ds.store(ds.key11a(TokenPricePath, token), bytes32(price));
     }
 }

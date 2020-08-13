@@ -7,11 +7,10 @@ import "./PayerCode.sol";
 
 contract TokenPayment is PayerCode, IConfig {
     bytes32 public constant TRUE = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
-    bytes32 public constant TeamMemberPath  = 'TeamMember-'; // bytes11
-    bytes32 public constant TokenForPath    = 'TokenFor---'; // bytes11: token for a specific address
+    bytes32 public constant TeamMemberPath  = 'TeamMember-';    // bytes11
 
     constructor(
-        address[]   memory admins,    // trusted team to set the token prices
+        address[]   memory admins,  // trusted team to set the token prices
         address[]   memory tokens,  // initial mapping(token address => price) keys
         uint[]      memory prices   // initial mapping(token address => price) values
     ) public {
@@ -31,37 +30,32 @@ contract TokenPayment is PayerCode, IConfig {
         return ds.load(ds.key11a(TeamMemberPath, member)) != 0;
     }
 
-    function getTokenFor(address to) external override view returns (address token) {
-        token = _getTokenFor(to);
+    function getAppTokenAndPrice(address app) external override view returns (address token, uint price) {
+        token = _getAppToken(app);
         if (token != address(0x0)) {
-            return token;
+            return (token, _getPrice(token));
         }
-        return to;
+        return (app, _getPrice(app));
     }
 
-    function setTokenFor(address to, address token) external {
+    function setAppToken(address app, address token) external {
         require(_isAdmin(msg.sender), "for team member only");
-        _setTokenFor(to, token);
+        _setAppToken(app, token);
     }
 
-    function _getTokenFor(address to) internal view returns (address) {
-        return ds.loadAddress(ds.key11a(TokenForPath, to));
-    }
-
-    function _setTokenFor(address to, address token) internal {
-        ds.storeAddress(ds.key11a(TokenForPath, to), token);
+    /**
+     * this is for new dapp contract to call on construction/initilization
+     */
+    function setAppToken(address token) external {
+        _setAppToken(msg.sender, token);
     }
 
     function getPrice(address token) external override view returns (uint price) {
-        return uint(ds.load(ds.key11a(TokenPricePath, token)));
+        return _getPrice(token);
     }
 
     function setPrice(address token, uint price) external {
         require(_isAdmin(msg.sender), "for team member only");
         _setPrice(token, price);
-    }
-
-    function _setPrice(address token, uint price) internal {
-        ds.store(ds.key11a(TokenPricePath, token), bytes32(price));
     }
 }

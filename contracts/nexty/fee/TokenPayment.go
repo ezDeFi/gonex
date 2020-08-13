@@ -27,12 +27,12 @@ var (
 )
 
 // IConfigABI is the input ABI used to generate the binding from.
-const IConfigABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"getTokenFor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const IConfigABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"app\",\"type\":\"address\"}],\"name\":\"getAppTokenAndPrice\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // IConfigFuncSigs maps the 4-byte function signature to its string representation.
 var IConfigFuncSigs = map[string]string{
+	"668f7d49": "getAppTokenAndPrice(address)",
 	"41976e09": "getPrice(address)",
-	"c0e04395": "getTokenFor(address)",
 }
 
 // IConfig is an auto generated Go binding around an Ethereum contract.
@@ -177,6 +177,42 @@ func (_IConfig *IConfigTransactorRaw) Transact(opts *bind.TransactOpts, method s
 	return _IConfig.Contract.contract.Transact(opts, method, params...)
 }
 
+// GetAppTokenAndPrice is a free data retrieval call binding the contract method 0x668f7d49.
+//
+// Solidity: function getAppTokenAndPrice(address app) view returns(address token, uint256 price)
+func (_IConfig *IConfigCaller) GetAppTokenAndPrice(opts *bind.CallOpts, app common.Address) (struct {
+	Token common.Address
+	Price *big.Int
+}, error) {
+	ret := new(struct {
+		Token common.Address
+		Price *big.Int
+	})
+	out := ret
+	err := _IConfig.contract.Call(opts, out, "getAppTokenAndPrice", app)
+	return *ret, err
+}
+
+// GetAppTokenAndPrice is a free data retrieval call binding the contract method 0x668f7d49.
+//
+// Solidity: function getAppTokenAndPrice(address app) view returns(address token, uint256 price)
+func (_IConfig *IConfigSession) GetAppTokenAndPrice(app common.Address) (struct {
+	Token common.Address
+	Price *big.Int
+}, error) {
+	return _IConfig.Contract.GetAppTokenAndPrice(&_IConfig.CallOpts, app)
+}
+
+// GetAppTokenAndPrice is a free data retrieval call binding the contract method 0x668f7d49.
+//
+// Solidity: function getAppTokenAndPrice(address app) view returns(address token, uint256 price)
+func (_IConfig *IConfigCallerSession) GetAppTokenAndPrice(app common.Address) (struct {
+	Token common.Address
+	Price *big.Int
+}, error) {
+	return _IConfig.Contract.GetAppTokenAndPrice(&_IConfig.CallOpts, app)
+}
+
 // GetPrice is a free data retrieval call binding the contract method 0x41976e09.
 //
 // Solidity: function getPrice(address token) view returns(uint256 price)
@@ -201,32 +237,6 @@ func (_IConfig *IConfigSession) GetPrice(token common.Address) (*big.Int, error)
 // Solidity: function getPrice(address token) view returns(uint256 price)
 func (_IConfig *IConfigCallerSession) GetPrice(token common.Address) (*big.Int, error) {
 	return _IConfig.Contract.GetPrice(&_IConfig.CallOpts, token)
-}
-
-// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
-//
-// Solidity: function getTokenFor(address to) view returns(address token)
-func (_IConfig *IConfigCaller) GetTokenFor(opts *bind.CallOpts, to common.Address) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _IConfig.contract.Call(opts, out, "getTokenFor", to)
-	return *ret0, err
-}
-
-// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
-//
-// Solidity: function getTokenFor(address to) view returns(address token)
-func (_IConfig *IConfigSession) GetTokenFor(to common.Address) (common.Address, error) {
-	return _IConfig.Contract.GetTokenFor(&_IConfig.CallOpts, to)
-}
-
-// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
-//
-// Solidity: function getTokenFor(address to) view returns(address token)
-func (_IConfig *IConfigCallerSession) GetTokenFor(to common.Address) (common.Address, error) {
-	return _IConfig.Contract.GetTokenFor(&_IConfig.CallOpts, to)
 }
 
 // IERC20ABI is the input ABI used to generate the binding from.
@@ -1003,12 +1013,13 @@ func (_IPayer *IPayerTransactorSession) Pay(coinbase common.Address, to common.A
 }
 
 // PayerCodeABI is the input ABI used to generate the binding from.
-const PayerCodeABI = "[{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const PayerCodeABI = "[{\"inputs\":[],\"name\":\"AppTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenFallbackKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // PayerCodeFuncSigs maps the 4-byte function signature to its string representation.
 var PayerCodeFuncSigs = map[string]string{
-	"5e8f4d74": "FeeTokenFallbackPath()",
-	"c8c1956b": "FeeTokenPath()",
+	"bc2b83d8": "AppTokenPath()",
+	"b20bc41d": "FeeTokenFallbackKey()",
+	"aba02ad7": "FeeTokenKey()",
 	"f218dd97": "TokenPayment()",
 	"c9969bcf": "TokenPricePath()",
 	"b3d76188": "pay(address,address,uint256)",
@@ -1156,56 +1167,82 @@ func (_PayerCode *PayerCodeTransactorRaw) Transact(opts *bind.TransactOpts, meth
 	return _PayerCode.Contract.contract.Transact(opts, method, params...)
 }
 
-// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
+// AppTokenPath is a free data retrieval call binding the contract method 0xbc2b83d8.
 //
-// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
-func (_PayerCode *PayerCodeCaller) FeeTokenFallbackPath(opts *bind.CallOpts) ([32]byte, error) {
+// Solidity: function AppTokenPath() view returns(bytes32)
+func (_PayerCode *PayerCodeCaller) AppTokenPath(opts *bind.CallOpts) ([32]byte, error) {
 	var (
 		ret0 = new([32]byte)
 	)
 	out := ret0
-	err := _PayerCode.contract.Call(opts, out, "FeeTokenFallbackPath")
+	err := _PayerCode.contract.Call(opts, out, "AppTokenPath")
 	return *ret0, err
 }
 
-// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
+// AppTokenPath is a free data retrieval call binding the contract method 0xbc2b83d8.
 //
-// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
-func (_PayerCode *PayerCodeSession) FeeTokenFallbackPath() ([32]byte, error) {
-	return _PayerCode.Contract.FeeTokenFallbackPath(&_PayerCode.CallOpts)
+// Solidity: function AppTokenPath() view returns(bytes32)
+func (_PayerCode *PayerCodeSession) AppTokenPath() ([32]byte, error) {
+	return _PayerCode.Contract.AppTokenPath(&_PayerCode.CallOpts)
 }
 
-// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
+// AppTokenPath is a free data retrieval call binding the contract method 0xbc2b83d8.
 //
-// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
-func (_PayerCode *PayerCodeCallerSession) FeeTokenFallbackPath() ([32]byte, error) {
-	return _PayerCode.Contract.FeeTokenFallbackPath(&_PayerCode.CallOpts)
+// Solidity: function AppTokenPath() view returns(bytes32)
+func (_PayerCode *PayerCodeCallerSession) AppTokenPath() ([32]byte, error) {
+	return _PayerCode.Contract.AppTokenPath(&_PayerCode.CallOpts)
 }
 
-// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
+// FeeTokenFallbackKey is a free data retrieval call binding the contract method 0xb20bc41d.
 //
-// Solidity: function FeeTokenPath() view returns(bytes32)
-func (_PayerCode *PayerCodeCaller) FeeTokenPath(opts *bind.CallOpts) ([32]byte, error) {
+// Solidity: function FeeTokenFallbackKey() view returns(bytes32)
+func (_PayerCode *PayerCodeCaller) FeeTokenFallbackKey(opts *bind.CallOpts) ([32]byte, error) {
 	var (
 		ret0 = new([32]byte)
 	)
 	out := ret0
-	err := _PayerCode.contract.Call(opts, out, "FeeTokenPath")
+	err := _PayerCode.contract.Call(opts, out, "FeeTokenFallbackKey")
 	return *ret0, err
 }
 
-// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
+// FeeTokenFallbackKey is a free data retrieval call binding the contract method 0xb20bc41d.
 //
-// Solidity: function FeeTokenPath() view returns(bytes32)
-func (_PayerCode *PayerCodeSession) FeeTokenPath() ([32]byte, error) {
-	return _PayerCode.Contract.FeeTokenPath(&_PayerCode.CallOpts)
+// Solidity: function FeeTokenFallbackKey() view returns(bytes32)
+func (_PayerCode *PayerCodeSession) FeeTokenFallbackKey() ([32]byte, error) {
+	return _PayerCode.Contract.FeeTokenFallbackKey(&_PayerCode.CallOpts)
 }
 
-// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
+// FeeTokenFallbackKey is a free data retrieval call binding the contract method 0xb20bc41d.
 //
-// Solidity: function FeeTokenPath() view returns(bytes32)
-func (_PayerCode *PayerCodeCallerSession) FeeTokenPath() ([32]byte, error) {
-	return _PayerCode.Contract.FeeTokenPath(&_PayerCode.CallOpts)
+// Solidity: function FeeTokenFallbackKey() view returns(bytes32)
+func (_PayerCode *PayerCodeCallerSession) FeeTokenFallbackKey() ([32]byte, error) {
+	return _PayerCode.Contract.FeeTokenFallbackKey(&_PayerCode.CallOpts)
+}
+
+// FeeTokenKey is a free data retrieval call binding the contract method 0xaba02ad7.
+//
+// Solidity: function FeeTokenKey() view returns(bytes32)
+func (_PayerCode *PayerCodeCaller) FeeTokenKey(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _PayerCode.contract.Call(opts, out, "FeeTokenKey")
+	return *ret0, err
+}
+
+// FeeTokenKey is a free data retrieval call binding the contract method 0xaba02ad7.
+//
+// Solidity: function FeeTokenKey() view returns(bytes32)
+func (_PayerCode *PayerCodeSession) FeeTokenKey() ([32]byte, error) {
+	return _PayerCode.Contract.FeeTokenKey(&_PayerCode.CallOpts)
+}
+
+// FeeTokenKey is a free data retrieval call binding the contract method 0xaba02ad7.
+//
+// Solidity: function FeeTokenKey() view returns(bytes32)
+func (_PayerCode *PayerCodeCallerSession) FeeTokenKey() ([32]byte, error) {
+	return _PayerCode.Contract.FeeTokenKey(&_PayerCode.CallOpts)
 }
 
 // TokenPayment is a free data retrieval call binding the contract method 0xf218dd97.
@@ -1282,26 +1319,27 @@ func (_PayerCode *PayerCodeTransactorSession) Pay(coinbase common.Address, to co
 }
 
 // TokenPaymentABI is the input ABI used to generate the binding from.
-const TokenPaymentABI = "[{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"admins\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokens\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"prices\",\"type\":\"uint256[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"FeeTokenFallbackPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TRUE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TeamMemberPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenForPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"getTokenFor\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"setPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"setTokenFor\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const TokenPaymentABI = "[{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"admins\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokens\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"prices\",\"type\":\"uint256[]\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AppTokenPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenFallbackKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FeeTokenKey\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TRUE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TeamMemberPath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPayment\",\"outputs\":[{\"internalType\":\"contractIConfig\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"TokenPricePath\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"app\",\"type\":\"address\"}],\"name\":\"getAppTokenAndPrice\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"setAppToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"app\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"setAppToken\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"name\":\"setPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // TokenPaymentFuncSigs maps the 4-byte function signature to its string representation.
 var TokenPaymentFuncSigs = map[string]string{
-	"5e8f4d74": "FeeTokenFallbackPath()",
-	"c8c1956b": "FeeTokenPath()",
+	"bc2b83d8": "AppTokenPath()",
+	"b20bc41d": "FeeTokenFallbackKey()",
+	"aba02ad7": "FeeTokenKey()",
 	"5994d984": "TRUE()",
 	"654b8c2a": "TeamMemberPath()",
-	"efc0a0a9": "TokenForPath()",
 	"f218dd97": "TokenPayment()",
 	"c9969bcf": "TokenPricePath()",
+	"668f7d49": "getAppTokenAndPrice(address)",
 	"41976e09": "getPrice(address)",
-	"c0e04395": "getTokenFor(address)",
 	"b3d76188": "pay(address,address,uint256)",
+	"07b3e5a7": "setAppToken(address)",
+	"1402930d": "setAppToken(address,address)",
 	"00e4768b": "setPrice(address,uint256)",
-	"90b63f21": "setTokenFor(address,address)",
 }
 
 // TokenPaymentBin is the compiled bytecode used for deploying new contracts.
-var TokenPaymentBin = "0x60806040523480156200001157600080fd5b5060405162000a6038038062000a60833981810160405260608110156200003757600080fd5b81019080805160405193929190846401000000008211156200005857600080fd5b9083019060208201858111156200006e57600080fd5b82518660208202830111640100000000821117156200008c57600080fd5b82525081516020918201928201910280838360005b83811015620000bb578181015183820152602001620000a1565b5050505090500160405260200180516040519392919084640100000000821115620000e557600080fd5b908301906020820185811115620000fb57600080fd5b82518660208202830111640100000000821117156200011957600080fd5b82525081516020918201928201910280838360005b83811015620001485781810151838201526020016200012e565b50505050905001604052602001805160405193929190846401000000008211156200017257600080fd5b9083019060208201858111156200018857600080fd5b8251866020820283011164010000000082111715620001a657600080fd5b82525081516020918201928201910280838360005b83811015620001d5578181015183820152602001620001bb565b5050505090500160405250505060008090505b83518110156200022057620002178482815181106200020357fe5b60200260200101516200027b60201b60201c565b600101620001e8565b5060005b82518110156200027157620002688382815181106200023f57fe5b60200260200101518383815181106200025457fe5b6020026020010151620002be60201b60201c565b60010162000224565b5050505062000315565b620002bb620002a46a5465616d4d656d6265722d60a81b836200030060201b6200047f1760201c565b60001960001b6200031160201b620004901760201c565b50565b620002fc620002e76a546f6b656e50726963652d60a81b846200030060201b6200047f1760201c565b8260001b6200031160201b620004901760201c565b5050565b60081b610100600160a81b03161790565b9055565b61073b80620003256000396000f3fe608060405234801561001057600080fd5b50600436106100b35760003560e01c8063b3d7618811610071578063b3d7618814610164578063c0e043951461019a578063c8c1956b146101dc578063c9969bcf146101e4578063efc0a0a9146101ec578063f218dd97146101f4576100b3565b8062e4768b146100b857806341976e09146100e65780635994d9841461011e5780635e8f4d7414610126578063654b8c2a1461012e57806390b63f2114610136575b600080fd5b6100e4600480360360408110156100ce57600080fd5b506001600160a01b0381351690602001356101fc565b005b61010c600480360360208110156100fc57600080fd5b50356001600160a01b031661025b565b60408051918252519081900360200190f35b61010c610285565b61010c61028b565b61010c6102a2565b6100e46004803603604081101561014c57600080fd5b506001600160a01b03813581169160200135166102b4565b6100e46004803603606081101561017a57600080fd5b506001600160a01b0381358116916020810135909116906040013561030f565b6101c0600480360360208110156101b057600080fd5b50356001600160a01b0316610420565b604080516001600160a01b039092168252519081900360200190f35b61010c610445565b61010c610454565b61010c610466565b6101c0610478565b61020533610494565b61024d576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61025782826104b9565b5050565b600061027d6102786a546f6b656e50726963652d60a81b8461047f565b6104da565b90505b919050565b60001981565b6f466565546f6b656e46616c6c6261636b60801b81565b6a5465616d4d656d6265722d60a81b81565b6102bd33610494565b610305576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b61025782826104de565b60008061031b846104f9565b9150915060008111610374576040805162461bcd60e51b815260206004820152601b60248201527f7061796d656e7420746f6b656e207072696365206e6f74207365740000000000604482015290519081900360640190fd5b60008184670de0b6b3a7640000028161038957fe5b049050826001600160a01b031663a9059cbb87836040518363ffffffff1660e01b815260040180836001600160a01b03166001600160a01b0316815260200182815260200192505050602060405180830381600087803b1580156103ec57600080fd5b505af1158015610400573d6000803e3d6000fd5b505050506040513d602081101561041657600080fd5b5050505050505050565b600061042b8261056c565b90506001600160a01b0381161561044157610280565b5090565b672332b2aa37b5b2b760c11b81565b6a546f6b656e50726963652d60a81b81565b6a546f6b656e466f722d2d2d60a81b81565b6205678981565b60081b610100600160a81b03161790565b9055565b60006104b16102786a5465616d4d656d6265722d60a81b8461047f565b151592915050565b6102576104d46a546f6b656e50726963652d60a81b8461047f565b82610490565b5490565b6102576104d46a546f6b656e466f722d2d2d60a81b8461047f565b60008061050583610589565b91506001600160a01b038216610559576040805162461bcd60e51b81526020600482015260146024820152731b9bc81d1bdad95b88199bdc881c185e5b595b9d60621b604482015290519081900360640190fd5b816105638361065c565b91509150915091565b600061027d6102786a546f6b656e466f722d2d2d60a81b8461047f565b600061059f672332b2aa37b5b2b760c11b6104da565b90506001600160a01b038116156105b557610280565b6040805163c0e0439560e01b81526001600160a01b03841660048201529051620567899163c0e04395916024808301926020929190829003018186803b1580156105fe57600080fd5b505afa158015610612573d6000803e3d6000fd5b505050506040513d602081101561062857600080fd5b505190506001600160a01b0381161561064057610280565b61027d6f466565546f6b656e46616c6c6261636b60801b6104da565b60008061067a6102786a546f6b656e50726963652d60a81b8561047f565b90508015610689579050610280565b604080516341976e0960e01b81526001600160a01b0385166004820152905162056789916341976e09916024808301926020929190829003018186803b1580156106d257600080fd5b505afa1580156106e6573d6000803e3d6000fd5b505050506040513d60208110156106fc57600080fd5b5051939250505056fea2646970667358221220f5291b39a5434fd0c6a1c61a2cc188aa579b5141551c54d648c2ebd59a3d77c064736f6c63430006080033"
+var TokenPaymentBin = "0x60806040523480156200001157600080fd5b5060405162000b2038038062000b20833981810160405260608110156200003757600080fd5b81019080805160405193929190846401000000008211156200005857600080fd5b9083019060208201858111156200006e57600080fd5b82518660208202830111640100000000821117156200008c57600080fd5b82525081516020918201928201910280838360005b83811015620000bb578181015183820152602001620000a1565b5050505090500160405260200180516040519392919084640100000000821115620000e557600080fd5b908301906020820185811115620000fb57600080fd5b82518660208202830111640100000000821117156200011957600080fd5b82525081516020918201928201910280838360005b83811015620001485781810151838201526020016200012e565b50505050905001604052602001805160405193929190846401000000008211156200017257600080fd5b9083019060208201858111156200018857600080fd5b8251866020820283011164010000000082111715620001a657600080fd5b82525081516020918201928201910280838360005b83811015620001d5578181015183820152602001620001bb565b5050505090500160405250505060008090505b83518110156200022057620002178482815181106200020357fe5b60200260200101516200027b60201b60201c565b600101620001e8565b5060005b82518110156200027157620002688382815181106200023f57fe5b60200260200101518383815181106200025457fe5b6020026020010151620002be60201b60201c565b60010162000224565b5050505062000315565b620002bb620002a46a5465616d4d656d6265722d60a81b836200030060201b620004f81760201c565b60001960001b6200031160201b620005091760201c565b50565b620002fc620002e76a546f6b656e50726963652d60a81b846200030060201b620004f81760201c565b8260001b6200031160201b620005091760201c565b5050565b60081b610100600160a81b03161790565b9055565b6107fb80620003256000396000f3fe608060405234801561001057600080fd5b50600436106100ce5760003560e01c8063668f7d491161008c578063b3d7618811610066578063b3d76188146101f6578063bc2b83d81461022c578063c9969bcf14610234578063f218dd971461023c576100ce565b8063668f7d491461019d578063aba02ad7146101e6578063b20bc41d146101ee576100ce565b8062e4768b146100d357806307b3e5a7146101015780631402930d1461012757806341976e09146101555780635994d9841461018d578063654b8c2a14610195575b600080fd5b6100ff600480360360408110156100e957600080fd5b506001600160a01b038135169060200135610260565b005b6100ff6004803603602081101561011757600080fd5b50356001600160a01b03166102bf565b6100ff6004803603604081101561013d57600080fd5b506001600160a01b03813581169160200135166102cc565b61017b6004803603602081101561016b57600080fd5b50356001600160a01b0316610327565b60408051918252519081900360200190f35b61017b61033a565b61017b610340565b6101c3600480360360208110156101b357600080fd5b50356001600160a01b0316610352565b604080516001600160a01b03909316835260208301919091528051918290030190f35b61017b610396565b61017b6103a5565b6100ff6004803603606081101561020c57600080fd5b506001600160a01b038135811691602081013590911690604001356103bc565b61017b6104cd565b61017b6104df565b6102446104f1565b604080516001600160a01b039092168252519081900360200190f35b6102693361050d565b6102b1576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b6102bb8282610537565b5050565b6102c93382610558565b50565b6102d53361050d565b61031d576040805162461bcd60e51b8152602060048201526014602482015273666f72207465616d206d656d626572206f6e6c7960601b604482015290519081900360640190fd5b6102bb8282610558565b600061033282610573565b90505b919050565b60001981565b6a5465616d4d656d6265722d60a81b81565b60008061035e83610590565b91506001600160a01b03821615610382578161037983610573565b91509150610391565b8261038c84610573565b915091505b915091565b672332b2aa37b5b2b760c11b81565b6f466565546f6b656e46616c6c6261636b60801b81565b6000806103c8846105ad565b9150915060008111610421576040805162461bcd60e51b815260206004820152601b60248201527f7061796d656e7420746f6b656e207072696365206e6f74207365740000000000604482015290519081900360640190fd5b60008184670de0b6b3a7640000028161043657fe5b049050826001600160a01b031663a9059cbb87836040518363ffffffff1660e01b815260040180836001600160a01b03166001600160a01b0316815260200182815260200192505050602060405180830381600087803b15801561049957600080fd5b505af11580156104ad573d6000803e3d6000fd5b505050506040513d60208110156104c357600080fd5b5050505050505050565b6a417070546f6b656e2d2d2d60a81b81565b6a546f6b656e50726963652d60a81b81565b6205678981565b60081b610100600160a81b03161790565b9055565b600061052f61052a6a5465616d4d656d6265722d60a81b846104f8565b61072a565b151592915050565b6102bb6105526a546f6b656e50726963652d60a81b846104f8565b82610509565b6102bb6105526a417070546f6b656e2d2d2d60a81b846104f8565b600061033261052a6a546f6b656e50726963652d60a81b846104f8565b600061033261052a6a417070546f6b656e2d2d2d60a81b846104f8565b6000806105c4672332b2aa37b5b2b760c11b61072a565b91506001600160a01b038216156105df57816103798361072e565b6105e883610590565b91506001600160a01b0382161561060357816103798361072e565b6040805163668f7d4960e01b81526001600160a01b03851660048201528151620567899263668f7d499260248082019391829003018186803b15801561064857600080fd5b505afa15801561065c573d6000803e3d6000fd5b505050506040513d604081101561067257600080fd5b5080516020909101519092509050600061068b83610573565b9050801561069a579050610391565b81156106a65750610391565b6106c26f466565546f6b656e46616c6c6261636b60801b61072a565b92506001600160a01b038316610716576040805162461bcd60e51b81526020600482015260146024820152731b9bc81d1bdad95b88199bdc881c185e5b595b9d60621b604482015290519081900360640190fd5b826107208461072e565b9250925050915091565b5490565b60008061073a83610573565b90508015610749579050610335565b604080516341976e0960e01b81526001600160a01b0385166004820152905162056789916341976e09916024808301926020929190829003018186803b15801561079257600080fd5b505afa1580156107a6573d6000803e3d6000fd5b505050506040513d60208110156107bc57600080fd5b5051939250505056fea264697066735822122005e24138627d901f331ff0e3e062acb55d009021004a8ce4c58ba0ef978941c364736f6c63430006080033"
 
 // DeployTokenPayment deploys a new Ethereum contract, binding an instance of TokenPayment to it.
 func DeployTokenPayment(auth *bind.TransactOpts, backend bind.ContractBackend, admins []common.Address, tokens []common.Address, prices []*big.Int) (common.Address, *types.Transaction, *TokenPayment, error) {
@@ -1459,56 +1497,82 @@ func (_TokenPayment *TokenPaymentTransactorRaw) Transact(opts *bind.TransactOpts
 	return _TokenPayment.Contract.contract.Transact(opts, method, params...)
 }
 
-// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
+// AppTokenPath is a free data retrieval call binding the contract method 0xbc2b83d8.
 //
-// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentCaller) FeeTokenFallbackPath(opts *bind.CallOpts) ([32]byte, error) {
+// Solidity: function AppTokenPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) AppTokenPath(opts *bind.CallOpts) ([32]byte, error) {
 	var (
 		ret0 = new([32]byte)
 	)
 	out := ret0
-	err := _TokenPayment.contract.Call(opts, out, "FeeTokenFallbackPath")
+	err := _TokenPayment.contract.Call(opts, out, "AppTokenPath")
 	return *ret0, err
 }
 
-// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
+// AppTokenPath is a free data retrieval call binding the contract method 0xbc2b83d8.
 //
-// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) FeeTokenFallbackPath() ([32]byte, error) {
-	return _TokenPayment.Contract.FeeTokenFallbackPath(&_TokenPayment.CallOpts)
+// Solidity: function AppTokenPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) AppTokenPath() ([32]byte, error) {
+	return _TokenPayment.Contract.AppTokenPath(&_TokenPayment.CallOpts)
 }
 
-// FeeTokenFallbackPath is a free data retrieval call binding the contract method 0x5e8f4d74.
+// AppTokenPath is a free data retrieval call binding the contract method 0xbc2b83d8.
 //
-// Solidity: function FeeTokenFallbackPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentCallerSession) FeeTokenFallbackPath() ([32]byte, error) {
-	return _TokenPayment.Contract.FeeTokenFallbackPath(&_TokenPayment.CallOpts)
+// Solidity: function AppTokenPath() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) AppTokenPath() ([32]byte, error) {
+	return _TokenPayment.Contract.AppTokenPath(&_TokenPayment.CallOpts)
 }
 
-// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
+// FeeTokenFallbackKey is a free data retrieval call binding the contract method 0xb20bc41d.
 //
-// Solidity: function FeeTokenPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentCaller) FeeTokenPath(opts *bind.CallOpts) ([32]byte, error) {
+// Solidity: function FeeTokenFallbackKey() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) FeeTokenFallbackKey(opts *bind.CallOpts) ([32]byte, error) {
 	var (
 		ret0 = new([32]byte)
 	)
 	out := ret0
-	err := _TokenPayment.contract.Call(opts, out, "FeeTokenPath")
+	err := _TokenPayment.contract.Call(opts, out, "FeeTokenFallbackKey")
 	return *ret0, err
 }
 
-// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
+// FeeTokenFallbackKey is a free data retrieval call binding the contract method 0xb20bc41d.
 //
-// Solidity: function FeeTokenPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) FeeTokenPath() ([32]byte, error) {
-	return _TokenPayment.Contract.FeeTokenPath(&_TokenPayment.CallOpts)
+// Solidity: function FeeTokenFallbackKey() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) FeeTokenFallbackKey() ([32]byte, error) {
+	return _TokenPayment.Contract.FeeTokenFallbackKey(&_TokenPayment.CallOpts)
 }
 
-// FeeTokenPath is a free data retrieval call binding the contract method 0xc8c1956b.
+// FeeTokenFallbackKey is a free data retrieval call binding the contract method 0xb20bc41d.
 //
-// Solidity: function FeeTokenPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentCallerSession) FeeTokenPath() ([32]byte, error) {
-	return _TokenPayment.Contract.FeeTokenPath(&_TokenPayment.CallOpts)
+// Solidity: function FeeTokenFallbackKey() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) FeeTokenFallbackKey() ([32]byte, error) {
+	return _TokenPayment.Contract.FeeTokenFallbackKey(&_TokenPayment.CallOpts)
+}
+
+// FeeTokenKey is a free data retrieval call binding the contract method 0xaba02ad7.
+//
+// Solidity: function FeeTokenKey() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCaller) FeeTokenKey(opts *bind.CallOpts) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _TokenPayment.contract.Call(opts, out, "FeeTokenKey")
+	return *ret0, err
+}
+
+// FeeTokenKey is a free data retrieval call binding the contract method 0xaba02ad7.
+//
+// Solidity: function FeeTokenKey() view returns(bytes32)
+func (_TokenPayment *TokenPaymentSession) FeeTokenKey() ([32]byte, error) {
+	return _TokenPayment.Contract.FeeTokenKey(&_TokenPayment.CallOpts)
+}
+
+// FeeTokenKey is a free data retrieval call binding the contract method 0xaba02ad7.
+//
+// Solidity: function FeeTokenKey() view returns(bytes32)
+func (_TokenPayment *TokenPaymentCallerSession) FeeTokenKey() ([32]byte, error) {
+	return _TokenPayment.Contract.FeeTokenKey(&_TokenPayment.CallOpts)
 }
 
 // TRUE is a free data retrieval call binding the contract method 0x5994d984.
@@ -1563,32 +1627,6 @@ func (_TokenPayment *TokenPaymentCallerSession) TeamMemberPath() ([32]byte, erro
 	return _TokenPayment.Contract.TeamMemberPath(&_TokenPayment.CallOpts)
 }
 
-// TokenForPath is a free data retrieval call binding the contract method 0xefc0a0a9.
-//
-// Solidity: function TokenForPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentCaller) TokenForPath(opts *bind.CallOpts) ([32]byte, error) {
-	var (
-		ret0 = new([32]byte)
-	)
-	out := ret0
-	err := _TokenPayment.contract.Call(opts, out, "TokenForPath")
-	return *ret0, err
-}
-
-// TokenForPath is a free data retrieval call binding the contract method 0xefc0a0a9.
-//
-// Solidity: function TokenForPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentSession) TokenForPath() ([32]byte, error) {
-	return _TokenPayment.Contract.TokenForPath(&_TokenPayment.CallOpts)
-}
-
-// TokenForPath is a free data retrieval call binding the contract method 0xefc0a0a9.
-//
-// Solidity: function TokenForPath() view returns(bytes32)
-func (_TokenPayment *TokenPaymentCallerSession) TokenForPath() ([32]byte, error) {
-	return _TokenPayment.Contract.TokenForPath(&_TokenPayment.CallOpts)
-}
-
 // TokenPayment is a free data retrieval call binding the contract method 0xf218dd97.
 //
 // Solidity: function TokenPayment() view returns(address)
@@ -1641,6 +1679,42 @@ func (_TokenPayment *TokenPaymentCallerSession) TokenPricePath() ([32]byte, erro
 	return _TokenPayment.Contract.TokenPricePath(&_TokenPayment.CallOpts)
 }
 
+// GetAppTokenAndPrice is a free data retrieval call binding the contract method 0x668f7d49.
+//
+// Solidity: function getAppTokenAndPrice(address app) view returns(address token, uint256 price)
+func (_TokenPayment *TokenPaymentCaller) GetAppTokenAndPrice(opts *bind.CallOpts, app common.Address) (struct {
+	Token common.Address
+	Price *big.Int
+}, error) {
+	ret := new(struct {
+		Token common.Address
+		Price *big.Int
+	})
+	out := ret
+	err := _TokenPayment.contract.Call(opts, out, "getAppTokenAndPrice", app)
+	return *ret, err
+}
+
+// GetAppTokenAndPrice is a free data retrieval call binding the contract method 0x668f7d49.
+//
+// Solidity: function getAppTokenAndPrice(address app) view returns(address token, uint256 price)
+func (_TokenPayment *TokenPaymentSession) GetAppTokenAndPrice(app common.Address) (struct {
+	Token common.Address
+	Price *big.Int
+}, error) {
+	return _TokenPayment.Contract.GetAppTokenAndPrice(&_TokenPayment.CallOpts, app)
+}
+
+// GetAppTokenAndPrice is a free data retrieval call binding the contract method 0x668f7d49.
+//
+// Solidity: function getAppTokenAndPrice(address app) view returns(address token, uint256 price)
+func (_TokenPayment *TokenPaymentCallerSession) GetAppTokenAndPrice(app common.Address) (struct {
+	Token common.Address
+	Price *big.Int
+}, error) {
+	return _TokenPayment.Contract.GetAppTokenAndPrice(&_TokenPayment.CallOpts, app)
+}
+
 // GetPrice is a free data retrieval call binding the contract method 0x41976e09.
 //
 // Solidity: function getPrice(address token) view returns(uint256 price)
@@ -1667,32 +1741,6 @@ func (_TokenPayment *TokenPaymentCallerSession) GetPrice(token common.Address) (
 	return _TokenPayment.Contract.GetPrice(&_TokenPayment.CallOpts, token)
 }
 
-// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
-//
-// Solidity: function getTokenFor(address to) view returns(address token)
-func (_TokenPayment *TokenPaymentCaller) GetTokenFor(opts *bind.CallOpts, to common.Address) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _TokenPayment.contract.Call(opts, out, "getTokenFor", to)
-	return *ret0, err
-}
-
-// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
-//
-// Solidity: function getTokenFor(address to) view returns(address token)
-func (_TokenPayment *TokenPaymentSession) GetTokenFor(to common.Address) (common.Address, error) {
-	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.CallOpts, to)
-}
-
-// GetTokenFor is a free data retrieval call binding the contract method 0xc0e04395.
-//
-// Solidity: function getTokenFor(address to) view returns(address token)
-func (_TokenPayment *TokenPaymentCallerSession) GetTokenFor(to common.Address) (common.Address, error) {
-	return _TokenPayment.Contract.GetTokenFor(&_TokenPayment.CallOpts, to)
-}
-
 // Pay is a paid mutator transaction binding the contract method 0xb3d76188.
 //
 // Solidity: function pay(address coinbase, address to, uint256 fee) returns()
@@ -1714,6 +1762,48 @@ func (_TokenPayment *TokenPaymentTransactorSession) Pay(coinbase common.Address,
 	return _TokenPayment.Contract.Pay(&_TokenPayment.TransactOpts, coinbase, to, fee)
 }
 
+// SetAppToken is a paid mutator transaction binding the contract method 0x07b3e5a7.
+//
+// Solidity: function setAppToken(address token) returns()
+func (_TokenPayment *TokenPaymentTransactor) SetAppToken(opts *bind.TransactOpts, token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "setAppToken", token)
+}
+
+// SetAppToken is a paid mutator transaction binding the contract method 0x07b3e5a7.
+//
+// Solidity: function setAppToken(address token) returns()
+func (_TokenPayment *TokenPaymentSession) SetAppToken(token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.SetAppToken(&_TokenPayment.TransactOpts, token)
+}
+
+// SetAppToken is a paid mutator transaction binding the contract method 0x07b3e5a7.
+//
+// Solidity: function setAppToken(address token) returns()
+func (_TokenPayment *TokenPaymentTransactorSession) SetAppToken(token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.SetAppToken(&_TokenPayment.TransactOpts, token)
+}
+
+// SetAppToken0 is a paid mutator transaction binding the contract method 0x1402930d.
+//
+// Solidity: function setAppToken(address app, address token) returns()
+func (_TokenPayment *TokenPaymentTransactor) SetAppToken0(opts *bind.TransactOpts, app common.Address, token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.contract.Transact(opts, "setAppToken0", app, token)
+}
+
+// SetAppToken0 is a paid mutator transaction binding the contract method 0x1402930d.
+//
+// Solidity: function setAppToken(address app, address token) returns()
+func (_TokenPayment *TokenPaymentSession) SetAppToken0(app common.Address, token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.SetAppToken0(&_TokenPayment.TransactOpts, app, token)
+}
+
+// SetAppToken0 is a paid mutator transaction binding the contract method 0x1402930d.
+//
+// Solidity: function setAppToken(address app, address token) returns()
+func (_TokenPayment *TokenPaymentTransactorSession) SetAppToken0(app common.Address, token common.Address) (*types.Transaction, error) {
+	return _TokenPayment.Contract.SetAppToken0(&_TokenPayment.TransactOpts, app, token)
+}
+
 // SetPrice is a paid mutator transaction binding the contract method 0x00e4768b.
 //
 // Solidity: function setPrice(address token, uint256 price) returns()
@@ -1733,27 +1823,6 @@ func (_TokenPayment *TokenPaymentSession) SetPrice(token common.Address, price *
 // Solidity: function setPrice(address token, uint256 price) returns()
 func (_TokenPayment *TokenPaymentTransactorSession) SetPrice(token common.Address, price *big.Int) (*types.Transaction, error) {
 	return _TokenPayment.Contract.SetPrice(&_TokenPayment.TransactOpts, token, price)
-}
-
-// SetTokenFor is a paid mutator transaction binding the contract method 0x90b63f21.
-//
-// Solidity: function setTokenFor(address to, address token) returns()
-func (_TokenPayment *TokenPaymentTransactor) SetTokenFor(opts *bind.TransactOpts, to common.Address, token common.Address) (*types.Transaction, error) {
-	return _TokenPayment.contract.Transact(opts, "setTokenFor", to, token)
-}
-
-// SetTokenFor is a paid mutator transaction binding the contract method 0x90b63f21.
-//
-// Solidity: function setTokenFor(address to, address token) returns()
-func (_TokenPayment *TokenPaymentSession) SetTokenFor(to common.Address, token common.Address) (*types.Transaction, error) {
-	return _TokenPayment.Contract.SetTokenFor(&_TokenPayment.TransactOpts, to, token)
-}
-
-// SetTokenFor is a paid mutator transaction binding the contract method 0x90b63f21.
-//
-// Solidity: function setTokenFor(address to, address token) returns()
-func (_TokenPayment *TokenPaymentTransactorSession) SetTokenFor(to common.Address, token common.Address) (*types.Transaction, error) {
-	return _TokenPayment.Contract.SetTokenFor(&_TokenPayment.TransactOpts, to, token)
 }
 
 // DsABI is the input ABI used to generate the binding from.
