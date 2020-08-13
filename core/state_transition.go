@@ -163,7 +163,7 @@ func (st *StateTransition) buyGas() error {
 	// if st.state.GetBalance(st.msg.From()).Cmp(mgval) < 0 {
 	// 	return errInsufficientBalanceForGas
 	// }
-	if st.msg.From() != params.ZeroAddress {
+	if st.msg.From() != (common.Address{}) {
 		vlp := new(big.Int).Add(mgval, st.msg.Value())
 		st.payByToken = st.state.GetBalance(st.msg.From()).Cmp(vlp) < 0
 	}
