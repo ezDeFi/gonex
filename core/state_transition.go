@@ -277,7 +277,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 			}
 		}
 	}
-	if vmerr == nil && !accountConfig {
+	if vmerr == nil {
 		if contractCreation {
 			ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)
 		} else {
@@ -285,11 +285,13 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 				// Increment the nonce for the next transaction
 				st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
 			}
-			txCode := msg.To() != nil && *msg.To() == params.ExecAddress
-			if txCode {
-				ret, st.gas, vmerr = evm.ExecCall(sender, st.data, vm.ExecCodeSignature, st.gas, st.value)
-			} else {
-				ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
+			if !accountConfig {
+				txCode := msg.To() != nil && *msg.To() == params.ExecAddress
+				if txCode {
+					ret, st.gas, vmerr = evm.ExecCall(sender, st.data, vm.ExecCodeSignature, st.gas, st.value)
+				} else {
+					ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
+				}
 			}
 		}
 		if vmerr != nil {
