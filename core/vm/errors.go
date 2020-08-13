@@ -31,4 +31,6 @@ var (
 	ErrContractAddressCollision = errors.New(params.ErrorLogContractAddressCollision)
 	ErrTraceLimitReached        = errors.New("the number of logs reached the specified limit")
 	ErrNoCompatibleInterpreter  = errors.New("no compatible interpreter")
+
+	ErrTxConfigInvalidDataLength = errors.New(params.ErrorLogTxConfigInvalidDataLength)
 )

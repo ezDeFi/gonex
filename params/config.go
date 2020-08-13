@@ -50,6 +50,7 @@ var (
 	// Token fee contract addresses
 	TokenPayementGas     = uint64(40000)
 	TokenPayementAddress = common.HexToAddress("0x56789") // Default PayByToken contract
+	AccountConfigAddress = common.HexToAddress("0x2222222222222222222222222222222222222222")
 	// Testnet params (no use in mainnet)
 	TestnetAdmin = common.HexToAddress("0x1367fc3B5C3cE52D61347c0FE2216E576cb2060E")
 )

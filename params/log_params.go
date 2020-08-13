@@ -24,7 +24,8 @@ import (
 )
 
 const (
-	FeePrefix = "fee: " // prefix for consensus errors happen while token fee payment
+	FeePrefix    = "fee: "    // prefix for consensus errors happen while token fee payment
+	ConfigPrefix = "config: " // prefix for consensus errors happen while account configuration
 
 	ErrorLogRevertUnknown            = "revert with no reason"
 	ErrorLogInvalidOpCode            = "invalid opcode 0x%x"
@@ -40,7 +41,9 @@ const (
 	ErrorLogDepth                    = "max call depth exceeded"
 	ErrorLogInsufficientBalance      = "insufficient balance for transfer"
 	ErrorLogContractAddressCollision = "contract address collision"
-	ErrorLogTxCodeOverspent          = "tx code value limit overspent"
+
+	ErrorLogTxCodeOverspent           = "tx code value limit overspent"
+	ErrorLogTxConfigInvalidDataLength = "invalid data size for account config transaction"
 )
 
 var (
