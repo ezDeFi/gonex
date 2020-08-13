@@ -225,7 +225,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	homestead := st.evm.ChainConfig().IsHomestead(st.evm.BlockNumber)
 	istanbul := st.evm.ChainConfig().IsIstanbul(st.evm.BlockNumber)
 	contractCreation := msg.To() == nil
-	txCode := msg.To() != nil && *msg.To() == params.ExecAddress
 
 	// Pay intrinsic gas
 	gas, err := IntrinsicGas(st.data, contractCreation, homestead, istanbul)
@@ -265,6 +264,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 				// Increment the nonce for the next transaction
 				st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
 			}
+			txCode := msg.To() != nil && *msg.To() == params.ExecAddress
 			if txCode {
 				ret, st.gas, vmerr = evm.ExecCall(sender, st.data, vm.ExecCodeSignature, st.gas, st.value)
 			} else {
