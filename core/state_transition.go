@@ -182,10 +182,6 @@ func (st *StateTransition) buyGas() error {
 }
 
 func (st *StateTransition) preCheck() error {
-	if st.msg.From() == params.ZeroAddress {
-		// ignore nonce for consensus tx
-		return nil
-	}
 	// Make sure this transaction's nonce is correct.
 	if st.msg.CheckNonce() {
 		nonce := st.state.GetNonce(st.msg.From())
@@ -274,10 +270,8 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		if contractCreation {
 			ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)
 		} else {
-			if !evm.IgnoreNonce() {
-				// Increment the nonce for the next transaction
-				st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
-			}
+			// Increment the nonce for the next transaction
+			st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
 			if !accountConfig {
 				txCode := msg.To() != nil && *msg.To() == params.ExecAddress
 				if txCode {

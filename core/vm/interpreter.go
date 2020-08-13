@@ -43,8 +43,7 @@ type Config struct {
 
 	ExtraEips []int // Additional EIPS that are to be enabled
 
-	Signer      types.Signer // Overriding tx signer
-	IgnoreNonce bool         // Bypass nonce check and increasement
+	Signer types.Signer // Overriding tx signer
 }
 
 // Interpreter is used to run Ethereum based contracts and will utilise the
