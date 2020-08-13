@@ -587,8 +587,8 @@ func (c *Context) initialize2(header *types.Header, state *state.StateDB) (types
 		}
 		log.Info("⚙ Successfully deploy token payment contracts")
 
-		header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
-		return nil, nil, nil
+		// header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
+		// return nil, nil, nil
 	}
 
 	medianPrice, err := c.CalcMedianPrice(header.Number.Uint64() - 1)
