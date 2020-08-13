@@ -29,12 +29,13 @@ import (
 )
 
 // iPayerABI is the input ABI used to generate the binding from.
-const iPayerABI = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"coinbase\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
-
-var iPayerFuncSigPay = []byte{0xb3, 0xd7, 0x61, 0x88} // pay(address,address,uint256)
+const iPayerABI = "[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"txTo\",\"type\":\"address\"}],\"name\":\"pay\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 var abiPayer, _ = abi.JSON(strings.NewReader(iPayerABI))
-var abiIPayerFuncPay, _ = abiPayer.MethodById(iPayerFuncSigPay)
+
+// "31cbf5e3": "pay(uint256,address)"
+var sigFuncPay = []byte{0x31, 0xcb, 0xf5, 0xe3}
+var abiFuncPay, _ = abiPayer.MethodById(sigFuncPay)
 
 var tokenPayerKey = common.BytesToHash([]byte("TokenPayer"))
 var tokenPriceKeyPrefix = []byte("TokenPrice-")
@@ -68,14 +69,11 @@ func NewPaymentContext(evm *vm.EVM, msg Message) (*PaymentContext, error) {
 	gasToPay = gasToPay.Add(gasToPay, new(big.Int).SetUint64(msg.Gas()))
 	feeToPay := gasToPay.Mul(gasToPay, msg.GasPrice())
 
-	input, err := abiIPayerFuncPay.Inputs.Pack(
-		evm.Coinbase,
-		msg.To(),
-		feeToPay)
+	input, err := abiFuncPay.Inputs.Pack(feeToPay, msg.To())
 	if err != nil {
 		return nil, err
 	}
-	input = append(iPayerFuncSigPay, input...)
+	input = append(sigFuncPay, input...)
 
 	return &PaymentContext{
 		evm:        evm,

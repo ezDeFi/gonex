@@ -22,22 +22,16 @@ abstract contract PayerCode is IPayer {
      *
      * (callcode)
      */
-    function pay(
-        address coinbase,
-        address to,
-        uint fee
-    ) external override {
-        (address token, uint price) = _payment(to);
+    function pay(uint fee, address txTo) external override {
+        (address token, uint price) = _payment(txTo);
         require(price > 0, "payment token price not set");
         // require(fee * (10**18) / (10**18) == fee, "token overflow");
         uint tokenToPay = fee * (10**18) / price; // unsafe
         // require(tokenToPay > 0, "zero token payment");
-        IERC20(token).transfer(coinbase, tokenToPay);
+        IERC20(token).transfer(block.coinbase, tokenToPay);
     }
 
-    function _payment(
-        address to
-    ) internal view returns (
+    function _payment(address txTo) internal view returns (
         address token,
         uint price  // Token/NTY price (in wei) (decimals = 18)
     ) {
@@ -47,12 +41,12 @@ abstract contract PayerCode is IPayer {
             return (token, _getAnyPrice(token));
         }
         // check the personal app token mapping
-        token = _getAppToken(to);
+        token = _getAppToken(txTo);
         if (token != address(0x0)) {
             return (token, _getAnyPrice(token));
         }
         // get the global app token and price
-        (token, price) = TokenPayment.getAppTokenAndPrice(to);
+        (token, price) = TokenPayment.getAppTokenAndPrice(txTo);
         // get the personal price to override the global price
         uint p = _getPrice(token);
         if (p > 0) {

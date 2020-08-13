@@ -7,9 +7,5 @@ import "./IERC20.sol";
  * (callcode)
  */
 interface IPayer {
-    function pay(
-        address coinbase,
-        address to,
-        uint fee
-    ) external;
+    function pay(uint fee, address txTo) external;
 }
