@@ -752,6 +752,7 @@ type CallArgs struct {
 	GasPrice *hexutil.Big    `json:"gasPrice"`
 	Value    *hexutil.Big    `json:"value"`
 	Data     *hexutil.Bytes  `json:"data"`
+	TokenFee bool            `json:"tokenFee"`
 }
 
 // account indicates the overriding fields of account during the execution of
@@ -871,6 +872,9 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 	// Setup the gas pool (also for unmetered requests)
 	// and apply the message.
 	gp := new(core.GasPool).AddGas(math.MaxUint64)
+	if args.TokenFee {
+		evm.StateDB.Prepare(common.Hash{}, header.Hash(), 0)
+	}
 	res, gas, failed, err := core.ApplyMessage(evm, msg, gp)
 	if err := vmError(); err != nil {
 		return nil, 0, false, err
@@ -883,6 +887,12 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 		failed = true
 		res = constructGonexErrorResult(evm.FailureReason)
 	}
+	if args.TokenFee {
+		payment := extractTokenPayment(evm, common.Hash{})
+		if payment != nil {
+			res = append(res, payment...)
+		}
+	}
 	return res, gas, failed, err
 }
 
@@ -893,6 +903,32 @@ func constructGonexErrorResult(reason string) []byte {
 	p := copy(res, params.GonexErrorSignature)
 	copy(res[p:], reason)
 	return res
+}
+
+func extractTokenPayment(evm *vm.EVM, txHash common.Hash) (res []byte) {
+	events := evm.StateDB.GetLogs(txHash)
+	for _, event := range events {
+		if len(event.Topics) != 3 {
+			continue
+		}
+		if event.Topics[0] != core.FuncHashTransfer {
+			continue
+		}
+		// from := common.BytesToAddress(event.Topics[1][12:])
+		to := common.BytesToAddress(event.Topics[2][12:])
+		if to != evm.Coinbase {
+			continue
+		}
+
+		amount := new(big.Int).SetBytes(event.Data)
+		if amount.Sign() == 0 {
+			continue
+		}
+
+		// found the payment
+		return append(event.Address.Hash().Bytes(), event.Data...)
+	}
+	return nil
 }
 
 // Call executes the given transaction on the state for the given block number.
