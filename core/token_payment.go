@@ -41,7 +41,7 @@ var tokenPayerKey = common.BytesToHash([]byte("TokenPayer"))
 var tokenPriceKeyPrefix = []byte("TokenPrice-")
 
 // keccak('Transfer(address,address,uint256)')
-var funcHashTransfer = common.HexToHash("ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")
+var FuncHashTransfer = common.HexToHash("ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")
 
 // PaymentContext stores the context for token payment
 type PaymentContext struct {
@@ -127,7 +127,7 @@ func (context *PaymentContext) extractPayment(txHash common.Hash) (*big.Int, err
 		if len(event.Topics) != 3 {
 			continue
 		}
-		if event.Topics[0] != funcHashTransfer {
+		if event.Topics[0] != FuncHashTransfer {
 			continue
 		}
 		// from := common.BytesToAddress(event.Topics[1][12:])
