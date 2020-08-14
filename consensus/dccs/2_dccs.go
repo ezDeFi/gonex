@@ -662,8 +662,9 @@ func (c *Context) seal2(block *types.Block, results chan<- *types.Block, stop <-
 		return err
 	}
 
+	// TODO: find a better way to pass the signer from Prepare to Seal
 	signer := queue.sealerFromDifficulty(header.Difficulty.Uint64())
-	log.Error("sealerFromDifficulty", "address", signer)
+	log.Trace("sealerFromDifficulty", "address", signer, "diff", header.Difficulty)
 
 	if !queue.isActive(signer) {
 		return errUnauthorizedSigner
