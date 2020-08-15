@@ -889,9 +889,12 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 	}
 	if args.TokenFee {
 		payment := extractTokenPayment(evm, common.Hash{})
-		if payment != nil {
-			res = append(res, payment...)
+		if len(payment) == 0 {
+			fee := new(big.Int).SetUint64(gas)
+			fee = fee.Mul(fee, msg.GasPrice())
+			payment = append(common.Hash{}.Bytes(), common.BigToHash(fee).Bytes()...)
 		}
+		res = append(res, payment...)
 	}
 	return res, gas, failed, err
 }
