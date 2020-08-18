@@ -685,16 +685,11 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	data := tx.Data()
 	// account configuration tx can be post-paid
 	if accountConfig {
-		if len(data) == 32 {
-			if gas < params.SloadGasEIP1884 {
-				return ErrAccConfigGas
-			}
-		} else if len(data) == 64 {
-			if gas < params.SstoreSetGas {
-				return ErrAccConfigGas
-			}
-		} else {
+		if len(data) != 64 {
 			return vm.ErrTxConfigInvalidDataLength
+		}
+		if gas < params.SstoreSetGas {
+			return ErrAccConfigGas
 		}
 	}
 

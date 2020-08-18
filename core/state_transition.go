@@ -238,22 +238,15 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	accountConfig := msg.To() != nil && *msg.To() == params.AccountConfigAddress
 	// account configuration tx can be post-paid
 	if accountConfig {
-		if len(st.data) == 32 {
-			if err = st.useGas(params.SloadGasEIP1884); err != nil {
-				return nil, 0, false, err
-			}
-			key := common.BytesToHash(st.data)
-			ret = st.evm.StateDB.GetState(from, key).Bytes()
-		} else if len(st.data) == 64 {
-			if err = st.useGas(params.SstoreSetGas); err != nil {
-				return nil, 0, false, err
-			}
-			key := common.BytesToHash(st.data[:32])
-			value := common.BytesToHash(st.data[32:])
-			st.evm.StateDB.SetState(from, key, value)
-		} else {
+		if len(st.data) != 64 {
 			return nil, st.gasUsed(), false, vm.ErrTxConfigInvalidDataLength
 		}
+		if err = st.useGas(params.SstoreSetGas); err != nil {
+			return nil, 0, false, err
+		}
+		key := common.BytesToHash(st.data[:32])
+		value := common.BytesToHash(st.data[32:])
+		st.evm.StateDB.SetState(from, key, value)
 	}
 
 	if st.payByToken {
