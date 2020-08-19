@@ -268,15 +268,15 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 				ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
 			}
 		}
-	}
-	if vmerr != nil {
-		log.Debug("VM returned with error", "err", vmerr)
-		// The only possible consensus-error would be if there wasn't
-		// sufficient balance to make the transfer happen. The first
-		// balance transfer may never fail.
-		if vmerr == vm.ErrInsufficientBalance {
-			evm.LogFailure(params.ErrorLogInsufficientBalance)
-			return nil, 0, false, vmerr
+		if vmerr != nil {
+			log.Debug("VM returned with error", "err", vmerr)
+			// The only possible consensus-error would be if there wasn't
+			// sufficient balance to make the transfer happen. The first
+			// balance transfer may never fail.
+			if vmerr == vm.ErrInsufficientBalance {
+				evm.LogFailure(params.ErrorLogInsufficientBalance)
+				return nil, 0, false, vmerr
+			}
 		}
 	}
 
