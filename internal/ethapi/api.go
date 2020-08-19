@@ -884,8 +884,14 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 		return nil, 0, false, fmt.Errorf("execution aborted (timeout = %v)", timeout)
 	}
 	if len(evm.FailureReason) > 0 {
-		failed = true
-		res = constructGonexErrorResult(evm.FailureReason)
+		if evm.FailureReason != params.FeePrefix {
+			failed = true
+			res = constructGonexErrorResult(evm.FailureReason)
+		} else {
+			if msg := params.GetSolidityRevertMessage(res); len(msg) > 0 {
+				res = params.FromSolidityRevertMessage(params.FeePrefix + msg)
+			}
+		}
 	}
 	if args.TokenFee {
 		payment := extractTokenPayment(evm, common.Hash{})

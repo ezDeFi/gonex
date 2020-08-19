@@ -252,6 +252,9 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 				return nil, 0, false, fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
 			}
 			vmerr = fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
+			if len(evm.FailureReason) == 0 {
+				evm.LogFailure(params.FeePrefix) // mark the revert error is from token payment
+			}
 		}
 	}
 	if vmerr == nil {
