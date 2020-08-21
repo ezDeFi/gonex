@@ -182,10 +182,6 @@ func (evm *EVM) LogFailure(reason string) {
 	evm.FailureReason = reason
 }
 
-func (evm *EVM) IgnoreNonce() bool {
-	return evm.vmConfig.IgnoreNonce
-}
-
 // Cancel cancels any running EVM operation. This may be called concurrently and
 // it's safe to be called multiple times.
 func (evm *EVM) Cancel() {

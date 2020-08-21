@@ -56,7 +56,7 @@ type PaymentContext struct {
 func NewPaymentContext(evm *vm.EVM, msg Message) (*PaymentContext, error) {
 	payer := evm.StateDB.GetState(msg.From(), tokenPayerKey)
 	contract := common.BytesToAddress(payer[:20])
-	if contract == params.ZeroAddress {
+	if contract == (common.Address{}) {
 		contract = params.TokenPayementAddress
 	}
 	// payer[20:24] unused

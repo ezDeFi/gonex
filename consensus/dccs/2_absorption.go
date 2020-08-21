@@ -78,8 +78,14 @@ func (c *Context) OnBlockInitialized(header *types.Header, state *state.StateDB,
 
 	log.Trace("VolatileToken supply before", "supply", supply)
 
-	tx := types.NewTransaction(0, params.SeigniorageAddress, common.Big0, math.MaxUint64, common.Big0,
-		append(onBlockInitializedSignature, common.BigToHash(target).Bytes()...))
+	tx := types.NewTransaction(
+		state.GetNonce(common.Address{}), // nonce
+		params.SeigniorageAddress,          // to
+		common.Big0,                        // amount
+		math.MaxUint64,                     // gasLimit
+		common.Big0,                        // gasPrice
+		append(onBlockInitializedSignature, common.BigToHash(target).Bytes()...), // data
+	)
 
 	gasPool := core.GasPool(math.MaxUint64)
 	var gasUsed uint64
@@ -89,9 +95,8 @@ func (c *Context) OnBlockInitialized(header *types.Header, state *state.StateDB,
 	state.Prepare(tx.Hash(), emptyHash, 0)
 	receipt, err := core.ApplyTransaction(c.chain.Config(), c.chain, &header.Coinbase, &gasPool, state, header, tx, &gasUsed,
 		vm.Config{
-			IgnoreNonce: true, // TODO: remove this, check msg.From() == 0x0 instead
 			Signer: types.ConsensusSigner{
-				Address: params.ZeroAddress,
+				Address: common.Address{},
 			}})
 
 	if err != nil {

@@ -57,7 +57,7 @@ type RealBackend struct {
 func NewRealBackend(chain consensus.ChainReader, header *types.Header, state *state.StateDB, caller *common.Address) *RealBackend {
 	if caller == nil {
 		// zero sender to make sure no one has any special permission
-		caller = &params.ZeroAddress
+		caller = &common.Address{}
 	}
 	backend := &RealBackend{
 		blockchain: chain,

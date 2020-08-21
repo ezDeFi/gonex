@@ -587,8 +587,8 @@ func (c *Context) initialize2(header *types.Header, state *state.StateDB) (types
 		}
 		log.Info("⚙ Successfully deploy token payment contracts")
 
-		header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
-		return nil, nil, nil
+		// header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
+		// return nil, nil, nil
 	}
 
 	medianPrice, err := c.CalcMedianPrice(header.Number.Uint64() - 1)
@@ -662,8 +662,9 @@ func (c *Context) seal2(block *types.Block, results chan<- *types.Block, stop <-
 		return err
 	}
 
+	// TODO: find a better way to pass the signer from Prepare to Seal
 	signer := queue.sealerFromDifficulty(header.Difficulty.Uint64())
-	log.Error("sealerFromDifficulty", "address", signer)
+	log.Trace("sealerFromDifficulty", "address", signer, "diff", header.Difficulty)
 
 	if !queue.isActive(signer) {
 		return errUnauthorizedSigner
