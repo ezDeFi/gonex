@@ -90,6 +90,10 @@ var (
 	// than required to start the invocation.
 	ErrIntrinsicGas = errors.New("intrinsic gas too low")
 
+	// ErrAccConfigGas is returned if the account configuration transaction is specified
+	// to use less gas than required to start the invocation.
+	ErrAccConfigGas = errors.New("account config gas too low")
+
 	// ErrGasLimit is returned if a transaction's requested gas limit exceeds the
 	// maximum allowance of the current block.
 	ErrGasLimit = errors.New("exceeds block gas limit")
@@ -675,6 +679,19 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	if tx.Gas() < intrGas {
 		return ErrIntrinsicGas
 	}
+	gas := tx.Gas() - intrGas
+
+	accountConfig := tx.To() != nil && *tx.To() == params.AccountConfigAddress
+	data := tx.Data()
+	// account configuration tx can be post-paid
+	if accountConfig {
+		if len(data) != 64 {
+			return vm.ErrTxConfigInvalidDataLength
+		}
+		if gas < params.SstoreSetGas {
+			return ErrAccConfigGas
+		}
+	}
 
 	gasPrice := tx.GasPrice() // can be overriden by the following token payment
 
@@ -684,6 +701,14 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		if err != nil {
 			return fmt.Errorf("%v%v", params.FeePrefix, err.Error())
 		}
+
+		// execute account configuration state modification before token payment
+		if accountConfig && len(data) == 64 {
+			key := common.BytesToHash(data[:32])
+			value := common.BytesToHash(data[32:])
+			paymentContext.evm.StateDB.SetState(from, key, value)
+		}
+
 		paymentContext.Prepare(tx.Hash(), pool.chain.CurrentBlock().Hash(), 0)
 		ret, vmerr := paymentContext.Pay()
 		if vmerr != nil {

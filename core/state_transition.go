@@ -225,7 +225,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	homestead := st.evm.ChainConfig().IsHomestead(st.evm.BlockNumber)
 	istanbul := st.evm.ChainConfig().IsIstanbul(st.evm.BlockNumber)
 	contractCreation := msg.To() == nil
-	txCode := msg.To() != nil && *msg.To() == params.ExecAddress
 
 	// Pay intrinsic gas
 	gas, err := IntrinsicGas(st.data, contractCreation, homestead, istanbul)
@@ -234,6 +233,20 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	}
 	if err = st.useGas(gas); err != nil {
 		return nil, 0, false, err
+	}
+
+	accountConfig := msg.To() != nil && *msg.To() == params.AccountConfigAddress
+	// account configuration tx can be post-paid
+	if accountConfig {
+		if len(st.data) != 64 {
+			return nil, st.gasUsed(), false, vm.ErrTxConfigInvalidDataLength
+		}
+		if err = st.useGas(params.SstoreSetGas); err != nil {
+			return nil, 0, false, err
+		}
+		key := common.BytesToHash(st.data[:32])
+		value := common.BytesToHash(st.data[32:])
+		st.evm.StateDB.SetState(from, key, value)
 	}
 
 	if st.payByToken {
@@ -265,10 +278,13 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 				// Increment the nonce for the next transaction
 				st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
 			}
-			if txCode {
-				ret, st.gas, vmerr = evm.ExecCall(sender, st.data, vm.ExecCodeSignature, st.gas, st.value)
-			} else {
-				ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
+			if !accountConfig {
+				txCode := msg.To() != nil && *msg.To() == params.ExecAddress
+				if txCode {
+					ret, st.gas, vmerr = evm.ExecCall(sender, st.data, vm.ExecCodeSignature, st.gas, st.value)
+				} else {
+					ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
+				}
 			}
 		}
 		if vmerr != nil {
