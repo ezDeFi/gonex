@@ -734,9 +734,11 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 			}
 			p.MarkTransaction(tx.Hash())
 		}
-		if !pm.txpool.AllowN(p.RemoteAddr().String(), len(txs)) {
-			log.Warn("Peer tx limit rate reached", "peer", p.RemoteAddr())
-			break
+		if !p.Trusted() {
+			if !pm.txpool.AllowN(p.RemoteAddr().String(), len(txs)) {
+				log.Warn("Peer tx limit rate reached", "peer", p.RemoteAddr())
+				break
+			}
 		}
 		pm.txpool.AddRemotes(txs)
 

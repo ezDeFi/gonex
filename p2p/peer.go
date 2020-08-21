@@ -179,6 +179,11 @@ func (p *Peer) Inbound() bool {
 	return p.rw.is(inboundConn)
 }
 
+// Trusted returns whether the peer is trusted
+func (p *Peer) Trusted() bool {
+	return p.rw.is(trustedConn)
+}
+
 func newPeer(log log.Logger, conn *conn, protocols []Protocol) *Peer {
 	protomap := matchProtocols(protocols, conn.caps, conn)
 	p := &Peer{
