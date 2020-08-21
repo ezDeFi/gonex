@@ -1,4 +1,5 @@
-pragma solidity ^0.5.2;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >= 0.6.2;
 
 import "./lib/util.sol";
 import "./lib/map.sol";
@@ -119,7 +120,7 @@ contract Preemptivable is Absorbable {
         super.trade(maker, index, value, wantAmount, assistingID);
     }
 
-    function onBlockInitialized(uint target) public consensus {
+    function onBlockInitialized(uint target) public override consensus {
         // cleaning up
         for (uint i = 0; i < votesToClear.length; i++) {
             votesToClear[i].clear();

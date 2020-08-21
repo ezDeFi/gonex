@@ -5,14 +5,13 @@
   "scripts": {
     "build": "npm run build-main && npm run build-volatile && npm run build-stable",
     "clean": "rimraf node_modules",
-    "build-main": "cp -prv src/. node_modules; cd node_modules; ../../../../build/bin/abigen -sol=Seigniorage.sol --pkg=endurio -out=../Seigniorage.go",
-    "build-stable": "cp -prv src/tokens/. node_modules; cd node_modules; ../../../../build/bin/abigen -sol=StableToken.sol --pkg=stable -out=../stable/StableToken.go",
-    "build-volatile": "cp -prv src/tokens/. node_modules; cd node_modules; ../../../../build/bin/abigen -sol=VolatileToken.sol --pkg=volatile -out=../volatile/VolatileToken.go"
+    "build-main": "cp -prv src/. node_modules; cd node_modules; abigen -sol=Seigniorage.sol --pkg=endurio -out=../Seigniorage.go",
+    "build-stable": "cp -prv src/tokens/. node_modules; cd node_modules; abigen -sol=StableToken.sol --pkg=stable -out=../stable/StableToken.go",
+    "build-volatile": "cp -prv src/tokens/. node_modules; cd node_modules; abigen -sol=VolatileToken.sol --pkg=volatile -out=../volatile/VolatileToken.go"
   },
   "author": "nexty.io",
   "dependencies": {
-    "openzeppelin-eth": "^2.1.3",
-    "openzeppelin-solidity": "^2.1.2",
+    "@openzeppelin/contracts": "^3.1.0",
     "zos-lib": "^2.2.2"
   }
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/params"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
@@ -21,8 +23,15 @@ func DeployContract(deployCallback DeployCallbackFn) (code []byte, storage map[c
 	// Generate a new random account and a funded simulator
 	prvKey, _ := crypto.GenerateKey()
 	auth := bind.NewKeyedTransactor(prvKey)
-	auth.GasLimit = 12344321
-	sim := backends.NewSimulatedBackend(core.GenesisAlloc{auth.From: {Balance: new(big.Int).Lsh(big.NewInt(1), 256-7)}}, auth.GasLimit)
+	auth.GasLimit = 12345678
+	sim := backends.NewSimulatedBackend(
+		params.ConsensusDeploymentConfig,
+		core.GenesisAlloc{
+			auth.From: {
+				Balance: new(big.Int).Lsh(big.NewInt(1), 256-7),
+			},
+		},
+		auth.GasLimit)
 	address, err := deployCallback(sim, auth)
 	if err != nil {
 		log.Error("Unable to deploy consensus contract", "error", err)
