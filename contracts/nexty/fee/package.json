@@ -1,0 +1,10 @@
+{
+  "name": "fee",
+  "version": "1.0.0",
+  "description": "TokenPayment Contract",
+  "scripts": {
+    "build": "cp -prv src/. node_modules; cd node_modules; abigen -sol=TokenPayment.sol --pkg=fee -out=../TokenPayment.go",
+    "clean": "rm -rf node_modules"
+  },
+  "author": "nexty.io"
+}

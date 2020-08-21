@@ -32,6 +32,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/prque"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/metrics"
@@ -146,6 +147,7 @@ const (
 // some pre checks in tx pool and event subscribers.
 type blockChain interface {
 	CurrentBlock() *types.Block
+	GetHeader(common.Hash, uint64) *types.Header
 	GetBlock(hash common.Hash, number uint64) *types.Block
 	StateAt(root common.Hash) (*state.StateDB, error)
 
@@ -190,14 +192,14 @@ var DefaultTxPoolConfig = TxPoolConfig{
 	PriceBump:  10,
 
 	ParityLimit: types.ParityMax,
-	ParityPrice: 13e15, // ~ 273 NTY ~ 0.01 USD for 21000 Tx Gas
+	ParityPrice: 13e9, // ~ 273 (old) NTY ~ 0.01 USD for 21000 Tx Gas
 
 	TxRateLimit: 1.0 / 3, // 1 tx/3s
 	TxRateBurst: 18,
 
 	FreeAgeMin:      0,
 	FreeDataSizeMax: 4 + 32*16,
-	NonFreePrice:    5e15,
+	NonFreePrice:    5e9,
 
 	AccountSlots: 16,
 	GlobalSlots:  4096,
@@ -611,6 +613,20 @@ func extrinsicParity(tx *types.Transaction) uint64 {
 	return (tx.Gas() - params.TxGas/2) / params.TxGas
 }
 
+func (pool *TxPool) createPaymentContext(tx *types.Transaction) (*PaymentContext, error) {
+	msg, err := tx.AsMessage(pool.signer)
+	if err != nil {
+		return nil, err
+	}
+	// Create a new context to be used in the EVM environment
+	context := NewEVMContext(msg, pool.chain.CurrentBlock().Header(), pool.chain, nil)
+	// Create a new environment which holds all relevant information
+	// about the transaction and calling mechanisms.
+	evm := vm.NewEVM(context, pool.currentState, pool.chainconfig, vm.Config{})
+
+	return NewPaymentContext(evm, msg)
+}
+
 // validateTx checks whether a transaction is valid according to the consensus
 // rules and adheres to some heuristic limits of the local node (price and size).
 func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
@@ -638,7 +654,57 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return errors.New("sensored sender: " + sender)
 	}
 
-	gasPrice := tx.GasPrice()
+	nonce := pool.currentState.GetNonce(from)
+	// Ensure the transaction adheres to nonce ordering
+	if nonce > tx.Nonce() {
+		return ErrNonceTooLow
+	}
+
+	balance := pool.currentState.GetBalance(from)
+
+	// Transactor should have enough funds to cover the costs
+	// cost == V + GP * GL
+	if balance.Cmp(tx.Value()) < 0 {
+		return fmt.Errorf("%v, balance=%v, value=%v", ErrInsufficientFunds.Error(), balance, tx.Value())
+	}
+	// Ensure the transaction has more gas than the basic tx fee.
+	intrGas, err := IntrinsicGas(tx.Data(), tx.To() == nil, true, pool.istanbul)
+	if err != nil {
+		return err
+	}
+	if tx.Gas() < intrGas {
+		return ErrIntrinsicGas
+	}
+
+	gasPrice := tx.GasPrice() // can be overriden by the following token payment
+
+	if balance.Cmp(tx.Cost()) < 0 {
+		// pay by token
+		paymentContext, err := pool.createPaymentContext(tx)
+		if err != nil {
+			return fmt.Errorf("%v%v", params.FeePrefix, err.Error())
+		}
+		paymentContext.Prepare(tx.Hash(), pool.chain.CurrentBlock().Hash(), 0)
+		ret, vmerr := paymentContext.Pay()
+		if vmerr != nil {
+			// provide extra user friendly revert reason
+			evm := paymentContext.evm
+			if len(evm.FailureReason) > 0 {
+				return fmt.Errorf("%v%v", params.FeePrefix, evm.FailureReason)
+			}
+			reason := params.GetSolidityRevertMessage(ret)
+			if len(reason) > 0 {
+				return fmt.Errorf("%v%v", params.FeePrefix, reason)
+			}
+			return fmt.Errorf("%v%v", params.FeePrefix, vmerr.Error())
+		}
+		// override the message's gas price
+		gasPrice, err = paymentContext.EffectiveGasPrice(tx.Hash())
+		if err != nil {
+			return err
+		}
+	}
+
 	// Drop non-local transactions under our own minimal accepted gas price
 	local = local || pool.locals.contains(from) // account may be local even if the transaction arrived from the network
 	if !local && pool.gasPrice.Cmp(gasPrice) > 0 {
@@ -650,12 +716,6 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		if gasPrice.Uint64() < pool.nonFreePrice {
 			return ErrHeavyUnderpriced
 		}
-	}
-
-	nonce := pool.currentState.GetNonce(from)
-	// Ensure the transaction adheres to nonce ordering
-	if nonce > tx.Nonce() {
-		return ErrNonceTooLow
 	}
 
 	mruNumber := pool.currentState.GetMRUNumber(from)
@@ -678,25 +738,11 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		}
 	}
 
-	balance := pool.currentState.GetBalance(from)
-	// Transactor should have enough funds to cover the costs
-	// cost == V + GP * GL
-	if balance.Cmp(tx.Cost()) < 0 {
-		return ErrInsufficientFunds
-	}
-	// Ensure the transaction has more gas than the basic tx fee.
-	intrGas, err := IntrinsicGas(tx.Data(), tx.To() == nil, true, pool.istanbul)
-	if err != nil {
-		return err
-	}
-	if tx.Gas() < intrGas {
-		return ErrIntrinsicGas
-	}
-
 	if !tx.HasParity() {
 		parity := mruNumber + extrinsicParity(tx)
 
 		if gasPrice.Sign() > 0 {
+			// TODO: apply token price here
 			priceParity := gasPrice.Div(gasPrice, pool.parityPrice).Uint64()
 
 			if parity <= priceParity {

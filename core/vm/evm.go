@@ -286,7 +286,7 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 // ExecCall creates a non-persistent contract at the caller address, and execute the code with
 // input is the first 4 bytes of the Keccak("main()"). The tx code can choose to run using the
 // supplemental input or non at all.
-func (evm *EVM) ExecCall(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, leftOverGas uint64, err error) {
+func (evm *EVM) ExecCall(caller ContractRef, code []byte, input []byte, gas uint64, value *big.Int) (ret []byte, leftOverGas uint64, err error) {
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
 		return nil, gas, nil
 	}
@@ -306,7 +306,7 @@ func (evm *EVM) ExecCall(caller ContractRef, code []byte, gas uint64, value *big
 	// Capture the tracer start/end events in debug mode
 	if evm.vmConfig.Debug && evm.depth == 0 {
 		start := time.Now()
-		evm.vmConfig.Tracer.CaptureStart(caller.Address(), to, false, ExecCodeSignature, gas, value)
+		evm.vmConfig.Tracer.CaptureStart(caller.Address(), to, false, input, gas, value)
 
 		defer func() { // Lazy evaluation of the parameters
 			evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
@@ -323,7 +323,7 @@ func (evm *EVM) ExecCall(caller ContractRef, code []byte, gas uint64, value *big
 				err = fmt.Errorf("panic in tx code execution: %v", x)
 			}
 		}()
-		return run(evm, contract, ExecCodeSignature, false)
+		return run(evm, contract, input, false)
 	}()
 	if err != nil {
 		evm.StateDB.RevertToSnapshot(snapshot)

@@ -89,7 +89,7 @@ func (c *Context) OnBlockInitialized(header *types.Header, state *state.StateDB,
 	state.Prepare(tx.Hash(), emptyHash, 0)
 	receipt, err := core.ApplyTransaction(c.chain.Config(), c.chain, &header.Coinbase, &gasPool, state, header, tx, &gasUsed,
 		vm.Config{
-			IgnoreNonce: true,
+			IgnoreNonce: true, // TODO: remove this, check msg.From() == 0x0 instead
 			Signer: types.ConsensusSigner{
 				Address: params.ZeroAddress,
 			}})
