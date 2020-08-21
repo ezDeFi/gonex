@@ -19,6 +19,8 @@ package params
 import (
 	"bytes"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 const (
@@ -60,10 +62,27 @@ func GetSolidityRevertMessage(res []byte) string {
 	res = res[4:]
 	offset := int(new(big.Int).SetBytes(res[:32]).Uint64())
 	res = res[32:]
+	// TODO: offset is actually the size field length?
 	size := int(new(big.Int).SetBytes(res[:32]).Uint64())
 	if len(res) < offset+size {
 		return string(res)
 	}
 	msg := string(res[offset : offset+size])
 	return msg
+}
+
+// FromSolidityRevertMessage construct the call result from an revert message
+func FromSolidityRevertMessage(msg string) []byte {
+	len := len(msg)
+	res := make([]byte, 0, len+4+32+32)
+	res = append(res, SolidityErrorSignature...)
+
+	offset := common.BigToHash(common.Big32)
+	res = append(res, offset.Bytes()...)
+
+	size := common.BigToHash(big.NewInt(int64(len)))
+	res = append(res, size.Bytes()...)
+
+	res = append(res, []byte(msg)...)
+	return res
 }
