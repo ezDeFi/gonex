@@ -248,7 +248,7 @@ func (b *RealBackend) callContract(ctx context.Context, call ethereum.CallMsg, h
 	// Execute the call.
 	msg := callmsg{call}
 
-	evmContext := core.NewEVMContext(msg, header, b.blockchain, b.caller)
+	evmContext := core.NewEVMContext(msg, header, b.blockchain, nil)
 	// Create a new environment which holds all relevant information
 	// about the transaction and calling mechanisms.
 	vmenv := vm.NewEVM(evmContext, statedb, b.config, vm.Config{})

@@ -9,9 +9,9 @@ import "./ERC223.sol";
 */
 
 contract VolatileToken is ERC223 {
-    string public constant symbol = "MNTY";
-    string public constant name = "Mega NTY";
-    uint public constant decimals = 24;
+    string public constant symbol = "WNTY";
+    string public constant name = "Wrapped NTY";
+    uint public constant decimals = 18;
 
     // track the amount of token has been inflated, negative for deflation
     // only use for report, so ignore any overflow

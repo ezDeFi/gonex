@@ -783,7 +783,10 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 				addr = accounts[0].Address
 			}
 		}
+		// `from` field is not set so only the state result is matter, the tx result will probablly wrong
+		state.SetBalance(addr, math.MaxBig256)
 	} else {
+		// the `from` balance is preserved to get the most corrected tx result
 		addr = *args.From
 	}
 	// Override the fields of specified contracts before execution.
@@ -823,7 +826,7 @@ func DoCall(ctx context.Context, b Backend, args CallArgs, blockNrOrHash rpc.Blo
 		log.Warn("Caller gas above allowance, capping", "requested", gas, "cap", globalGasCap)
 		gas = globalGasCap.Uint64()
 	}
-	gasPrice := new(big.Int).SetUint64(defaultGasPrice)
+	gasPrice := common.Big0
 	if args.GasPrice != nil {
 		gasPrice = args.GasPrice.ToInt()
 	}
@@ -922,14 +925,14 @@ func DoEstimateGas(ctx context.Context, b Backend, args CallArgs, blockNrOrHash 
 	cap = hi
 
 	// Create a helper to check if a gas allowance results in an executable transaction
-	executable := func(gas uint64) bool {
+	exec := func(gas uint64) ([]byte, uint64, bool, error) {
 		args.Gas = (*hexutil.Uint64)(&gas)
 
-		_, _, failed, err := DoCall(ctx, b, args, blockNrOrHash, nil, vm.Config{}, 0, gasCap)
-		if err != nil || failed {
-			return false
-		}
-		return true
+		return DoCall(ctx, b, args, blockNrOrHash, nil, vm.Config{}, 0, gasCap)
+	}
+	executable := func(gas uint64) bool {
+		_, _, failed, err := exec(gas)
+		return err == nil && !failed
 	}
 	// Execute the binary search and hone in on an executable gas limit
 	for lo+1 < hi {
@@ -942,7 +945,17 @@ func DoEstimateGas(ctx context.Context, b Backend, args CallArgs, blockNrOrHash 
 	}
 	// Reject the transaction as invalid if it still fails at the highest allowance
 	if hi == cap {
-		if !executable(hi) {
+		res, _, failed, err := exec(hi)
+		if err != nil {
+			return 0, err
+		}
+		if len(res) > 0 {
+			reason := params.GetSolidityRevertMessage(res)
+			if len(reason) > 0 {
+				return 0, errors.New(reason)
+			}
+		}
+		if failed {
 			return 0, fmt.Errorf("gas required exceeds allowance (%d) or always failing transaction", cap)
 		}
 	}

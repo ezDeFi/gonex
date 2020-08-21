@@ -16,6 +16,11 @@
 
 package params
 
+import (
+	"bytes"
+	"math/big"
+)
+
 const (
 	ErrorLogRevertUnknown            = "revert with no reason"
 	ErrorLogInvalidOpCode            = "invalid opcode 0x%x"
@@ -35,6 +40,28 @@ const (
 )
 
 var (
+	// SolidityErrorSignature is Keccak("Error(string)")
+	SolidityErrorSignature = []byte{0x08, 0xc3, 0x79, 0xa0}
+
 	// GonexErrorSignature is Keccak("Error")
 	GonexErrorSignature = []byte{0xe3, 0x42, 0xda, 0xa4}
 )
+
+// GetSolidityRevertMessage handles Solidity revert and require message.
+func GetSolidityRevertMessage(res []byte) string {
+	if len(res) < 4+32+32 {
+		return string(res)
+	}
+	if bytes.Compare(res[:4], SolidityErrorSignature) != 0 {
+		return string(res)
+	}
+	res = res[4:]
+	offset := int(new(big.Int).SetBytes(res[:32]).Uint64())
+	res = res[32:]
+	size := int(new(big.Int).SetBytes(res[:32]).Uint64())
+	if len(res) < offset+size {
+		return string(res)
+	}
+	msg := string(res[offset : offset+size])
+	return msg
+}

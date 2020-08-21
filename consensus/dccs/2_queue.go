@@ -31,6 +31,9 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+const MajorityDividend = 3
+const MajorityDivisor = 4
+
 type SealingQueue struct {
 	hash       common.Hash                 // hash of the header
 	sealer     common.Address              // sealer address of the header
@@ -50,6 +53,13 @@ func addressesHash(adrs []common.Address) common.Hash {
 	}
 	return common.BytesToHash(hasher.Sum(nil))
 }
+
+// signersAscending implements the sort interface to allow sorting a list of addresses
+type signersAscending []common.Address
+
+func (s signersAscending) Len() int           { return len(s) }
+func (s signersAscending) Less(i, j int) bool { return bytes.Compare(s[i][:], s[j][:]) < 0 }
+func (s signersAscending) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 func (q *SealingQueue) sealersDigest() common.Hash {
 	q.digestOnce.Do(func() {
@@ -81,7 +91,8 @@ func (q *SealingQueue) commonRatio(r *SealingQueue) (*big.Rat, bool) {
 	}
 	ratio := big.NewRat(int64(common), int64(len(larger)))
 	// common must be more than super majority of both queues
-	broken := common*3 <= qLen*2 || common*3 <= rLen*2
+	broken := common*MajorityDivisor <= qLen*MajorityDividend ||
+		common*MajorityDivisor <= rLen*MajorityDividend
 	return ratio, broken
 }
 
@@ -117,7 +128,7 @@ func (q *SealingQueue) sortedQueue() []common.Address {
 		s.queue[0] = q.sealer
 		for adr := range q.active {
 			_, recentlySigned := q.recent[adr]
-			if !recentlySigned {
+			if !recentlySigned && adr != q.sealer {
 				s.queue = append(s.queue, adr)
 				// TODO: pre-calculate the shuffling hash here
 			}
@@ -216,7 +227,7 @@ func (q *SealingQueue) sealerFromDifficulty(difficulty uint64) common.Address {
 	return queue[pos]
 }
 
-// recents len is MIN(lastActiveLen,activeLen)*2/3
+// recents len is MIN(lastActiveLen,activeLen)*3/4
 func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error) {
 	if q, ok := c.engine.sealingQueueCache.Get(parentHash); ok {
 		// in-memory SealingQueue found
@@ -272,7 +283,7 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	}
 	// scan backward from parent number for recents and difficulty
 	// somewhat probabilistically optimized, fairly safe nonetheless
-	for hash := parentHash; uint64(len(recents)) < maxDiff*2/3 && n > startLimit; n-- {
+	for hash := parentHash; uint64(len(recents)) < maxDiff*MajorityDividend/MajorityDivisor && n > startLimit; n-- {
 		header := c.getHeader(hash, n)
 		if header == nil {
 			log.Error("Header not found", "number", n, "hash", hash, "len(parents)", len(c.parents))
@@ -329,8 +340,20 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	}
 	log.Trace("Sealer applications", "apps", b.String())
 
+	// the first sealer applications is in the genesis extra
+	if parent.Number.Uint64() < c.engine.config.LeakDuration {
+		sealers := c.genesisSealers()
+		count := int(c.engine.config.LeakDuration - parent.Number.Uint64())
+		if len(sealers) < count {
+			count = len(sealers)
+		}
+		for i := 0; i < count; i++ {
+			addActive(sealers[i])
+		}
+	}
+
 	// truncate the extra recents
-	for i := len(queue.active) * 2 / 3; i < len(recents); i++ {
+	for i := len(queue.active) * MajorityDividend / MajorityDivisor; i < len(recents); i++ {
 		delete(queue.recent, recents[i])
 	}
 
@@ -339,13 +362,28 @@ func (c *Context) getSealingQueue(parentHash common.Hash) (*SealingQueue, error)
 	return &queue, nil
 }
 
+// sealer in genesis extra reversed
+func (c *Context) genesisSealers() []common.Address {
+	c.engine.genesisSealersOnce.Do(func() {
+		genesis := c.chain.GetHeaderByNumber(0)
+		extra := genesis.Extra
+		// assert: len(extra) % common.AddressLength == 0
+		sealers := make([]common.Address, 0, len(extra)/common.AddressLength)
+		for index := len(extra) - common.AddressLength; index >= 0; index -= common.AddressLength {
+			sealers = append(sealers, common.BytesToAddress(extra[index:index+common.AddressLength]))
+		}
+		c.engine.genesisSealers = sealers
+	})
+	return c.engine.genesisSealers
+}
+
 // crawl back the sealer applications skip-list
 func (c *Context) crawlSealerApplications(header *types.Header) ([]SealerApplication, error) {
 	number := header.Number.Uint64()
 	apps := []SealerApplication{}
 	for header := c.getHeaderByHash(header.MixDigest); header != nil; header = c.getHeaderByHash(header.MixDigest) {
 		if (header.MixDigest == common.Hash{}) {
-			// reach the CoLoa hardfork (new genesis)
+			// reach the new genesis (block 1)
 			break
 		}
 		appConfirmedNumber := header.Number.Uint64() + c.engine.config.ApplicationConfirmation

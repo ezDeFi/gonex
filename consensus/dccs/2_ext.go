@@ -249,7 +249,7 @@ func (c *Context) assembleAnchorExtra(parent *types.Header) ([]byte, error) {
 		return nil, err
 	}
 
-	if parent.Number.Uint64()+1 == c.engine.config.CoLoaBlock.Uint64() {
+	if parent.Number.Sign() == 0 {
 		// special handling for hardfork block
 		anchorData := AnchorData{
 			destHash:      common.Hash{},

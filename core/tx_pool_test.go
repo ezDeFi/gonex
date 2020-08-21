@@ -60,6 +60,10 @@ func (bc *testBlockChain) GetBlock(hash common.Hash, number uint64) *types.Block
 	return bc.CurrentBlock()
 }
 
+func (bc *testBlockChain) GetHeader(common.Hash, uint64) *types.Header {
+	return bc.CurrentBlock().Header()
+}
+
 func (bc *testBlockChain) StateAt(common.Hash) (*state.StateDB, error) {
 	return bc.statedb, nil
 }

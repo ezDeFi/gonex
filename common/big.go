@@ -30,8 +30,10 @@ var (
 
 	Big1000 = big.NewInt(1000)
 	Big1e12 = big.NewInt(1e12)
+	Big1e18 = big.NewInt(1e18)
 	Big1e24 = new(big.Int).Mul(Big1e12, Big1e12)
-	Big1e27 = new(big.Int).Mul(Big1e24, Big1000)
+
+	Big2e14 = big.NewInt(2e14)
 )
 
 var (

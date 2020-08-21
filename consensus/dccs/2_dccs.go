@@ -36,6 +36,7 @@ import (
 	"github.com/ethereum/go-ethereum/contracts/nexty/endurio"
 	"github.com/ethereum/go-ethereum/contracts/nexty/endurio/stable"
 	"github.com/ethereum/go-ethereum/contracts/nexty/endurio/volatile"
+	"github.com/ethereum/go-ethereum/contracts/nexty/governance"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vdf"
@@ -70,9 +71,11 @@ var (
 	errNoEligibleAccount = errors.New("no eligible account for sealing")
 )
 
+var blockReward = common.Big2e14 // 0.0002 coin
+
 // Init the second hardfork of DCCS consensus
 func (d *Dccs) init2() *Dccs {
-	d.init1()
+	// d.init1()
 	d.sealingQueueCache, _ = lru.NewARC(inmemorySealingQueues)
 	d.extDataCache, _ = lru.NewARC(inmemoryExtDatas)
 	d.anchorExtraCache, _ = lru.NewARC(inmemoryAnchorExtras)
@@ -157,7 +160,7 @@ func (c *Context) verifyHeader2(seal bool) error {
 }
 
 func (c *Context) getBlockNonce(parent *types.Header) types.BlockNonce {
-	if parent.Number.Uint64()+1 == c.engine.config.CoLoaBlock.Uint64() {
+	if parent.Number.Sign() == 0 {
 		return types.BlockNonce{}
 	}
 	return types.EncodeNonce(parent.Nonce.Uint64() + 1)
@@ -186,7 +189,7 @@ func (c *Context) verifyCascadingFields2(seal bool) error {
 
 	// verify the cross-link reference to the last sealer application block
 	var expectedMixDigest common.Hash
-	if c.engine.config.CoLoaBlock.Cmp(header.Number) == 0 {
+	if common.Big1.Cmp(header.Number) == 0 {
 		expectedMixDigest = common.Hash{}
 	} else if hasAnchorData(parent) {
 		expectedMixDigest = parent.Hash()
@@ -270,16 +273,11 @@ func (c *Context) verifyCascadingFields2(seal bool) error {
 // from.
 func (c *Context) verifySeal2() error {
 	header := c.head
+
 	// Verifying the genesis block is not supported
 	number := header.Number.Uint64()
 	if number == 0 {
 		return errUnknownBlock
-	}
-
-	// Retrieve the sealing queue verify this header
-	queue, err := c.getSealingQueue(header.ParentHash)
-	if err != nil {
-		return err
 	}
 
 	// Resolve the authorization key and check against signers
@@ -287,19 +285,41 @@ func (c *Context) verifySeal2() error {
 	if err != nil {
 		return err
 	}
-	if !queue.isActive(signer) {
-		return errUnauthorizedSigner
-	}
-	if queue.isRecentlySigned(signer) {
-		return errRecentlySigned
+
+	signerDifficulty, err := c.difficulty2(signer)
+	if err != nil {
+		return err
 	}
 
 	// Ensure that the difficulty corresponds to the turn-ness of the signer
-	signerDifficulty := queue.difficulty(signer)
 	if header.Difficulty.Uint64() != signerDifficulty {
 		return errInvalidDifficulty
 	}
 	return nil
+}
+
+func (c *Context) difficulty2(signer common.Address) (uint64, error) {
+	// Retrieve the sealing queue verify this header
+	queue, err := c.getSealingQueue(c.head.ParentHash)
+	if err != nil {
+		return 0, err
+	}
+
+	if !queue.isActive(signer) {
+		return 0, errUnauthorizedSigner
+	}
+	if queue.isRecentlySigned(signer) {
+		return 0, errRecentlySigned
+	}
+
+	// Ensure that the difficulty corresponds to the turn-ness of the signer
+	return queue.difficulty(signer), nil
+}
+
+// Author implements consensus.Engine, returning the Ethereum address recovered
+// from the signature in the header's extra-data section.
+func (d *Dccs) Author(header *types.Header) (common.Address, error) {
+	return ecrecover(header, d.signatures)
 }
 
 func (c *Context) getHeader(hash common.Hash, number uint64) *types.Header {
@@ -383,7 +403,7 @@ func (c *Context) getChainRandomSeed(parent *types.Header) (RandomData, error) {
 	if seedHeader == nil {
 		return nil, errRandomSeedHeaderMissing
 	}
-	if c.engine.config.CoLoaBlock.Cmp(seedHeader.Number) == 0 {
+	if common.Big1.Cmp(seedHeader.Number) == 0 {
 		// use the sealer digest for hardfork block
 		anchorData, err := c.getAnchorData(seedHeader)
 		if err != nil {
@@ -489,7 +509,7 @@ func (c *Context) prepare2(header *types.Header) error {
 	}
 
 	// set the cross-link reference to the last block with anchor data
-	if c.engine.config.CoLoaBlock.Cmp(header.Number) == 0 {
+	if common.Big1.Cmp(header.Number) == 0 {
 		// special handling for hardfork block
 		header.MixDigest = common.Hash{}
 	} else if hasAnchorData(parent) {
@@ -546,13 +566,21 @@ func (c *Context) prepare2(header *types.Header) error {
 
 // initialize implements the consensus.Engine
 func (c *Context) initialize2(header *types.Header, state *state.StateDB) (types.Transactions, types.Receipts, error) {
-	if header.Number.Cmp(c.engine.config.CoLoaBlock) == 0 {
-		if err := deployCoLoaContracts(c.chain, header, state); err != nil {
-			log.Error("Failed to deploy CoLoa stablecoin contracts", "err", err)
+	if header.Number.Cmp(common.Big1) == 0 {
+		// Deploy the contract and ininitalize it with empty signer list
+		if err := deployConsensusContracts(state, c.chain.Config(), []common.Address{}); err != nil {
+			log.Error("Failed to deploy governance contract", "err", err)
 			return nil, nil, err
 		}
+		log.Info("⚙ Successfully deploy governance contract")
+
+		if err := deployStablecoinContracts(c.chain, header, state); err != nil {
+			log.Error("Failed to deploy stablecoin contracts", "err", err)
+			return nil, nil, err
+		}
+		log.Info("⚙ Successfully deploy stablecoin contracts")
+
 		header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
-		log.Info("⚙ Successfully deploy CoLoa stablecoin contracts")
 		return nil, nil, nil
 	}
 
@@ -569,25 +597,42 @@ func (c *Context) initialize2(header *types.Header, state *state.StateDB) (types
 	return txs, receipts, nil
 }
 
-// finalize2 implements consensus.Engine, ensuring no uncles are set, nor block
-// rewards given, and returns the final block.
+// finalize2 implements consensus.Engine, ensuring no uncles are set and returns the final block.
 func (c *Context) finalize2(header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
-	// Calculate any block reward for the sealer and commit the final state root
-	c.engine.calculateRewards(c.chain, state, header)
+	state.AddBalance(header.Coinbase, blockReward)
 	header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
 	header.UncleHash = types.EmptyUncleHash
 }
 
-// finalizeAndAssemble2 implements consensus.Engine, ensuring no uncles are set, nor block
-// rewards given, and returns the final block.
+// finalizeAndAssemble2 implements consensus.Engine, ensuring no uncles are set and returns the final block.
 func (c *Context) finalizeAndAssemble2(header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (block *types.Block, err error) {
-	// Calculate any block reward for the sealer and commit the final state root
-	c.engine.calculateRewards(c.chain, state, header)
+	state.AddBalance(header.Coinbase, blockReward)
 	header.Root = state.IntermediateRoot(c.chain.Config().IsEIP158(header.Number))
 	header.UncleHash = types.EmptyUncleHash
 
 	// Assemble and return the final block for sealing
 	return types.NewBlock(header, txs, nil, receipts), nil
+}
+
+// deployConsensusContracts deploys the consensus contract without any owner
+func deployConsensusContracts(state *state.StateDB, chainConfig *params.ChainConfig, signers []common.Address) error {
+	// Deploy Nexty Governance Contract
+	{
+		// Generate contract code and data using a simulated backend
+		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
+			stakeRequire := new(big.Int).Mul(new(big.Int).SetUint64(chainConfig.Dccs.StakeRequire), new(big.Int).SetUint64(1e+18))
+			stakeLockHeight := new(big.Int).SetUint64(chainConfig.Dccs.StakeLockHeight)
+			address, _, _, err := governance.DeployNextyGovernance(auth, sim, stakeRequire, stakeLockHeight, signers)
+			return address, err
+		})
+		if err != nil {
+			return err
+		}
+		// Deploy or update
+		deployContract(state, params.GovernanceAddress, code, storage, true)
+	}
+
+	return nil
 }
 
 // seal2 implements consensus.Engine, attempting to create a sealed block using
@@ -669,11 +714,27 @@ func (c *Context) seal2(block *types.Block, results chan<- *types.Block, stop <-
 	return nil
 }
 
+// calcDelayTime calculate delay time for current sealing node
+func (d *Dccs) calcDelayTimeForOffset(pos int) time.Duration {
+	delay := time.Duration(0)
+	wiggle := float64(0.0)
+	for i := 1; i <= pos; i++ {
+		wiggle += math.Floor(float64(1.387978)/(float64(0.002313279)*float64(i)+float64(0.00462659)) + float64(499.9994))
+	}
+	wiggle = wiggle * float64(time.Millisecond)
+	delay += time.Duration(int64(wiggle))
+	return delay
+}
+
 func (c *Context) ecrecover(header *types.Header) (common.Address, error) {
+	if header.Number.Sign() == 0 {
+		// use the last address recorded in extra field of genesis block
+		return c.genesisSealers()[0], nil
+	}
 	return ecrecover(header, c.engine.signatures)
 }
 
-func deployCoLoaContracts(chain consensus.ChainReader, header *types.Header, state *state.StateDB) error {
+func deployStablecoinContracts(chain consensus.ChainReader, header *types.Header, state *state.StateDB) error {
 	// Deploy Seigniorage Contract
 	{
 		// Generate contract code and data using a simulated backend

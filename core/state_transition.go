@@ -199,9 +199,8 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 	sender := vm.AccountRef(msg.From())
 	homestead := st.evm.ChainConfig().IsHomestead(st.evm.BlockNumber)
 	istanbul := st.evm.ChainConfig().IsIstanbul(st.evm.BlockNumber)
-	iscoloa := st.evm.ChainConfig().IsCoLoa(st.evm.BlockNumber)
 	contractCreation := msg.To() == nil
-	txCode := msg.To() != nil && *msg.To() == params.ExecAddress && iscoloa
+	txCode := msg.To() != nil && *msg.To() == params.ExecAddress
 
 	// Pay intrinsic gas
 	gas, err := IntrinsicGas(st.data, contractCreation, homestead, istanbul)
@@ -243,11 +242,7 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		}
 	}
 	st.refundGas()
-	if st.evm.ChainConfig().IsThangLong(st.evm.BlockNumber) {
-		st.state.AddBalance(params.ZeroAddress, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
-	} else {
-		st.state.AddBalance(st.evm.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
-	}
+	st.state.AddBalance(st.evm.Coinbase, new(big.Int).Mul(new(big.Int).SetUint64(st.gasUsed()), st.gasPrice))
 
 	st.updateMRU()
 
@@ -258,10 +253,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 // after the state transition applied
 func (st *StateTransition) updateMRU() bool {
 	blockNumber := st.evm.BlockNumber
-	if !st.evm.ChainConfig().IsThangLong(blockNumber) {
-		return false
-	}
-
 	from := st.msg.From()
 
 	// Most frequently used number.
@@ -279,10 +270,10 @@ func (st *StateTransition) updateMRU() bool {
 		return true
 	}
 
-	if mruNumber == 0 && st.state.GetNonce(from) > 0 {
-		// old account from pre-hardfork
-		mruNumber = st.evm.ChainConfig().Dccs.ThangLongBlock.Uint64()
-	}
+	// if mruNumber == 0 && st.state.GetNonce(from) > 0 {
+	// 	// old account from pre-hardfork
+	// 	mruNumber = st.evm.ChainConfig().Dccs.ThangLongBlock.Uint64()
+	// }
 
 	if blockNumber.Uint64() <= mruNumber+1 {
 		// short-circuit frequently used account

@@ -9,8 +9,8 @@ import "./ERC223.sol";
 
 contract StableToken is ERC223{
     string public constant symbol = "NEWSD";
-    string public constant name = "Nexty Stable Dollar";
-    uint public constant decimals = 6;
+    string public constant name = "New Stable Dollar";
+    uint public constant decimals = 18;
 
     constructor (
         address orderbook,      // mandatory

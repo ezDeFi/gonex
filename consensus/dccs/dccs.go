@@ -31,6 +31,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vdf"
+	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/log"
@@ -48,8 +49,6 @@ const (
 
 // Dccs proof-of-foundation protocol constants.
 var (
-	epochLength = uint64(30000) // Default number of blocks after which to checkpoint and reset the pending votes
-
 	extraVanity = 32 // Fixed number of extra-data prefix bytes reserved for signer vanity
 	extraSeal   = 65 // Fixed number of extra-data suffix bytes reserved for signer seal
 
@@ -131,6 +130,9 @@ type Dccs struct {
 	config *params.DccsConfig // Consensus engine configuration parameters
 	db     ethdb.Database     // Database to store and retrieve snapshot checkpoints
 
+	genesisSealers     []common.Address
+	genesisSealersOnce sync.Once
+
 	recents    *lru.ARCCache // Snapshots for recent block to speed up reorgs
 	signatures *lru.ARCCache // Signatures of recent blocks to speed up mining
 
@@ -142,7 +144,7 @@ type Dccs struct {
 
 	accManager *accounts.Manager
 
-	// CoLoa hard-fork
+	// r2PoS
 	sealingQueueCache *lru.ARCCache // SealingQueue of recent blocks
 	extDataCache      *lru.ARCCache // ExtendedData of recent blocks
 	anchorExtraCache  *lru.ARCCache // Recently assembled anchor extra bytes
@@ -162,9 +164,6 @@ type Dccs struct {
 func New(config *params.DccsConfig, db ethdb.Database, priceServiceURL, vdfGen string) *Dccs {
 	// Set any missing consensus parameters to their defaults
 	conf := *config
-	if conf.Epoch == 0 {
-		conf.Epoch = epochLength
-	}
 	// Allocate the snapshot caches and create the engine
 	recents, _ := lru.NewARC(inmemorySnapshots)
 	signatures, _ := lru.NewARC(inmemorySignatures)
@@ -183,18 +182,12 @@ func New(config *params.DccsConfig, db ethdb.Database, priceServiceURL, vdfGen s
 
 // VerifyHeader checks whether a header conforms to the consensus rules.
 func (d *Dccs) VerifyHeader(chain consensus.ChainReader, header *types.Header, seal bool) error {
-	if chain.Config().IsCoLoa(header.Number) {
-		context := Context{
-			head:   header,
-			chain:  chain,
-			engine: d,
-		}
-		return context.verifyHeader2(seal)
+	context := Context{
+		head:   header,
+		chain:  chain,
+		engine: d,
 	}
-	if chain.Config().IsThangLong(header.Number) {
-		return d.verifyHeader1(chain, header, nil, seal)
-	}
-	return d.verifyHeader(chain, header, nil, seal)
+	return context.verifyHeader2(seal)
 }
 
 // VerifyHeaders is similar to VerifyHeader, but verifies a batch of headers. The
@@ -210,22 +203,16 @@ func (d *Dccs) VerifyHeaders(chain consensus.ChainReader, headers []*types.Heade
 	go func() {
 		for i, header := range headers {
 			var err error
-			if chain.Config().IsCoLoa(header.Number) {
-				context := Context{
-					head:    header,
-					parents: headers[:i],
-					chain:   chain,
-					engine:  d,
-				}
-				// force full verification for the last header in batch, otherwise,
-				// let the consensus decide which header to fully verify
-				seal := !fastSync || i == len(seals)-1
-				err = context.verifyHeader2(seal)
-			} else if chain.Config().IsThangLong(header.Number) {
-				err = d.verifyHeader1(chain, header, headers[:i], seals[i])
-			} else {
-				err = d.verifyHeader(chain, header, headers[:i], seals[i])
+			context := Context{
+				head:    header,
+				parents: headers[:i],
+				chain:   chain,
+				engine:  d,
 			}
+			// force full verification for the last header in batch, otherwise,
+			// let the consensus decide which header to fully verify
+			seal := !fastSync || i == len(seals)-1
+			err = context.verifyHeader2(seal)
 
 			select {
 			case <-abort:
@@ -249,126 +236,90 @@ func (d *Dccs) VerifyUncles(chain consensus.ChainReader, block *types.Block) err
 // VerifySeal implements consensus.Engine, checking whether the signature contained
 // in the header satisfies the consensus protocol requirements.
 func (d *Dccs) VerifySeal(chain consensus.ChainReader, header *types.Header) error {
-	if chain.Config().IsCoLoa(header.Number) {
-		context := Context{
-			head:   header,
-			chain:  chain,
-			engine: d,
-		}
-		return context.verifySeal2()
+	context := Context{
+		head:   header,
+		chain:  chain,
+		engine: d,
 	}
-	if chain.Config().IsThangLong(header.Number) {
-		return d.verifySeal1(chain, header, nil)
-	}
-	return d.verifySeal(chain, header, nil)
+	return context.verifySeal2()
 }
 
 // Prepare implements consensus.Engine, preparing all the consensus fields of the
 // header for running the transactions on top.
 func (d *Dccs) Prepare(chain consensus.ChainReader, header *types.Header) error {
-	if chain.Config().IsCoLoa(header.Number) {
-		context := Context{
-			chain:  chain,
-			engine: d,
-		}
-		return context.prepare2(header)
+	context := Context{
+		chain:  chain,
+		engine: d,
 	}
-	if chain.Config().IsThangLong(header.Number) {
-		return d.prepare1(chain, header)
-	}
-	return d.prepare(chain, header)
+	return context.prepare2(header)
 }
 
 // Initialize implements the consensus.Engine
 func (d *Dccs) Initialize(chain consensus.ChainReader, header *types.Header, state *state.StateDB) (types.Transactions, types.Receipts, error) {
-	if chain.Config().IsCoLoa(header.Number) {
-		context := Context{
-			chain:  chain,
-			engine: d,
-		}
-		return context.initialize2(header, state)
+	context := Context{
+		chain:  chain,
+		engine: d,
 	}
-	return nil, nil, nil
+	return context.initialize2(header, state)
 }
 
 // Finalize implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
 func (d *Dccs) Finalize(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header) {
-	if chain.Config().IsCoLoa(header.Number) {
-		context := Context{
-			chain:  chain,
-			engine: d,
-		}
-		context.finalize2(header, state, txs, uncles)
-		return
+	context := Context{
+		chain:  chain,
+		engine: d,
 	}
-	if chain.Config().IsThangLong(header.Number) {
-		d.finalize1(chain, header, state, txs, uncles)
-		return
-	}
-	if chain.Config().IsThangLongPreparationBlock(header.Number) {
-		// Retrieve the pre-fork signers list
-		s, err := d.snapshot(chain, header.Number.Uint64()-1, header.ParentHash, nil)
-		if err != nil {
-			return
-		}
-		sigs := s.signers()
-		// Deploy the contract and ininitalize it with pre-fork signers
-		if err = deployConsensusContracts(state, chain.Config(), sigs); err != nil {
-			log.Error("Unable to deploy Nexty governance smart contract", "err", err)
-			return
-		}
-		log.Info("Successfully deploy Nexty governance contract", "Number of sealers", len(sigs))
-	}
-	d.finalize(chain, header, state, txs, uncles)
+	context.finalize2(header, state, txs, uncles)
 }
 
 // FinalizeAndAssemble implements consensus.Engine, ensuring no uncles are set, nor block
 // rewards given, and returns the final block.
 func (d *Dccs) FinalizeAndAssemble(chain consensus.ChainReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt) (*types.Block, error) {
-	if chain.Config().IsCoLoa(header.Number) {
-		context := Context{
-			chain:  chain,
-			engine: d,
-		}
-		return context.finalizeAndAssemble2(header, state, txs, uncles, receipts)
+	context := Context{
+		chain:  chain,
+		engine: d,
 	}
-	if chain.Config().IsThangLong(header.Number) {
-		return d.finalizeAndAssemble1(chain, header, state, txs, uncles, receipts)
+	return context.finalizeAndAssemble2(header, state, txs, uncles, receipts)
+}
+
+func deployContract(state *state.StateDB, address common.Address, code []byte, storage map[common.Hash]common.Hash, overwrite bool) {
+	// Ensure there's no existing contract already at the designated address
+	contractHash := state.GetCodeHash(address)
+	// this is an consensus upgrade
+	exist := state.GetNonce(address) != 0 || (contractHash != (common.Hash{}) && contractHash != vm.EmptyCodeHash)
+	if !exist {
+		// Create a new account on the state
+		state.CreateAccount(address)
+		// Assuming chainConfig.IsEIP158(BlockNumber)
+		state.SetNonce(address, 1)
+	} else if !overwrite {
+		// disable overwrite flag to prevent unintentional contract upgrade
+		return
 	}
-	if chain.Config().IsThangLongPreparationBlock(header.Number) {
-		// Retrieve the pre-fork signers list
-		s, err := d.snapshot(chain, header.Number.Uint64()-1, header.ParentHash, nil)
-		if err != nil {
-			return nil, err
-		}
-		sigs := s.signers()
-		// Deploy the contract and ininitalize it with pre-fork signers
-		if err = deployConsensusContracts(state, chain.Config(), sigs); err != nil {
-			log.Error("Unable to deploy Nexty governance smart contract", "err", err)
-			return nil, err
-		}
-		log.Info("Successfully deploy Nexty governance contract", "Number of sealers", len(sigs))
+
+	// Transfer the code and state from simulated backend to the real state db
+	state.SetCode(address, code)
+	for key, value := range storage {
+		state.SetState(address, key, value)
 	}
-	return d.finalizeAndAssemble(chain, header, state, txs, uncles, receipts)
+	state.Commit(true)
 }
 
 // Authorize injects a private key into the consensus engine to mint new blocks
 // with.
 func (d *Dccs) Authorize(signer common.Address, signFn accounts.SignerFn, state *state.StateDB, header *types.Header, accManager *accounts.Manager) {
-	if d.config.IsThangLong(header.Number) {
-		size := state.GetCodeSize(params.GovernanceAddress)
-		log.Info("smart contract size", "size", size)
-		if size > 0 && state.Error() == nil {
-			// Get token holder from coinbase
-			index := common.BigToHash(common.Big1).String()[2:]
-			coinbase := "0x000000000000000000000000" + signer.String()[2:]
-			key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
-			result := state.GetState(params.GovernanceAddress, key)
+	size := state.GetCodeSize(params.GovernanceAddress)
+	log.Info("smart contract size", "size", size)
+	if size > 0 && state.Error() == nil {
+		// Get token holder from coinbase
+		index := common.BigToHash(common.Big1).String()[2:]
+		coinbase := "0x000000000000000000000000" + signer.String()[2:]
+		key := crypto.Keccak256Hash(hexutil.MustDecode(coinbase + index))
+		result := state.GetState(params.GovernanceAddress, key)
 
-			if (result == common.Hash{}) {
-				log.Warn("Validator is not in activation sealer set")
-			}
+		if (result == common.Hash{}) {
+			log.Warn("Validator is not in activation sealer set")
 		}
 	}
 
@@ -383,41 +334,27 @@ func (d *Dccs) Authorize(signer common.Address, signFn accounts.SignerFn, state 
 // Seal implements consensus.Engine, attempting to create a sealed block using
 // the local signing credentials.
 func (d *Dccs) Seal(chain consensus.ChainReader, block *types.Block, results chan<- *types.Block, stop <-chan struct{}) error {
-	header := block.Header()
-	if chain.Config().IsCoLoa(header.Number) {
-		context := Context{
-			chain:  chain,
-			engine: d,
-		}
-		return context.seal2(block, results, stop)
+	context := Context{
+		chain:  chain,
+		engine: d,
 	}
-	if chain.Config().IsThangLong(header.Number) {
-		return d.seal1(chain, block, results, stop)
-	}
-	return d.seal(chain, block, results, stop)
+	return context.seal2(block, results, stop)
 }
 
 // CalcDifficulty is the difficulty adjustment algorithm. It returns the difficulty
 // that a new block should have based on the previous blocks in the chain and the
 // current signer.
 func (d *Dccs) CalcDifficulty(chain consensus.ChainReader, time uint64, parent *types.Header) *big.Int {
-	number := new(big.Int).Add(common.Big1, parent.Number)
-	if chain.Config().IsThangLong(number) {
-		// create a fake header for the being-mined block
-		snap, err := d.snapshot1(chain, &types.Header{
-			Number:     number,
-			ParentHash: parent.Hash(),
-		}, nil)
-		if err != nil {
-			return nil
-		}
-		return CalcDifficulty1(snap, d.signer, parent)
+	context := Context{
+		chain:  chain,
+		engine: d,
 	}
-	snap, err := d.snapshot(chain, parent.Number.Uint64(), parent.Hash(), nil)
+	diff, err := context.difficulty2(d.signer)
 	if err != nil {
+		log.Error("failed to calculate the next difficulty", "err", err)
 		return nil
 	}
-	return CalcDifficulty(snap, d.signer)
+	return new(big.Int).SetUint64(diff)
 }
 
 // SealHash returns the hash of a block prior to it being sealed.
