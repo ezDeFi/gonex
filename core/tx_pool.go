@@ -190,7 +190,7 @@ var DefaultTxPoolConfig = TxPoolConfig{
 	PriceBump:  10,
 
 	ParityLimit: types.ParityMax,
-	ParityPrice: 13e9, // ~ 273 (old) ZD ~ 0.01 USD for 21000 Tx Gas
+	ParityPrice: 1e9, // ~ 0.00002 ZD ~ 0.01 USD for 21000 Tx Gas
 
 	TxRateLimit: 1.0 / 3, // 1 tx/3s
 	TxRateBurst: 18,

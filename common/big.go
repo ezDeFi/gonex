@@ -34,7 +34,8 @@ var (
 	Big1e18 = big.NewInt(1e18)
 	Big1e24 = new(big.Int).Mul(Big1e12, Big1e12)
 
-	Big2e14 = big.NewInt(2e14)
+	Big5e13 = big.NewInt(5e13)                             // block reward
+	Big3e22 = new(big.Int).Mul(Big1e18, big.NewInt(30000)) // initial supply
 )
 
 var (

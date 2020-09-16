@@ -72,7 +72,7 @@ var (
 	errNoEligibleAccount = errors.New("no eligible account for sealing")
 )
 
-var blockReward = common.Big2e14 // 0.0002 coin
+var blockReward = common.Big5e13 // 0.00005 coin
 
 // Init the second hardfork of DCCS consensus
 func (d *Dccs) init2() *Dccs {

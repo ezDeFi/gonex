@@ -338,13 +338,20 @@ func GenesisBlockForTesting(db ethdb.Database, addr common.Address, balance *big
 // DefaultGenesisBlock returns the Ethereum main net genesis block.
 func DefaultGenesisBlock() *Genesis {
 	return &Genesis{
-		Config:     params.MainnetChainConfig,
-		Timestamp:  1520505573,
-		Nonce:      0,
-		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000008fdfd61f626240a92dcd9461f18404250507004d61c0d779622e7384a4f7d8bafa1ca60f4634a313d4db56caa4b9bc49ed17d0f149bfeaa98adfc17e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+		Config:    params.MainnetChainConfig,
+		Timestamp: 0,
+		Nonce:     0,
+		ExtraData: hexutil.MustDecode("0x" +
+			"b376d5ba1a7abb99edfa173766ed3ce956b0ac12" +
+			"e2f2ba93c5619f2f007c9cc4f9e72e801e7130be" +
+			"d8a9e4a349676845ba6596713d119b4f177b1624" +
+			"69e96f2d745cf1293638069cf446aa9e1f1b1687" +
+			"88c1fc22fbd5c2b0973b543186c75fcf96fe596e"),
 		GasLimit:   42000000,
-		Difficulty: big.NewInt(1),
-		Alloc:      decodePrealloc(mainnetAllocData),
+		Difficulty: common.Big1,
+		Alloc: GenesisAlloc{
+			common.HexToAddress("13cF09A56802e6C60F1E3318D5C0eBA836E18Af0"): GenesisAccount{Balance: common.Big3e22},
+		},
 	}
 }
 
@@ -363,11 +370,11 @@ func DefaultTestnetGenesisBlock() *Genesis {
 		GasLimit:   42000000,
 		Difficulty: common.Big1,
 		Alloc: GenesisAlloc{
-			common.HexToAddress("d638dc353687169d117df1933ba93fcc1ff42834"): GenesisAccount{Balance: common.Big1e24},
-			common.HexToAddress("71e2ecb267a79fa7d026559aba3a10ee569f4176"): GenesisAccount{Balance: common.Big1e24},
-			common.HexToAddress("695f53abda356da3cdcfa5cd0dfb641c60b1c91f"): GenesisAccount{Balance: common.Big1e24},
-			common.HexToAddress("a5af745e0526d7eaeafd889e59bd3d4e8bd8b4de"): GenesisAccount{Balance: common.Big1e24},
-			common.HexToAddress("65662f08e77432a474b17f17873e87f557d7f0d3"): GenesisAccount{Balance: common.Big1e24},
+			common.HexToAddress("d638dc353687169d117df1933ba93fcc1ff42834"): GenesisAccount{Balance: common.Big3e22},
+			common.HexToAddress("71e2ecb267a79fa7d026559aba3a10ee569f4176"): GenesisAccount{Balance: common.Big3e22},
+			common.HexToAddress("695f53abda356da3cdcfa5cd0dfb641c60b1c91f"): GenesisAccount{Balance: common.Big3e22},
+			common.HexToAddress("a5af745e0526d7eaeafd889e59bd3d4e8bd8b4de"): GenesisAccount{Balance: common.Big3e22},
+			common.HexToAddress("65662f08e77432a474b17f17873e87f557d7f0d3"): GenesisAccount{Balance: common.Big3e22},
 		},
 	}
 }
@@ -398,14 +405,7 @@ func DefaultGoerliGenesisBlock() *Genesis {
 
 // DefaultDccsGenesisBlock returns the Dccs network genesis block.
 func DefaultDccsGenesisBlock() *Genesis {
-	return &Genesis{
-		Config:     params.DccsChainConfig,
-		Timestamp:  1492009146,
-		ExtraData:  hexutil.MustDecode("0x52657370656374206d7920617574686f7269746168207e452e436172746d616e42eb768f2244c8811c63729a21a3569731535f067ffc57839b00206d1ad20c69a1981b489f772031b279182d99e65703f0076e4812653aab85fca0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-		GasLimit:   4700000,
-		Difficulty: big.NewInt(1),
-		Alloc:      decodePrealloc(dccsAllocData),
-	}
+	return DefaultGenesisBlock()
 }
 
 // DeveloperGenesisBlock returns the 'geth --dev' genesis block. Note, this must

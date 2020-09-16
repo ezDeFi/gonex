@@ -90,7 +90,7 @@ var (
 		Dccs: &DccsConfig{
 			Period: BlockSeconds,
 			// Stake params
-			StakeRequire:    20000,
+			StakeRequire:    100,
 			StakeLockHeight: 30000,
 			// r2PoS
 			LeakDuration:            1024,
@@ -104,10 +104,15 @@ var (
 			LockdownExpiration:    7 * 24 * 60 * 60 / BlockSeconds * 2, // 2 weeks
 			SlashingRate:          1e18,
 			// TokenFee
-			TokenPaymentAdmins: nil,
+			TokenPaymentAdmins: []common.Address{
+				common.HexToAddress("1234565cF92B796F2d3ED34DADB9eF1A1beCd60f"),
+				common.HexToAddress("4f052FefE25aB4e7b3091F7359539e0fb9155Bed"),
+				common.HexToAddress("d218A1757671CE8ef725A4f0ef79a8D27D399D3a"),
+				common.HexToAddress("3e18a1aC2cA22Dc3749356E7Ef2DE590ffBE175a"),
+			},
 			TokenPrice: map[common.Address]*big.Int{
 				VolatileTokenAddress: common.Big1e18,
-				StableTokenAddress:   big.NewInt(76923076923076923), // 1 ZD = 13 USD
+				StableTokenAddress:   big.NewInt(2e15), // 1 ZD = 500 USD
 			},
 		},
 	}
