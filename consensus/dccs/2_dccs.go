@@ -33,11 +33,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
-	"github.com/ethereum/go-ethereum/contracts/nexty/endurio"
-	"github.com/ethereum/go-ethereum/contracts/nexty/endurio/stable"
-	"github.com/ethereum/go-ethereum/contracts/nexty/endurio/volatile"
-	"github.com/ethereum/go-ethereum/contracts/nexty/fee"
-	"github.com/ethereum/go-ethereum/contracts/nexty/governance"
+	"github.com/ethereum/go-ethereum/contracts/core/endurio"
+	"github.com/ethereum/go-ethereum/contracts/core/endurio/stable"
+	"github.com/ethereum/go-ethereum/contracts/core/endurio/volatile"
+	"github.com/ethereum/go-ethereum/contracts/core/fee"
+	"github.com/ethereum/go-ethereum/contracts/core/governance"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vdf"
@@ -623,13 +623,13 @@ func (c *Context) finalizeAndAssemble2(header *types.Header, state *state.StateD
 
 // deployConsensusContracts deploys the consensus contract without any owner
 func deployConsensusContracts(state *state.StateDB, chainConfig *params.ChainConfig, signers []common.Address) error {
-	// Deploy Nexty Governance Contract
+	// Deploy Governance Contract
 	{
 		// Generate contract code and data using a simulated backend
 		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
 			stakeRequire := new(big.Int).Mul(new(big.Int).SetUint64(chainConfig.Dccs.StakeRequire), new(big.Int).SetUint64(1e+18))
 			stakeLockHeight := new(big.Int).SetUint64(chainConfig.Dccs.StakeLockHeight)
-			address, _, _, err := governance.DeployNextyGovernance(auth, sim, stakeRequire, stakeLockHeight, signers)
+			address, _, _, err := governance.DeployGovernance(auth, sim, stakeRequire, stakeLockHeight, signers)
 			return address, err
 		})
 		if err != nil {

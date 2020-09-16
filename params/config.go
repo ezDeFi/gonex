@@ -44,8 +44,8 @@ var (
 	GovernanceAddress  = common.HexToAddress("0x12345")
 	// Stablecoin contract addresses
 	SeigniorageAddress   = common.HexToAddress("0x23456") // Seigniorage contract address
-	VolatileTokenAddress = common.HexToAddress("0x34567") // WNTY token contract address
-	StableTokenAddress   = common.HexToAddress("0x45678") // NEWSD token contract address
+	VolatileTokenAddress = common.HexToAddress("0x34567") // WZD token contract address
+	StableTokenAddress   = common.HexToAddress("0x45678") // ZUSD token contract address
 	// Token fee contract addresses
 	TokenPayementGas     = uint64(40000)
 	TokenPayementAddress = common.HexToAddress("0x56789") // Default PayByToken contract
@@ -107,7 +107,7 @@ var (
 			TokenPaymentAdmins: nil,
 			TokenPrice: map[common.Address]*big.Int{
 				VolatileTokenAddress: common.Big1e18,
-				StableTokenAddress:   big.NewInt(76923076923076923), // 1 NTY = 13 USD
+				StableTokenAddress:   big.NewInt(76923076923076923), // 1 ZD = 13 USD
 			},
 		},
 	}
@@ -213,7 +213,7 @@ var (
 		},
 	}
 
-	// DccsChainConfig contains the chain parameters to run a node on the Nexty test network.
+	// DccsChainConfig contains the chain parameters to run a node on the test network.
 	DccsChainConfig = MainnetChainConfig
 
 	// RinkebyTrustedCheckpoint contains the light client trusted checkpoint for the Rinkeby test network.

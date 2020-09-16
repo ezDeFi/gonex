@@ -29,9 +29,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/contracts/nexty/endurio"
-	"github.com/ethereum/go-ethereum/contracts/nexty/endurio/stable"
-	"github.com/ethereum/go-ethereum/contracts/nexty/endurio/volatile"
+	"github.com/ethereum/go-ethereum/contracts/core/endurio"
+	"github.com/ethereum/go-ethereum/contracts/core/endurio/stable"
+	"github.com/ethereum/go-ethereum/contracts/core/endurio/volatile"
 	"github.com/ethereum/go-ethereum/core/state"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
@@ -80,10 +80,10 @@ func (c *Context) OnBlockInitialized(header *types.Header, state *state.StateDB,
 
 	tx := types.NewTransaction(
 		state.GetNonce(common.Address{}), // nonce
-		params.SeigniorageAddress,          // to
-		common.Big0,                        // amount
-		math.MaxUint64,                     // gasLimit
-		common.Big0,                        // gasPrice
+		params.SeigniorageAddress,        // to
+		common.Big0,                      // amount
+		math.MaxUint64,                   // gasLimit
+		common.Big0,                      // gasPrice
 		append(onBlockInitializedSignature, common.BigToHash(target).Bytes()...), // data
 	)
 

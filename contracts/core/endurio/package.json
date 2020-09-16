@@ -9,7 +9,7 @@
     "build-stable": "cp -prv src/tokens/. node_modules; cd node_modules; abigen -sol=StableToken.sol --pkg=stable -out=../stable/StableToken.go",
     "build-volatile": "cp -prv src/tokens/. node_modules; cd node_modules; abigen -sol=VolatileToken.sol --pkg=volatile -out=../volatile/VolatileToken.go"
   },
-  "author": "nexty.io",
+  "author": "ezdefi.com",
   "dependencies": {
     "@openzeppelin/contracts": "^3.1.0",
     "zos-lib": "^2.2.2"

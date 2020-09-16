@@ -1,4 +1,4 @@
-// Copyright 2015 The Nexty Authors
+// Copyright 2015 The EzDeFi Authors
 // This file is part of the gonex library.
 //
 // The go-ethereum library is free software: you can redistribute it and/or modify

@@ -1,0 +1,13 @@
+{
+  "name": "ezdefi",
+  "version": "1.0.0",
+  "description": "EzDeFi Consensus Contract",
+  "scripts": {
+    "compile": "solc governance.sol",
+    "build": "../../../build/bin/abigen -sol=governance.sol --pkg=governance -out=governance.go"
+  },
+  "author": "ezdefi.com",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.1.0"
+  }
+}

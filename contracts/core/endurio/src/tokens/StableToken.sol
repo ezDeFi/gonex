@@ -15,7 +15,7 @@ contract StableToken is ERC223 {
         uint prefundAmount      // optional
     )
         public
-        ERC20("New Stable Dollar", "NEWSD")
+        ERC20("EzDeFi USD", "ZUSD")
     {
         if (prefundAmount > 0 ) {
             _mint(prefundAddress, prefundAmount * 10**18);
@@ -23,7 +23,7 @@ contract StableToken is ERC223 {
         initialize(orderbook);
     }
 
-    // order USD -> MNTY
+    // order USD -> WZD
     function trade(
         bytes32 index,
         uint haveAmount,

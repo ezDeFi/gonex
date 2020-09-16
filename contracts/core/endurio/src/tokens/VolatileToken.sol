@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./ERC223.sol";
 
 /*
-    . Exchanged with NTY with rate 1 MegaNTY = 1000000 NTY
+    . Exchanged with ZD with rate 01 WZD = 01 ZD
     . Mint. / burn. able(free) by owner = orderbook contract
 */
 
@@ -20,7 +20,7 @@ contract VolatileToken is ERC223 {
         uint prefundAmount      // optional
     )
         public
-        ERC20("Wrapped NTY", "WNTY")
+        ERC20("Wrapped ZD", "WZD")
     {
         if (prefundAmount > 0 ) {
             _mint(prefundAddress, prefundAmount * 10**18); // TODO: pass wei instead of coin
@@ -48,7 +48,7 @@ contract VolatileToken is ERC223 {
         return inflated;
     }
 
-    // deposit (MNTY <- NTY)
+    // deposit (WZD <- ZD)
     function deposit()
         external
         payable
@@ -57,7 +57,7 @@ contract VolatileToken is ERC223 {
         depositTo(msg.sender);
     }
 
-    // withdraw (MNTY -> NTY)
+    // withdraw (WZD -> ZD)
     function withdraw(uint _amount)
         external
         returns(bool)
@@ -65,7 +65,7 @@ contract VolatileToken is ERC223 {
         withdrawTo(_amount, msg.sender);
     }
 
-    // withdrawTo (MNTY -> NTY -> address)
+    // withdrawTo (WZD -> ZD -> address)
     function withdrawTo(uint _amount, address payable _to)
         public
         returns(bool)
@@ -74,13 +74,13 @@ contract VolatileToken is ERC223 {
         _burn(_sender, _amount);
 
         /************************************************************************/
-        /* concensus garantures, this contract always got enough NTY to withdraw */
+        /* concensus garantures, this contract always got enough ZD to withdraw */
         /************************************************************************/
 
         _to.transfer(_amount);
     }
 
-    // depositTo (addresss <- MNTY <- NTY)
+    // depositTo (addresss <- WZD <- ZD)
     function depositTo(
         address _to
     )
@@ -93,7 +93,7 @@ contract VolatileToken is ERC223 {
         return true;
     }
 
-    // deposit and order (NTY -> MNTY -> USD)
+    // deposit and order (ZD -> WZD -> USD)
     function depositAndTrade(
         bytes32 index,
         uint haveAmount,
@@ -107,7 +107,7 @@ contract VolatileToken is ERC223 {
         trade(index, haveAmount, wantAmount, assistingID);
     }
 
-    // create selling order (MNTY -> USD)
+    // create selling order (WZD -> USD)
     // with verbose data = (wantAmount, assistingID)
     function trade(
         bytes32 index,

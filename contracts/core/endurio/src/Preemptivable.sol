@@ -89,7 +89,7 @@ contract Preemptivable is Absorbable {
         bytes calldata data)
         external
     {
-        // if MNTY is received and data contains 4 params
+        // if WZD is received and data contains 4 params
         if (data.length == 32*4 && msg.sender == address(VolatileToken)) {
             // pre-emptive absorption proposal
             require(!proposals.has(maker), "already has a proposal");
@@ -175,7 +175,7 @@ contract Preemptivable is Absorbable {
             toSlash = lockdown.stake;
         }
 
-        // this slashed NTY will be burnt by the consensus by calling setBalance
+        // this slashed ZD will be burnt by the consensus by calling setBalance
         lockdown.stake -= toSlash;
         VolatileToken.dexBurn(toSlash);
 
@@ -190,7 +190,7 @@ contract Preemptivable is Absorbable {
     }
 
     /**
-     * propose allows Preemptive initiator to lock their MNTY in and
+     * propose allows Preemptive initiator to lock their WZD in and
      * introduces new proposal.
      */
     function propose(

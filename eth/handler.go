@@ -231,7 +231,7 @@ func (pm *ProtocolManager) removePeer(id string) {
 	if peer == nil {
 		return
 	}
-	log.Debug("Removing Nexty peer", "peer", id)
+	log.Debug("Removing peer", "peer", id)
 
 	// Unregister the peer from the downloader and Ethereum peer set
 	pm.downloader.UnregisterPeer(id)
@@ -262,7 +262,7 @@ func (pm *ProtocolManager) Start(maxPeers int) {
 }
 
 func (pm *ProtocolManager) Stop() {
-	log.Info("Stopping Nexty protocol")
+	log.Info("Stopping the protocol")
 
 	pm.txsSub.Unsubscribe()        // quits txBroadcastLoop
 	pm.minedBlockSub.Unsubscribe() // quits blockBroadcastLoop
@@ -283,7 +283,7 @@ func (pm *ProtocolManager) Stop() {
 	// Wait for all peer handler goroutines and the loops to come down.
 	pm.wg.Wait()
 
-	log.Info("Nexty protocol stopped")
+	log.Info("Protocol stopped")
 }
 
 func (pm *ProtocolManager) newPeer(pv int, p *p2p.Peer, rw p2p.MsgReadWriter) *peer {
@@ -297,7 +297,7 @@ func (pm *ProtocolManager) handle(p *peer) error {
 	if pm.peers.Len() >= pm.maxPeers && !p.Peer.Info().Network.Trusted {
 		return p2p.DiscTooManyPeers
 	}
-	p.Log().Debug("Nexty peer connected", "name", p.Name())
+	p.Log().Debug("Peer connected", "name", p.Name())
 
 	// Execute the Ethereum handshake
 	var (
@@ -316,7 +316,7 @@ func (pm *ProtocolManager) handle(p *peer) error {
 	}
 	// Register the peer locally
 	if err := pm.peers.Register(p); err != nil {
-		p.Log().Error("Nexty peer registration failed", "err", err)
+		p.Log().Error("Peer registration failed", "err", err)
 		return err
 	}
 	defer pm.removePeer(p.id)
@@ -357,7 +357,7 @@ func (pm *ProtocolManager) handle(p *peer) error {
 	// Handle incoming messages until the connection is torn down
 	for {
 		if err := pm.handleMsg(p); err != nil {
-			p.Log().Debug("Nexty message handling failed", "err", err)
+			p.Log().Debug("Message handling failed", "err", err)
 			return err
 		}
 	}

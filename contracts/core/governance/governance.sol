@@ -3,9 +3,9 @@ pragma solidity >=0.6.2;
 import "node_modules/@openzeppelin/contracts/math/SafeMath.sol";
 
 /**
- * @title Nexty sealers management smart contract
+ * @title sealers management smart contract
  */
-contract NextyGovernance {
+contract Governance {
     using SafeMath for uint256;
 
     // zero address

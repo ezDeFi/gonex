@@ -208,7 +208,7 @@ func (w *wizard) makeGenesis() {
 			genesis.Config.Dccs.TokenPaymentAdmins = []common.Address{*address}
 		}
 
-		// // NEWSD/NTY price
+		// // ZUSD/ZD price
 		// defaultPrice := 1.0
 		// if price, ok := genesis.Config.Dccs.TokenPrice[params.StableTokenAddress]; ok {
 		// 	f := new(big.Float).SetInt(price)
@@ -216,7 +216,7 @@ func (w *wizard) makeGenesis() {
 		// 	defaultPrice, _ = f.Float64()
 		// }
 		// fmt.Println()
-		// fmt.Printf("Initialize price of NEWSD/NTY? (default = %v)\n", defaultPrice)
+		// fmt.Printf("Initialize price of ZUSD/ZD? (default = %v)\n", defaultPrice)
 		// if price := w.readDefaultFloat(defaultPrice); price > 0 {
 		// 	f := big.NewFloat(price)
 		// 	f = f.Mul(f, new(big.Float).SetInt(common.Big1e18))

@@ -41,7 +41,7 @@ library absn {
         // amount of StablizeToken to absorb, positive for inflation, negative for deflation
         int amount;
 
-        // NTY amount staked for the preemptive proposal
+        // ZD amount staked for the preemptive proposal
         uint stake;
 
         // slashingDivisor = stake * slashingRate / ZOOM / |amount|

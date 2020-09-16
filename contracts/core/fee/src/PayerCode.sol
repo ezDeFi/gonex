@@ -33,7 +33,7 @@ abstract contract PayerCode is IPayer {
 
     function _payment(address txTo) internal view returns (
         address token,
-        uint price  // Token/NTY price (in wei) (decimals = 18)
+        uint price  // Token/ZD price (in wei) (decimals = 18)
     ) {
         // first check the fee token setting
         token = ds.loadAddress(FeeTokenKey);

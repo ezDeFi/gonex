@@ -434,7 +434,7 @@ func startNode(ctx *cli.Context, stack *node.Node) {
 		}
 		var ethereum *eth.Ethereum
 		if err := stack.Service(&ethereum); err != nil {
-			utils.Fatalf("Nexty service not running: %v", err)
+			utils.Fatalf("Gonex service not running: %v", err)
 		}
 		// Set the gas price to the limits from the CLI and start mining
 		gasprice := utils.GlobalBig(ctx, utils.MinerLegacyGasPriceFlag.Name)
