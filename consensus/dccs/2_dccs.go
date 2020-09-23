@@ -782,11 +782,15 @@ func deployStablecoinContracts(chain consensus.ChainReader, header *types.Header
 
 	// Deploy StableToken Contract
 	{
+		prefundAmount := chain.Config().Dccs.TestnetSTBPrefundAmount
+		if prefundAmount == nil {
+			prefundAmount = common.Big0
+		}
 		// Generate contract code and data using a simulated backend
 		code, storage, err := deployer.DeployContract(func(sim *backends.SimulatedBackend, auth *bind.TransactOpts) (common.Address, error) {
 			address, _, _, err := stable.DeployStableToken(auth, sim, params.SeigniorageAddress,
 				chain.Config().Dccs.TestnetSTBPrefundAddress,
-				chain.Config().Dccs.TestnetSTBPrefundAmount)
+				prefundAmount)
 			return address, err
 		})
 		if err != nil {
