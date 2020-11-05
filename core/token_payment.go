@@ -69,7 +69,11 @@ func NewPaymentContext(evm *vm.EVM, msg Message) (*PaymentContext, error) {
 	gasToPay = gasToPay.Add(gasToPay, new(big.Int).SetUint64(msg.Gas()))
 	feeToPay := gasToPay.Mul(gasToPay, msg.GasPrice())
 
-	input, err := abiFuncPay.Inputs.Pack(feeToPay, msg.To())
+	msgTo := msg.To()
+	if msgTo == nil {
+		msgTo = &common.Address{}
+	}
+	input, err := abiFuncPay.Inputs.Pack(feeToPay, msgTo)
 	if err != nil {
 		return nil, err
 	}
