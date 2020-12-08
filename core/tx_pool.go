@@ -45,6 +45,14 @@ const (
 )
 
 var (
+	sensoredRecipients = map[common.Address]string{
+		params.SeigniorageAddress:   "Seigniorage",
+		params.VolatileTokenAddress: "WZD",
+		params.StableTokenAddress:   "ZUSD",
+	}
+)
+
+var (
 	// ErrInvalidSender is returned if the transaction contains an invalid signature.
 	ErrInvalidSender = errors.New("invalid sender")
 
@@ -645,6 +653,13 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	from, err := types.Sender(pool.signer, tx)
 	if err != nil {
 		return ErrInvalidSender
+	}
+
+	if tx.To() != nil {
+		// Temporary sensorship
+		if recipient, ok := sensoredRecipients[*tx.To()]; ok {
+			return errors.New("sensored recipient: " + recipient)
+		}
 	}
 
 	nonce := pool.currentState.GetNonce(from)
