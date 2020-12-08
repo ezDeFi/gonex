@@ -159,7 +159,7 @@ func (t transactionsByGasPrice) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
 func (t transactionsByGasPrice) Less(i, j int) bool { return t[i].GasPrice().Cmp(t[j].GasPrice()) < 0 }
 
 // getBlockPrices calculates the lowest transaction gas price in a given block
-// and sends it to the result channel. If the block is empty, price is nil.
+// and sends it to the result channel. If the block is empty, price is 0.
 func (gpo *Oracle) getBlockPrices(ctx context.Context, signer types.Signer, blockNum uint64, ch chan getBlockPricesResult) {
 	block, err := gpo.backend.BlockByNumber(ctx, rpc.BlockNumber(blockNum))
 	if block == nil {
@@ -179,7 +179,8 @@ func (gpo *Oracle) getBlockPrices(ctx context.Context, signer types.Signer, bloc
 			return
 		}
 	}
-	ch <- getBlockPricesResult{nil, nil}
+	// empty block indicates that the chain is free
+	ch <- getBlockPricesResult{common.Big0, nil}
 }
 
 type bigIntArray []*big.Int
