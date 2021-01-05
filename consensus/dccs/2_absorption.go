@@ -130,7 +130,7 @@ func AbsorbedStat(chain consensus.ChainReader, number uint64) string {
 		return err.Error()
 	}
 	if state == nil {
-		return "No state at " + string(number-1)
+		return "No state at " + fmt.Sprint(number)
 	}
 	oldSupply, err := GetStableTokenSupply(chain, header, state)
 	if err != nil {
@@ -146,7 +146,7 @@ func AbsorbedStat(chain consensus.ChainReader, number uint64) string {
 		return err.Error()
 	}
 	if state == nil {
-		return "No state at " + string(number)
+		return "No state at " + fmt.Sprint(number)
 	}
 	supply, err := GetStableTokenSupply(chain, header, state)
 	if err != nil {
@@ -171,7 +171,7 @@ func RemainToAbsorbStat(chain consensus.ChainReader, number uint64) string {
 		return "Failed to get chain state: " + err.Error()
 	}
 	if state == nil {
-		return "No state at " + string(number)
+		return "No state at " + fmt.Sprint(number)
 	}
 	// Random key to make sure no one has any special right
 	backend := backends.NewRealBackend(chain, header, state, nil)
@@ -202,7 +202,7 @@ func StableSupplyStat(chain consensus.ChainReader, number uint64) string {
 		return err.Error()
 	}
 	if state == nil {
-		return "No state at " + string(number)
+		return "No state at " + fmt.Sprint(number)
 	}
 	supply, err := GetStableTokenSupply(chain, header, state)
 	if err != nil {
