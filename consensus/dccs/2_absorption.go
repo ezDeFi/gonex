@@ -122,6 +122,9 @@ func AbsorbedStat(chain consensus.ChainReader, number uint64) string {
 		return ""
 	}
 	header := chain.GetHeaderByNumber(number - 1)
+	if header == nil {
+		return "No header at " + fmt.Sprint(number)
+	}
 	state, err := chain.StateAt(header.Root)
 	if err != nil {
 		return err.Error()
